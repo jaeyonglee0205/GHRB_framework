@@ -1,0 +1,53 @@
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/broker/DeleteExpiredCommitLogSubCommandTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/broker/DeleteExpiredCommitLogSubCommandTest.java
+index 38f7250..931d2b2 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/broker/DeleteExpiredCommitLogSubCommandTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/broker/DeleteExpiredCommitLogSubCommandTest.java
+@@ -61,7 +61,7 @@ public class DeleteExpiredCommitLogSubCommandTest extends ServerResponseMocker {
+         final CommandLine commandLine = ServerUtil.parseCmdLine("mqadmin " + cmd.commandName(), subargs,
+             cmd.buildCommandlineOptions(options), new DefaultParser());
+         cmd.execute(commandLine, options, null);
+-        Assert.assertTrue(outContent.toString().startsWith("success"));
++        Assert.assertTrue(outContent.toString().contains("success"));
+         Assert.assertEquals("", errContent.toString());
+     }
+ }
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/server/ServerResponseMocker.java b/tools/src/test/java/org/apache/rocketmq/tools/command/server/ServerResponseMocker.java
+index 8e043ce..94dca48 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/server/ServerResponseMocker.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/server/ServerResponseMocker.java
+@@ -32,14 +32,12 @@ import io.netty.util.concurrent.Future;
+ import java.net.InetSocketAddress;
+ import java.util.HashMap;
+ import java.util.concurrent.ExecutionException;
+-import org.apache.rocketmq.client.log.ClientLogger;
+ import org.apache.rocketmq.remoting.netty.NettyDecoder;
+ import org.apache.rocketmq.remoting.netty.NettyEncoder;
+ import org.apache.rocketmq.remoting.protocol.RemotingCommand;
+ import org.apache.rocketmq.remoting.protocol.RemotingSysResponseCode;
+ import org.junit.After;
+ import org.junit.Before;
+-import org.junit.BeforeClass;
+ 
+ /**
+  * mock server response for command
+@@ -50,11 +48,6 @@ public abstract class ServerResponseMocker {
+ 
+     private final NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup();
+ 
+-    @BeforeClass
+-    public static void setLogHome() {
+-        System.setProperty(ClientLogger.CLIENT_LOG_ROOT, System.getProperty("java.io.tmpdir"));
+-    }
+-
+     @Before
+     public void before() {
+         start();
+@@ -89,7 +82,7 @@ public abstract class ServerResponseMocker {
+                 .channel(NioServerSocketChannel.class)
+                 .option(ChannelOption.SO_BACKLOG, 1024)
+                 .option(ChannelOption.SO_REUSEADDR, true)
+-                .option(ChannelOption.SO_KEEPALIVE, false)
++                .childOption(ChannelOption.SO_KEEPALIVE, false)
+                 .childOption(ChannelOption.TCP_NODELAY, true)
+                 .childOption(ChannelOption.SO_SNDBUF, 65535)
+                 .childOption(ChannelOption.SO_RCVBUF, 65535)

@@ -1,0 +1,65 @@
+diff --git a/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/cases/dataset/DataSet.java b/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/cases/dataset/DataSet.java
+index 9fdf6f8..975f7a7 100644
+--- a/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/cases/dataset/DataSet.java
++++ b/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/cases/dataset/DataSet.java
+@@ -19,7 +19,7 @@ package org.apache.shardingsphere.test.e2e.cases.dataset;
+ 
+ import lombok.Getter;
+ import org.apache.shardingsphere.infra.datanode.DataNode;
+-import org.apache.shardingsphere.infra.util.expr.InlineExpressionParser;
++import org.apache.shardingsphere.infra.expr.core.InlineExpressionParser;
+ import org.apache.shardingsphere.test.e2e.cases.dataset.metadata.DataSetMetaData;
+ import org.apache.shardingsphere.test.e2e.cases.dataset.row.DataSetRow;
+ 
+diff --git a/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/engine/composer/BatchE2EContainerComposer.java b/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/engine/composer/BatchE2EContainerComposer.java
+index bec66d4..0076521 100644
+--- a/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/engine/composer/BatchE2EContainerComposer.java
++++ b/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/engine/composer/BatchE2EContainerComposer.java
+@@ -19,7 +19,7 @@ package org.apache.shardingsphere.test.e2e.engine.composer;
+ 
+ import org.apache.shardingsphere.infra.database.type.DatabaseType;
+ import org.apache.shardingsphere.infra.datanode.DataNode;
+-import org.apache.shardingsphere.infra.util.expr.InlineExpressionParser;
++import org.apache.shardingsphere.infra.expr.core.InlineExpressionParser;
+ import org.apache.shardingsphere.test.e2e.cases.assertion.IntegrationTestCaseAssertion;
+ import org.apache.shardingsphere.test.e2e.cases.dataset.DataSet;
+ import org.apache.shardingsphere.test.e2e.cases.dataset.DataSetLoader;
+diff --git a/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/engine/type/DDLE2EIT.java b/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/engine/type/DDLE2EIT.java
+index 2bb1845..089595f 100644
+--- a/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/engine/type/DDLE2EIT.java
++++ b/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/engine/type/DDLE2EIT.java
+@@ -20,7 +20,7 @@ package org.apache.shardingsphere.test.e2e.engine.type;
+ import com.google.common.base.Splitter;
+ import lombok.SneakyThrows;
+ import org.apache.shardingsphere.infra.datanode.DataNode;
+-import org.apache.shardingsphere.infra.util.expr.InlineExpressionParser;
++import org.apache.shardingsphere.infra.expr.core.InlineExpressionParser;
+ import org.apache.shardingsphere.test.e2e.cases.SQLCommandType;
+ import org.apache.shardingsphere.test.e2e.cases.SQLExecuteType;
+ import org.apache.shardingsphere.test.e2e.cases.dataset.metadata.DataSetColumn;
+diff --git a/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/engine/type/dml/BaseDMLE2EIT.java b/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/engine/type/dml/BaseDMLE2EIT.java
+index 81be0fa..1b8cb3d 100644
+--- a/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/engine/type/dml/BaseDMLE2EIT.java
++++ b/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/engine/type/dml/BaseDMLE2EIT.java
+@@ -18,7 +18,7 @@
+ package org.apache.shardingsphere.test.e2e.engine.type.dml;
+ 
+ import org.apache.shardingsphere.infra.datanode.DataNode;
+-import org.apache.shardingsphere.infra.util.expr.InlineExpressionParser;
++import org.apache.shardingsphere.infra.expr.core.InlineExpressionParser;
+ import org.apache.shardingsphere.test.e2e.cases.dataset.metadata.DataSetColumn;
+ import org.apache.shardingsphere.test.e2e.cases.dataset.metadata.DataSetMetaData;
+ import org.apache.shardingsphere.test.e2e.cases.dataset.row.DataSetRow;
+diff --git a/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/env/DataSetEnvironmentManager.java b/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/env/DataSetEnvironmentManager.java
+index b626e7f..d3b3598 100644
+--- a/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/env/DataSetEnvironmentManager.java
++++ b/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/env/DataSetEnvironmentManager.java
+@@ -23,7 +23,7 @@ import org.apache.shardingsphere.infra.database.type.DatabaseTypeEngine;
+ import org.apache.shardingsphere.infra.datanode.DataNode;
+ import org.apache.shardingsphere.infra.executor.kernel.ExecutorEngine;
+ import org.apache.shardingsphere.infra.executor.kernel.thread.ExecutorServiceManager;
+-import org.apache.shardingsphere.infra.util.expr.InlineExpressionParser;
++import org.apache.shardingsphere.infra.expr.core.InlineExpressionParser;
+ import org.apache.shardingsphere.test.e2e.cases.dataset.DataSet;
+ import org.apache.shardingsphere.test.e2e.cases.dataset.metadata.DataSetColumn;
+ import org.apache.shardingsphere.test.e2e.cases.dataset.metadata.DataSetMetaData;

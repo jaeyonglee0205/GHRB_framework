@@ -1,0 +1,331 @@
+diff --git a/src/test/java/org/mockito/internal/invocation/InvocationBuilder.java b/src/test/java/org/mockito/internal/invocation/InvocationBuilder.java
+index 9900db9..d5cf3e5 100644
+--- a/src/test/java/org/mockito/internal/invocation/InvocationBuilder.java
++++ b/src/test/java/org/mockito/internal/invocation/InvocationBuilder.java
+@@ -13,7 +13,7 @@ import java.util.LinkedList;
+ import java.util.List;
+ 
+ import org.mockito.Mockito;
+-import org.mockito.internal.debugging.LocationImpl;
++import org.mockito.internal.debugging.LocationFactory;
+ import org.mockito.internal.invocation.mockref.MockReference;
+ import org.mockito.internal.invocation.mockref.MockStrongReference;
+ import org.mockito.invocation.Invocation;
+@@ -72,7 +72,7 @@ public class InvocationBuilder {
+                         new SerializableMethod(method),
+                         args,
+                         NO_OP,
+-                        location == null ? new LocationImpl() : location,
++                        location == null ? LocationFactory.create() : location,
+                         1);
+         if (verified) {
+             i.markVerified();
+diff --git a/src/test/java/org/mockito/internal/stubbing/defaultanswers/ReturnsSmartNullsTest.java b/src/test/java/org/mockito/internal/stubbing/defaultanswers/ReturnsSmartNullsTest.java
+index 984e07d..267c6d6 100644
+--- a/src/test/java/org/mockito/internal/stubbing/defaultanswers/ReturnsSmartNullsTest.java
++++ b/src/test/java/org/mockito/internal/stubbing/defaultanswers/ReturnsSmartNullsTest.java
+@@ -20,7 +20,7 @@ import org.assertj.core.api.Assertions;
+ import org.assertj.core.api.ThrowableAssert;
+ import org.junit.Test;
+ import org.mockito.exceptions.verification.SmartNullPointerException;
+-import org.mockito.internal.debugging.LocationImpl;
++import org.mockito.internal.debugging.LocationFactory;
+ import org.mockito.internal.invocation.InterceptedInvocation;
+ import org.mockito.internal.invocation.SerializableMethod;
+ import org.mockito.internal.invocation.mockref.MockStrongReference;
+@@ -146,7 +146,7 @@ public class ReturnsSmartNullsTest extends TestBase {
+                         GenericFooBar.class.getMethod("methodWithArgs", int.class, Object.class)),
+                 new Object[] {1, obj},
+                 InterceptedInvocation.NO_OP,
+-                new LocationImpl(),
++                LocationFactory.create(),
+                 1);
+     }
+ 
+@@ -269,7 +269,7 @@ public class ReturnsSmartNullsTest extends TestBase {
+                                 "methodWithVarArgs", int.class, Object[].class)),
+                 new Object[] {1, obj},
+                 InterceptedInvocation.NO_OP,
+-                new LocationImpl(),
++                LocationFactory.create(),
+                 1);
+     }
+ 
+diff --git a/src/test/java/org/mockitointegration/ClassLoadabilityChecker.java b/src/test/java/org/mockitointegration/ClassLoadabilityChecker.java
+new file mode 100644
+index 0000000..d19c51f
+--- /dev/null
++++ b/src/test/java/org/mockitointegration/ClassLoadabilityChecker.java
+@@ -0,0 +1,70 @@
++/*
++ * Copyright (c) 2017 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitointegration;
++
++import java.util.HashSet;
++import java.util.Set;
++
++/**
++ * Check that classes can be loaded and initialized on a provided classloader. Used
++ * for checking that Mockito has no dependency on libraries like JUnit.
++ * <p>
++ * Some classes are excluded from this checking - namely, classes that fail due to
++ * the absence of Java classes. It's assumed that this is due to a specific optional
++ * dependency on APIs available in certain Java versions and so other elements of the
++ * test Matrix will check that those classes do not depend on JUnit or ByteBuddy. We
++ * exclude based on the failure of a ClassNotFoundException, or a NoClassDefFoundError
++ * caused by the failing to load of a failing parent class.
++ */
++public final class ClassLoadabilityChecker {
++    private static final boolean INITIALIZE_CLASSES = true;
++    private final Set<String> excludedClasses = new HashSet<>();
++    private final ClassLoader classLoader;
++    private final String purpose;
++
++    public ClassLoadabilityChecker(ClassLoader classLoader, String purpose) {
++        this.classLoader = classLoader;
++        this.purpose = purpose;
++    }
++
++    public void checkLoadability(String className) {
++        try {
++            Class.forName(className, INITIALIZE_CLASSES, classLoader);
++        } catch (ClassNotFoundException | LinkageError e) {
++            if (isFailureExcluded(className, e)) {
++                return;
++            }
++            e.printStackTrace();
++            throw new AssertionError(
++                    String.format("'%s' has some dependency to %s", className, purpose));
++        }
++    }
++
++    private boolean isFailureExcluded(String loadedClass, Throwable thrown) {
++        if (thrown == null) {
++            return false;
++        }
++        if (thrown instanceof ClassNotFoundException) {
++            ClassNotFoundException cnf = (ClassNotFoundException) thrown;
++            if (cnf.getMessage().startsWith("java.")) {
++                excludedClasses.add(loadedClass);
++                return true;
++            }
++        } else if (thrown instanceof NoClassDefFoundError) {
++            NoClassDefFoundError ncdf = (NoClassDefFoundError) thrown;
++            // if Foo fails due to depending on a Java class, Foo$Bar will fail with a NCDFE
++            int lastInnerClass = loadedClass.lastIndexOf('$');
++            if (lastInnerClass != -1) {
++                String parent = loadedClass.substring(0, lastInnerClass);
++                if (excludedClasses.contains(parent) && ncdf.getMessage().contains(parent)) {
++                    excludedClasses.add(loadedClass);
++                    return true;
++                }
++            }
++        }
++
++        return isFailureExcluded(loadedClass, thrown.getCause());
++    }
++}
+diff --git a/src/test/java/org/mockitointegration/NoByteCodeDependenciesTest.java b/src/test/java/org/mockitointegration/NoByteCodeDependenciesTest.java
+index 3a2908d..3db1395 100644
+--- a/src/test/java/org/mockitointegration/NoByteCodeDependenciesTest.java
++++ b/src/test/java/org/mockitointegration/NoByteCodeDependenciesTest.java
+@@ -43,21 +43,11 @@ public class NoByteCodeDependenciesTest {
+         pureMockitoAPIClasses.remove(
+                 "org.mockito.internal.util.reflection.InstrumentationMemberAccessor");
+ 
++        ClassLoadabilityChecker checker =
++                new ClassLoadabilityChecker(
++                        classLoader_without_bytecode_libraries, "ByteBuddy or Objenesis");
+         for (String pureMockitoAPIClass : pureMockitoAPIClasses) {
+-            checkDependency(classLoader_without_bytecode_libraries, pureMockitoAPIClass);
+-        }
+-    }
+-
+-    private void checkDependency(ClassLoader classLoader, String pureMockitoAPIClass)
+-            throws ClassNotFoundException {
+-        try {
+-            Class.forName(pureMockitoAPIClass, true, classLoader);
+-        } catch (Throwable e) {
+-            e.printStackTrace();
+-            throw new AssertionError(
+-                    String.format(
+-                            "'%s' has some dependency to Byte Buddy or Objenesis",
+-                            pureMockitoAPIClass));
++            checker.checkLoadability(pureMockitoAPIClass);
+         }
+     }
+ }
+diff --git a/src/test/java/org/mockitointegration/NoJUnitDependenciesTest.java b/src/test/java/org/mockitointegration/NoJUnitDependenciesTest.java
+index 7b156f0..503d859 100644
+--- a/src/test/java/org/mockitointegration/NoJUnitDependenciesTest.java
++++ b/src/test/java/org/mockitointegration/NoJUnitDependenciesTest.java
+@@ -42,27 +42,18 @@ public class NoJUnitDependenciesTest {
+                         .omit("runners", "junit", "JUnit", "opentest4j")
+                         .listOwnedClasses();
+ 
++        ClassLoadabilityChecker checker =
++                new ClassLoadabilityChecker(classLoader_without_JUnit, "JUnit");
++
+         // The later class is required to be initialized before any inline mock maker classes can be
+         // loaded.
+-        checkDependency(
+-                classLoader_without_JUnit,
++        checker.checkLoadability(
+                 "org.mockito.internal.creation.bytebuddy.InlineDelegateByteBuddyMockMaker");
+         pureMockitoAPIClasses.remove(
+                 "org.mockito.internal.creation.bytebuddy.InlineDelegateByteBuddyMockMaker");
+ 
+         for (String pureMockitoAPIClass : pureMockitoAPIClasses) {
+-            checkDependency(classLoader_without_JUnit, pureMockitoAPIClass);
+-        }
+-    }
+-
+-    private void checkDependency(ClassLoader classLoader_without_JUnit, String pureMockitoAPIClass)
+-            throws ClassNotFoundException {
+-        try {
+-            Class.forName(pureMockitoAPIClass, true, classLoader_without_JUnit);
+-        } catch (Throwable e) {
+-            e.printStackTrace();
+-            throw new AssertionError(
+-                    String.format("'%s' has some dependency to JUnit", pureMockitoAPIClass));
++            checker.checkLoadability(pureMockitoAPIClass);
+         }
+     }
+ }
+diff --git a/src/test/java/org/mockitousage/internal/debugging/LocationFactoryTest.java b/src/test/java/org/mockitousage/internal/debugging/LocationFactoryTest.java
+new file mode 100644
+index 0000000..072c13f
+--- /dev/null
++++ b/src/test/java/org/mockitousage/internal/debugging/LocationFactoryTest.java
+@@ -0,0 +1,38 @@
++/*
++ * Copyright (c) 2007 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitousage.internal.debugging;
++
++import org.junit.Test;
++import org.mockito.internal.debugging.LocationFactory;
++import org.mockitoutil.TestBase;
++
++import java.util.ArrayList;
++import java.util.List;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.junit.Assert.assertEquals;
++
++public class LocationFactoryTest extends TestBase {
++
++    @Test
++    public void shouldLocationNotContainGetStackTraceMethod() {
++        assertThat(LocationFactory.create().toString())
++                .contains("shouldLocationNotContainGetStackTraceMethod");
++    }
++
++    @Test
++    public void provides_location_class() {
++        // when
++        final List<String> files = new ArrayList<String>();
++        new Runnable() { // anonymous inner class adds stress to the check
++            public void run() {
++                files.add(LocationFactory.create().getSourceFile());
++            }
++        }.run();
++
++        // then
++        assertEquals("LocationFactoryTest.java", files.get(0));
++    }
++}
+diff --git a/src/test/java/org/mockitousage/internal/debugging/LocationImplTest.java b/src/test/java/org/mockitousage/internal/debugging/LocationImplTest.java
+deleted file mode 100644
+index d20bfce..0000000
+--- a/src/test/java/org/mockitousage/internal/debugging/LocationImplTest.java
++++ /dev/null
+@@ -1,63 +0,0 @@
+-/*
+- * Copyright (c) 2007 Mockito contributors
+- * This program is made available under the terms of the MIT License.
+- */
+-package org.mockitousage.internal.debugging;
+-
+-import static org.assertj.core.api.Assertions.assertThat;
+-import static org.junit.Assert.assertEquals;
+-
+-import java.util.ArrayList;
+-import java.util.List;
+-
+-import org.junit.Test;
+-import org.mockito.internal.debugging.LocationImpl;
+-import org.mockito.internal.exceptions.stacktrace.StackTraceFilter;
+-import org.mockitoutil.TestBase;
+-
+-@SuppressWarnings("serial")
+-public class LocationImplTest extends TestBase {
+-
+-    @Test
+-    public void shouldLocationNotContainGetStackTraceMethod() {
+-        assertThat(new LocationImpl().toString())
+-                .contains("shouldLocationNotContainGetStackTraceMethod");
+-    }
+-
+-    @Test
+-    public void shouldBeSafeInCaseForSomeReasonFilteredStackTraceIsEmpty() {
+-        // given
+-        StackTraceFilter filterReturningEmptyArray =
+-                new StackTraceFilter() {
+-                    @Override
+-                    public StackTraceElement[] filter(StackTraceElement[] target, boolean keepTop) {
+-                        return new StackTraceElement[0];
+-                    }
+-
+-                    @Override
+-                    public StackTraceElement filterFirst(Throwable target, boolean isInline) {
+-                        return null;
+-                    }
+-                };
+-
+-        // when
+-        String loc = new LocationImpl(filterReturningEmptyArray).toString();
+-
+-        // then
+-        assertEquals("-> at <<unknown line>>", loc);
+-    }
+-
+-    @Test
+-    public void provides_location_class() {
+-        // when
+-        final List<String> files = new ArrayList<String>();
+-        new Runnable() { // anonymous inner class adds stress to the check
+-            public void run() {
+-                files.add(new LocationImpl().getSourceFile());
+-            }
+-        }.run();
+-
+-        // then
+-        assertEquals("LocationImplTest.java", files.get(0));
+-    }
+-}
+diff --git a/src/test/java/org/mockitoutil/TestBase.java b/src/test/java/org/mockitoutil/TestBase.java
+index 2fe8950..3f772d0 100644
+--- a/src/test/java/org/mockitoutil/TestBase.java
++++ b/src/test/java/org/mockitoutil/TestBase.java
+@@ -17,7 +17,7 @@ import org.mockito.MockitoAnnotations;
+ import org.mockito.StateMaster;
+ import org.mockito.internal.MockitoCore;
+ import org.mockito.internal.configuration.ConfigurationAccess;
+-import org.mockito.internal.debugging.LocationImpl;
++import org.mockito.internal.debugging.LocationFactory;
+ import org.mockito.internal.invocation.InterceptedInvocation;
+ import org.mockito.internal.invocation.InvocationBuilder;
+ import org.mockito.internal.invocation.InvocationMatcher;
+@@ -84,7 +84,7 @@ public class TestBase {
+                 new SerializableMethod(type.getMethod(methodName, types)),
+                 args,
+                 InterceptedInvocation.NO_OP,
+-                new LocationImpl(),
++                LocationFactory.create(),
+                 1);
+     }
+ 

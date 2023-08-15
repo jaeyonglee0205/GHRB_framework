@@ -40,6 +40,10 @@ def call_info(pid, bid):
     with open("project_id.json", "r") as f:
         project_id = json.load(f)
     
+    if pid not in project_id.keys():
+        output = "Wrong project id"
+        return output
+    
     owner = project_id[pid]["owner"]
     number_of_bugs = project_id[pid]["number_of_bugs"]
     commit_db = project_id[pid]["commit_db"]
@@ -67,10 +71,10 @@ def call_info(pid, bid):
             extra_info = json.load(f)
 
         for b_id in bid:
-            b = b_id - 1
-            revision_id_fixed = active_bugs.loc[b]["revision.id.fixed"]
-            report_id = active_bugs.loc[b]["report.id"]
-            report_url = active_bugs.loc[b]["report.url"]
+            revision_id_fixed = active_bugs.loc[active_bugs['bug_id'] == int(b_id)]["revision.id.fixed"].values[0]
+            revision_id_buggy = active_bugs.loc[active_bugs['bug_id'] == int(b_id)]["revision.id.buggy"].values[0]
+            report_id = active_bugs.loc[active_bugs['bug_id'] == int(b_id)]["report.id"].values[0]
+            report_url = active_bugs.loc[active_bugs['bug_id'] == int(b_id)]["report.url"].values[0]
             
             output += (f'''
     Summary for Bug: {pid}-{b_id}
@@ -87,20 +91,29 @@ def call_info(pid, bid):
         Bug report url:
         {report_url}
     ------------------------------------------
+        Revision ID (buggy version):
+        {revision_id_buggy}
+    ------------------------------------------
         Root cause in triggering tests:
         ???????
     ------------------------------------------
         List of modified sources:
-        {extra_info[report_id]['changed_tests']}
     ''')
+            for modified_file in extra_info[report_id]['changed_tests']:
+                output += '\t' + modified_file + '\n'
     return output
 
 def call_checkout(pid, vid, dir):
     with open("project_id.json", "r") as f:
         project_id = json.load(f)
 
+    if pid not in project_id.keys():
+        output = "Wrong project id"
+        return output
+    
     commit_db = project_id[pid]["commit_db"]
     repo_path = project_id[pid]["repo_path"]
+
     active_bugs = pd.read_csv(commit_db)
 
     bid = vid[:-1]
@@ -110,56 +123,182 @@ def call_checkout(pid, vid, dir):
     
     output = "" 
 
-    test_patch_dir = None
-    
+    report_id = active_bugs.loc[active_bugs['bug_id'] == int(bid)]["report.id"].values[0]
+
+    test_patch_dir = os.path.abspath(os.path.join('./test_diff/', f'{report_id}.diff'))
+
     if version == "b":
         #buggy version
-        commit = active_bugs[bid]['revision.id.buggy']
+        commit = active_bugs.loc[active_bugs['bug_id'] == int(bid)]['revision.id.buggy'].values[0]
     
     elif version == "f":
         #fixed version
-        commit = active_bugs[bid]['revision.id.fixed']
+        commit = active_bugs.loc[active_bugs['bug_id'] == int(bid)]['revision.id.fixed'].values[0]
+
+    else:
+        output = "Choose 'b' for buggy version, 'f' for fixed version"
+        return output
+    
+    '''
+    The working directory to which the buggy or fixed project version 
+    shall be checked out. The working directory
+    has to be either empty or a previously used working directory.
+
+    ALL files in a previously used working directory are deleted prior 
+    to checking out the requested project version.
+    '''
+
+    if dir is not None:
+        working_dir = dir
+    else:
+        working_dir = repo_path
 
     if commit != None:
 
         sp.run(['git', 'reset', '--hard', 'HEAD'],
-            cwd=repo_path, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+            cwd=working_dir, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
         sp.run(['git', 'clean', '-df'],
-            cwd=repo_path, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+            cwd=working_dir, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
         # checkout to the buggy version and apply patch to the buggy version
-        sp.run(['git', 'checkout', commit], cwd=repo_path,
+        sp.run(['git', 'checkout', commit], cwd=working_dir,
             stdout=sp.DEVNULL, stderr=sp.DEVNULL)
         
-        output += (f"Checking out {commit} to {dir}\n")
+        output += (f"Checking out {commit} to {working_dir}\n")
         
         if version == "b":
-            sp.run(['git', 'apply', test_patch_dir], cwd=repo_path,
+            sp.run(['git', 'apply', test_patch_dir], cwd=working_dir,
                 stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
             output += (f"Applying patch\n")
         
-        output += (f"Check out program version-{pid}-{vid}\n")
+        output += (f"Check out program version {pid}-{vid}\n")
     else:
         output += "Cannot find version..."
     
     return output
 
-def call_compile(dir):
-    pass
+def find_env (pid):
+    with open("project_id.json", "r") as f:
+        project_id = json.load(f)
 
-def call_test(dir, test_case, test_suite):
+    if pid not in project_id.keys():
+        output = "No matching project id"
+        return output
+
+    requirements = project_id[pid]["requirements"]
+    if len(requirements["extra"]) != 0:
+        extra = requirements["extra"]
+    
+    mvn_required = requirements["maven"]
+    jdk_required = requirements["jdk"]
+    # if requirements["gradle"] != "0":
+    #     gradle_required = requirements["gradle"]
+
+    print(f"Required Maven Version: {mvn_required}")
+    print(f"Required JDK Version: {jdk_required}")
+
+    JAVA_HOME = mvn_path = None
+    if jdk_required == '8':
+        JAVA_HOME = '/usr/lib/jvm/java-8-openjdk-amd64'
+    elif jdk_required == '11':
+        JAVA_HOME = '/usr/lib/jvm/java-11-openjdk-amd64'
+    elif jdk_required == '17':
+        JAVA_HOME = '/usr/lib/jvm/java-17-openjdk-amd64'
+    
+    if mvn_required == '3.8.6':
+        mvn_path = '/opt/apache-maven-3.8.6/bin'
+    elif mvn_required == '3.8.1':
+        mvn_path = '/opt/apache-maven-3.8.1/bin'
+
+    new_env = os.environ.copy()
+    new_env['JAVA_HOME'] = JAVA_HOME
+    new_env['PATH'] = os.pathsep.join([mvn_path, new_env['PATH']])
+
+    return new_env
+
+def call_compile(pid, dir):
+    '''
+    Docker:
+        maven 3.8.1, 3.8.6
+        jdk 8, 11, 17
+        gradle 7.6.2
+    
+    '''
+    with open("project_id.json", "r") as f:
+        project_id = json.load(f)
+
+    if pid not in project_id.keys():
+        output = "No matching project id"
+        return output
+
+    repo_path = project_id[pid]["repo_path"]
+
+    new_env = find_env(pid)
+    out = sp.run(['mvn', 'clean', 'compile'], env=new_env, check=True, cwd=repo_path)
+
+    '''
+    mvn clean install -DskipTests=true
+    mvn clean package -Dmaven.buildDirectory='target'
+    '''
+
+def call_test(pid, bid, dir, test_case, test_suite):
     '''
     default is the current directory
     test_case -> By default all tests are executed
     test_suite -> The archive file name of an external test suite. 
     '''
-    pass
+    output = ""
+    with open("project_id.json", "r") as f:
+        project_id = json.load(f)
+
+    if pid not in project_id.keys():
+        output = "No matching project id"
+        return output
+
+    commit_db = project_id[pid]["commit_db"]
+    repo_path = project_id[pid]["repo_path"]
+
+    owner = project_id[pid]["owner"]
+
+    repo_name = owner + "_" + pid
+    
+    with open(f"verified_bug/verified_bugs_{repo_name}.json", "r") as f:
+        verified_bugs = json.load(f)
+
+    active_bugs = pd.read_csv(commit_db)
+    report_id = active_bugs.loc[active_bugs['bug_id'] == int(bid)]['report.id'].values[0]
+    
+    target_tests = verified_bugs[report_id]["execution_result"]["success_tests"]
+    print(target_tests)
+    new_env = find_env(pid)
+    if test_case is not None:
+        if test_case not in target_tests:
+            print("External test case")
+        else:
+            print("Internal test case")
+            run = sp.run(['mvn', 'clean', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false'],
+                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=repo_path)
+            output += run.stdout.decode()
+    elif test_suite is not None:
+        print("External test suite")
+        pass
+    else:
+        print("Running all test cases")
+        for test in target_tests:
+            run = sp.run(['mvn', 'clean', 'test', f'-Dtest={test}', '-DfailIfNoTests=false'], 
+                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=repo_path)
+            output += run.stdout.decode()
+
 
 def call_bid(pid):
     with open("project_id.json", "r") as f:
         project_id = json.load(f)
 
+    if pid not in project_id.keys():
+        output = "Wrong project id"
+        return output
+    
     number_of_bugs = project_id[pid]["number_of_bugs"]
     commit_db = project_id[pid]["commit_db"]
     
@@ -170,25 +309,25 @@ def call_bid(pid):
     ------------------------------------------
 '''
 
-    active_bugs = pd.read_csv(commit_db)
+    # active_bugs = pd.read_csv(commit_db)
 
-    for bug_id in active_bugs["bug_id"]:
-        output += f"\t{bug_id}\n"
+    # for bug_id in active_bugs["bug_id"]:
+    #     output += f"\t{bug_id}\n"
     
     return output
 
 def call_pid():
 
     output = '''
-    Owner:\tProject ID
-    -------------------------
+    Owner:\t\tProject ID
+    ----------------------------------------
 ''' 
     with open("project_id.json", "r") as f:
         project_id = json.load(f)
     
     for pid in project_id.keys():
         project_name = project_id[pid]["owner"]
-        output += f"    {project_name}:\t{pid}\n"
+        output += f"    {project_name}:\t\t{pid}\n"
     
     return output
 
@@ -230,6 +369,8 @@ if __name__ == '__main__':
     parser_compile = subparsers.add_parser('compile',
                                         help="Compile sources and developer-written tests of a buggy or a fixed project version")
     
+    parser_compile.add_argument("-p", dest="project_id", action="store",
+                                help="The project id that shall be built")
     parser_compile.add_argument("-w", dest="work_dir", action="store", default=default_dir,
                                 help="The working directory of the checked-out project version (optional). Default is the current directory")
     
@@ -237,6 +378,12 @@ if __name__ == '__main__':
     #  d4j-test [-w work_dir] [-r | [-t single_test] [-s test_suite]]
     parser_test = subparsers.add_parser('test',
                                         help="Run a single test method or a test suite on a buggy or a fixed project version")
+    
+    parser_test.add_argument("-p", dest="project_id", action="store",
+                             help="The project id that shall be tested")
+    
+    parser_test.add_argument("-b", dest="bug_id", action="store",
+                             help="The bug id that shall be tested")
     
     parser_test.add_argument("-w", dest="work_dir", action="store", default=default_dir,
                              help="The working directory of the checked-out project version (optional). Default is the current directory")
@@ -268,11 +415,13 @@ if __name__ == '__main__':
         output = call_info(args.project_id, args.bug_id)
         print(output)
     elif args.command == "checkout":
-        call_checkout(args.project_id, args.version_id, args.work_dir)
+        output = call_checkout(args.project_id, args.version_id, args.work_dir)
+        print(output)
     elif args.command == "compile":
-        call_compile(args.work_dir)
+        output = call_compile(args.project_id, args.work_dir)
+        print(output)
     elif args.command == "test":
-        call_test(args.work_dir, args.single_test, args.test_suite)
+        output = call_test(args.project_id, args.bug_id, args.work_dir, args.single_test, args.test_suite)
     elif args.command == "bid":
         output = call_bid(args.project_id)
         print(output)

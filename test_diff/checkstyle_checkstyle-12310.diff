@@ -1,0 +1,14 @@
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/whitespace/emptyforinitializerpad/InputEmptyForInitializerPadDefaultConfig.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/whitespace/emptyforinitializerpad/InputEmptyForInitializerPadDefaultConfig.java
+index aa6daf1..f3568bb 100644
+--- a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/whitespace/emptyforinitializerpad/InputEmptyForInitializerPadDefaultConfig.java
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/whitespace/emptyforinitializerpad/InputEmptyForInitializerPadDefaultConfig.java
+@@ -58,4 +58,9 @@ class InputEmptyForInitializerPadDefaultConfig
+         ;; ) {
+         }
+     }
++
++    void method3() {
++for (
++;;) {}
++    }
+ }

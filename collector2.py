@@ -26,11 +26,32 @@ def project_id_collector():
         number_of_bugs = len(active_bug_list)
         commit_db = f"commit_db_2/{project_id}_bugs.csv"
 
-        repo_path = "temporary"
+        with open("requirements.json", 'r') as f:
+            requirements = json.load(f)
+
+        repo_path = None
+
+        '''
+        Temporary code for repo_path
+        !!!Need to change!!!
+        '''
+
+        for dir in os.listdir("../repos/"):
+            if project_id in dir:
+                repo_path = os.path.abspath(os.path.join(
+                    '../repos/', f'{dir}'
+                ))
+        if repo_path is None:
+            for dir in os.listdir("../paper_repos/"):
+                if project_id in dir:
+                    repo_path = os.path.abspath(os.path.join(
+                        '../paper_repos/', f'{dir}'
+                    ))
         project_map[project_id]["owner"] = owner
         project_map[project_id]["number_of_bugs"] = number_of_bugs
         project_map[project_id]['commit_db'] = commit_db
         project_map[project_id]['repo_path'] = repo_path
+        project_map[project_id]['requirements'] = requirements[project_id]
 
     
     with open('project_id.json', 'w') as f:

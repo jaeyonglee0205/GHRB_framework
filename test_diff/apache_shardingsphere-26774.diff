@@ -1,0 +1,60 @@
+diff --git a/kernel/data-pipeline/core/src/test/java/org/apache/shardingsphere/data/pipeline/core/listener/ShardingSphereDataCollectorFixture.java b/kernel/data-pipeline/core/src/test/java/org/apache/shardingsphere/data/pipeline/core/listener/ShardingSphereDataCollectorFixture.java
+index 2d7bb4e..c44e8f7 100644
+--- a/kernel/data-pipeline/core/src/test/java/org/apache/shardingsphere/data/pipeline/core/listener/ShardingSphereDataCollectorFixture.java
++++ b/kernel/data-pipeline/core/src/test/java/org/apache/shardingsphere/data/pipeline/core/listener/ShardingSphereDataCollectorFixture.java
+@@ -17,11 +17,12 @@
+ 
+ package org.apache.shardingsphere.data.pipeline.core.listener;
+ 
++import org.apache.shardingsphere.infra.database.type.dialect.MySQLDatabaseType;
++import org.apache.shardingsphere.infra.metadata.database.ShardingSphereDatabase;
++import org.apache.shardingsphere.infra.metadata.database.schema.model.ShardingSphereTable;
+ import org.apache.shardingsphere.infra.metadata.statistics.ShardingSphereRowData;
+ import org.apache.shardingsphere.infra.metadata.statistics.ShardingSphereTableData;
+ import org.apache.shardingsphere.infra.metadata.statistics.collector.ShardingSphereStatisticsCollector;
+-import org.apache.shardingsphere.infra.metadata.database.ShardingSphereDatabase;
+-import org.apache.shardingsphere.infra.metadata.database.schema.model.ShardingSphereTable;
+ 
+ import java.sql.SQLException;
+ import java.util.Arrays;
+@@ -43,6 +44,6 @@ public final class ShardingSphereDataCollectorFixture implements ShardingSphereS
+     
+     @Override
+     public String getType() {
+-        return "test_table";
++        return String.join(".", new MySQLDatabaseType().getType(), "logic_schema", "test_table");
+     }
+ }
+diff --git a/kernel/data-pipeline/core/src/test/java/org/apache/shardingsphere/data/pipeline/core/listener/ShardingSphereDataCollectorTest.java b/kernel/data-pipeline/core/src/test/java/org/apache/shardingsphere/data/pipeline/core/listener/ShardingSphereDataCollectorTest.java
+index 9147027..4a03aed 100644
+--- a/kernel/data-pipeline/core/src/test/java/org/apache/shardingsphere/data/pipeline/core/listener/ShardingSphereDataCollectorTest.java
++++ b/kernel/data-pipeline/core/src/test/java/org/apache/shardingsphere/data/pipeline/core/listener/ShardingSphereDataCollectorTest.java
+@@ -19,15 +19,16 @@ package org.apache.shardingsphere.data.pipeline.core.listener;
+ 
+ import org.apache.shardingsphere.data.pipeline.core.listener.ShardingSphereStatisticsScheduleCollector.ShardingSphereDataCollectorRunnable;
+ import org.apache.shardingsphere.infra.config.props.ConfigurationProperties;
++import org.apache.shardingsphere.infra.database.type.dialect.MySQLDatabaseType;
+ import org.apache.shardingsphere.infra.metadata.ShardingSphereMetaData;
+-import org.apache.shardingsphere.infra.metadata.statistics.ShardingSphereStatistics;
+-import org.apache.shardingsphere.infra.metadata.statistics.ShardingSphereDatabaseData;
+-import org.apache.shardingsphere.infra.metadata.statistics.ShardingSphereSchemaData;
+-import org.apache.shardingsphere.infra.metadata.statistics.ShardingSphereTableData;
+ import org.apache.shardingsphere.infra.metadata.database.ShardingSphereDatabase;
+ import org.apache.shardingsphere.infra.metadata.database.schema.model.ShardingSphereColumn;
+ import org.apache.shardingsphere.infra.metadata.database.schema.model.ShardingSphereSchema;
+ import org.apache.shardingsphere.infra.metadata.database.schema.model.ShardingSphereTable;
++import org.apache.shardingsphere.infra.metadata.statistics.ShardingSphereDatabaseData;
++import org.apache.shardingsphere.infra.metadata.statistics.ShardingSphereSchemaData;
++import org.apache.shardingsphere.infra.metadata.statistics.ShardingSphereStatistics;
++import org.apache.shardingsphere.infra.metadata.statistics.ShardingSphereTableData;
+ import org.apache.shardingsphere.mode.manager.ContextManager;
+ import org.junit.jupiter.api.Test;
+ 
+@@ -71,6 +72,7 @@ class ShardingSphereDataCollectorTest {
+         ShardingSphereMetaData result = mock(ShardingSphereMetaData.class);
+         ShardingSphereDatabase database = mock(ShardingSphereDatabase.class);
+         when(database.getName()).thenReturn("logic_db");
++        when(database.getProtocolType()).thenReturn(new MySQLDatabaseType());
+         when(result.getDatabases()).thenReturn(Collections.singletonMap("logic_db", database));
+         when(result.getDatabase("logic_db")).thenReturn(database);
+         when(result.containsDatabase("logic_db")).thenReturn(true);

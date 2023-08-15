@@ -1,0 +1,411 @@
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/admin/DefaultMQAdminExtTest.java b/tools/src/test/java/org/apache/rocketmq/tools/admin/DefaultMQAdminExtTest.java
+index 02d280f..b94754f 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/admin/DefaultMQAdminExtTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/admin/DefaultMQAdminExtTest.java
+@@ -37,39 +37,39 @@ import org.apache.rocketmq.client.impl.MQClientManager;
+ import org.apache.rocketmq.client.impl.factory.MQClientInstance;
+ import org.apache.rocketmq.common.MixAll;
+ import org.apache.rocketmq.common.TopicConfig;
+-import org.apache.rocketmq.common.admin.ConsumeStats;
+-import org.apache.rocketmq.common.admin.TopicStatsTable;
+ import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
+ import org.apache.rocketmq.common.message.MessageExt;
+ import org.apache.rocketmq.common.message.MessageQueue;
+ import org.apache.rocketmq.common.namesrv.NamesrvUtil;
+-import org.apache.rocketmq.common.protocol.ResponseCode;
+-import org.apache.rocketmq.common.protocol.body.ClusterInfo;
+-import org.apache.rocketmq.common.protocol.body.Connection;
+-import org.apache.rocketmq.common.protocol.body.ConsumeStatsList;
+-import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
+-import org.apache.rocketmq.common.protocol.body.ConsumerRunningInfo;
+-import org.apache.rocketmq.common.protocol.body.GroupList;
+-import org.apache.rocketmq.common.protocol.body.KVTable;
+-import org.apache.rocketmq.common.protocol.body.ProducerConnection;
+-import org.apache.rocketmq.common.protocol.body.ProducerInfo;
+-import org.apache.rocketmq.common.protocol.body.ProducerTableInfo;
+-import org.apache.rocketmq.common.protocol.body.QueueTimeSpan;
+-import org.apache.rocketmq.common.protocol.body.SubscriptionGroupWrapper;
+-import org.apache.rocketmq.common.protocol.body.TopicConfigSerializeWrapper;
+-import org.apache.rocketmq.common.protocol.body.TopicList;
+-import org.apache.rocketmq.common.protocol.heartbeat.ConsumeType;
+-import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
+-import org.apache.rocketmq.common.protocol.route.BrokerData;
+-import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+-import org.apache.rocketmq.common.statictopic.TopicConfigAndQueueMapping;
+-import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
+ import org.apache.rocketmq.remoting.exception.RemotingConnectException;
+ import org.apache.rocketmq.remoting.exception.RemotingException;
+ import org.apache.rocketmq.remoting.exception.RemotingSendRequestException;
+ import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
+ import org.apache.rocketmq.remoting.protocol.LanguageCode;
++import org.apache.rocketmq.remoting.protocol.ResponseCode;
++import org.apache.rocketmq.remoting.protocol.admin.ConsumeStats;
++import org.apache.rocketmq.remoting.protocol.admin.TopicStatsTable;
++import org.apache.rocketmq.remoting.protocol.body.ClusterInfo;
++import org.apache.rocketmq.remoting.protocol.body.Connection;
++import org.apache.rocketmq.remoting.protocol.body.ConsumeStatsList;
++import org.apache.rocketmq.remoting.protocol.body.ConsumerConnection;
++import org.apache.rocketmq.remoting.protocol.body.ConsumerRunningInfo;
++import org.apache.rocketmq.remoting.protocol.body.GroupList;
++import org.apache.rocketmq.remoting.protocol.body.KVTable;
++import org.apache.rocketmq.remoting.protocol.body.ProducerConnection;
++import org.apache.rocketmq.remoting.protocol.body.ProducerInfo;
++import org.apache.rocketmq.remoting.protocol.body.ProducerTableInfo;
++import org.apache.rocketmq.remoting.protocol.body.QueueTimeSpan;
++import org.apache.rocketmq.remoting.protocol.body.SubscriptionGroupWrapper;
++import org.apache.rocketmq.remoting.protocol.body.TopicConfigSerializeWrapper;
++import org.apache.rocketmq.remoting.protocol.body.TopicList;
++import org.apache.rocketmq.remoting.protocol.heartbeat.ConsumeType;
++import org.apache.rocketmq.remoting.protocol.heartbeat.MessageModel;
++import org.apache.rocketmq.remoting.protocol.route.BrokerData;
++import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
++import org.apache.rocketmq.remoting.protocol.statictopic.TopicConfigAndQueueMapping;
++import org.apache.rocketmq.remoting.protocol.subscription.SubscriptionGroupConfig;
+ import org.apache.rocketmq.tools.admin.api.MessageTrack;
+ import org.apache.rocketmq.tools.admin.api.TrackType;
+ import org.assertj.core.util.Maps;
+@@ -517,4 +517,4 @@ public class DefaultMQAdminExtTest {
+         TopicConfig topicConfig = defaultMQAdminExt.examineTopicConfig("127.0.0.1:10911", "topic_test_examine_topicConfig");
+         assertThat(topicConfig.getTopicName().equals("topic_test_examine_topicConfig")).isTrue();
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/CommandUtilTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/CommandUtilTest.java
+index 3f9ecc1..ea08935 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/CommandUtilTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/CommandUtilTest.java
+@@ -28,11 +28,11 @@ import org.apache.rocketmq.client.exception.MQClientException;
+ import org.apache.rocketmq.client.impl.MQClientAPIImpl;
+ import org.apache.rocketmq.client.impl.MQClientManager;
+ import org.apache.rocketmq.client.impl.factory.MQClientInstance;
+-import org.apache.rocketmq.common.protocol.body.ClusterInfo;
+-import org.apache.rocketmq.common.protocol.route.BrokerData;
+ import org.apache.rocketmq.remoting.exception.RemotingConnectException;
+ import org.apache.rocketmq.remoting.exception.RemotingSendRequestException;
+ import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
++import org.apache.rocketmq.remoting.protocol.body.ClusterInfo;
++import org.apache.rocketmq.remoting.protocol.route.BrokerData;
+ import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
+ import org.apache.rocketmq.tools.admin.DefaultMQAdminExtImpl;
+ import org.junit.After;
+@@ -108,4 +108,4 @@ public class CommandUtilTest {
+         assertThat(result.contains("default-broker-one")).isTrue();
+         assertThat(result.size()).isEqualTo(2);
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/broker/BrokerConsumeStatsSubCommadTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/broker/BrokerConsumeStatsSubCommadTest.java
+index 6b4833f..d7315d0 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/broker/BrokerConsumeStatsSubCommadTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/broker/BrokerConsumeStatsSubCommadTest.java
+@@ -26,10 +26,10 @@ import org.apache.rocketmq.client.exception.MQClientException;
+ import org.apache.rocketmq.client.impl.MQClientAPIImpl;
+ import org.apache.rocketmq.client.impl.MQClientManager;
+ import org.apache.rocketmq.client.impl.factory.MQClientInstance;
+-import org.apache.rocketmq.common.protocol.body.ConsumeStatsList;
+ import org.apache.rocketmq.remoting.exception.RemotingConnectException;
+ import org.apache.rocketmq.remoting.exception.RemotingSendRequestException;
+ import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
++import org.apache.rocketmq.remoting.protocol.body.ConsumeStatsList;
+ import org.apache.rocketmq.srvutil.ServerUtil;
+ import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
+ import org.apache.rocketmq.tools.admin.DefaultMQAdminExtImpl;
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/broker/BrokerStatusSubCommandTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/broker/BrokerStatusSubCommandTest.java
+index f734c9d..d329fb0 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/broker/BrokerStatusSubCommandTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/broker/BrokerStatusSubCommandTest.java
+@@ -19,8 +19,8 @@ package org.apache.rocketmq.tools.command.broker;
+ import org.apache.commons.cli.CommandLine;
+ import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Options;
+-import org.apache.rocketmq.common.protocol.body.BrokerStatsData;
+-import org.apache.rocketmq.common.protocol.body.BrokerStatsItem;
++import org.apache.rocketmq.remoting.protocol.body.BrokerStatsData;
++import org.apache.rocketmq.remoting.protocol.body.BrokerStatsItem;
+ import org.apache.rocketmq.srvutil.ServerUtil;
+ import org.apache.rocketmq.tools.command.SubCommandException;
+ import org.apache.rocketmq.tools.command.server.ServerResponseMocker;
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/connection/ConsumerConnectionSubCommandTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/connection/ConsumerConnectionSubCommandTest.java
+index 6214dba..f5967f5 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/connection/ConsumerConnectionSubCommandTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/connection/ConsumerConnectionSubCommandTest.java
+@@ -20,8 +20,8 @@ import java.util.HashSet;
+ import org.apache.commons.cli.CommandLine;
+ import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Options;
+-import org.apache.rocketmq.common.protocol.body.Connection;
+-import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
++import org.apache.rocketmq.remoting.protocol.body.Connection;
++import org.apache.rocketmq.remoting.protocol.body.ConsumerConnection;
+ import org.apache.rocketmq.srvutil.ServerUtil;
+ import org.apache.rocketmq.tools.command.SubCommandException;
+ import org.apache.rocketmq.tools.command.server.NameServerMocker;
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/connection/ProducerConnectionSubCommandTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/connection/ProducerConnectionSubCommandTest.java
+index d915ccd..672e411 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/connection/ProducerConnectionSubCommandTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/connection/ProducerConnectionSubCommandTest.java
+@@ -20,8 +20,8 @@ import java.util.HashSet;
+ import org.apache.commons.cli.CommandLine;
+ import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Options;
+-import org.apache.rocketmq.common.protocol.body.Connection;
+-import org.apache.rocketmq.common.protocol.body.ProducerConnection;
++import org.apache.rocketmq.remoting.protocol.body.Connection;
++import org.apache.rocketmq.remoting.protocol.body.ProducerConnection;
+ import org.apache.rocketmq.srvutil.ServerUtil;
+ import org.apache.rocketmq.tools.command.SubCommandException;
+ import org.apache.rocketmq.tools.command.server.NameServerMocker;
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/consumer/ConsumerProgressSubCommandTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/consumer/ConsumerProgressSubCommandTest.java
+index d3f5fe3..15c3fa7 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/consumer/ConsumerProgressSubCommandTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/consumer/ConsumerProgressSubCommandTest.java
+@@ -20,9 +20,9 @@ import java.util.HashMap;
+ import org.apache.commons.cli.CommandLine;
+ import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Options;
+-import org.apache.rocketmq.common.admin.ConsumeStats;
+-import org.apache.rocketmq.common.admin.OffsetWrapper;
+ import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.remoting.protocol.admin.ConsumeStats;
++import org.apache.rocketmq.remoting.protocol.admin.OffsetWrapper;
+ import org.apache.rocketmq.srvutil.ServerUtil;
+ import org.apache.rocketmq.tools.command.SubCommandException;
+ import org.apache.rocketmq.tools.command.server.NameServerMocker;
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/consumer/ConsumerStatusSubCommandTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/consumer/ConsumerStatusSubCommandTest.java
+index 5175d1e..4651113 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/consumer/ConsumerStatusSubCommandTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/consumer/ConsumerStatusSubCommandTest.java
+@@ -20,8 +20,8 @@ import java.util.HashSet;
+ import org.apache.commons.cli.CommandLine;
+ import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Options;
+-import org.apache.rocketmq.common.protocol.body.Connection;
+-import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
++import org.apache.rocketmq.remoting.protocol.body.Connection;
++import org.apache.rocketmq.remoting.protocol.body.ConsumerConnection;
+ import org.apache.rocketmq.srvutil.ServerUtil;
+ import org.apache.rocketmq.tools.command.SubCommandException;
+ import org.apache.rocketmq.tools.command.server.NameServerMocker;
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/consumer/GetConsumerConfigSubCommandTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/consumer/GetConsumerConfigSubCommandTest.java
+index 784d1e8..e4e5e97 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/consumer/GetConsumerConfigSubCommandTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/consumer/GetConsumerConfigSubCommandTest.java
+@@ -22,10 +22,10 @@ import java.util.Set;
+ import org.apache.commons.cli.CommandLine;
+ import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Options;
+-import org.apache.rocketmq.common.protocol.body.ClusterInfo;
+-import org.apache.rocketmq.common.protocol.body.Connection;
+-import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
+-import org.apache.rocketmq.common.protocol.route.BrokerData;
++import org.apache.rocketmq.remoting.protocol.body.ClusterInfo;
++import org.apache.rocketmq.remoting.protocol.body.Connection;
++import org.apache.rocketmq.remoting.protocol.body.ConsumerConnection;
++import org.apache.rocketmq.remoting.protocol.route.BrokerData;
+ import org.apache.rocketmq.srvutil.ServerUtil;
+ import org.apache.rocketmq.tools.command.SubCommandException;
+ import org.apache.rocketmq.tools.command.server.ServerResponseMocker;
+@@ -97,4 +97,4 @@ public class GetConsumerConfigSubCommandTest {
+         // start broker
+         return ServerResponseMocker.startServer(consumerConnection.encode());
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/message/QueryMsgByUniqueKeySubCommandTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/message/QueryMsgByUniqueKeySubCommandTest.java
+index ea74038..b722677 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/message/QueryMsgByUniqueKeySubCommandTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/message/QueryMsgByUniqueKeySubCommandTest.java
+@@ -35,24 +35,24 @@ import org.apache.rocketmq.client.impl.MQClientAPIImpl;
+ import org.apache.rocketmq.client.impl.MQClientManager;
+ import org.apache.rocketmq.client.impl.factory.MQClientInstance;
+ import org.apache.rocketmq.common.MixAll;
+-import org.apache.rocketmq.common.admin.ConsumeStats;
+-import org.apache.rocketmq.common.admin.OffsetWrapper;
+ import org.apache.rocketmq.common.message.MessageExt;
+ import org.apache.rocketmq.common.message.MessageQueue;
+-import org.apache.rocketmq.common.protocol.body.CMResult;
+-import org.apache.rocketmq.common.protocol.body.ClusterInfo;
+-import org.apache.rocketmq.common.protocol.body.Connection;
+-import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
+-import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
+-import org.apache.rocketmq.common.protocol.body.GroupList;
+-import org.apache.rocketmq.common.protocol.heartbeat.ConsumeType;
+-import org.apache.rocketmq.common.protocol.route.BrokerData;
+-import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+ import org.apache.rocketmq.remoting.exception.RemotingConnectException;
+ import org.apache.rocketmq.remoting.exception.RemotingException;
+ import org.apache.rocketmq.remoting.exception.RemotingSendRequestException;
+ import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
+ import org.apache.rocketmq.remoting.protocol.LanguageCode;
++import org.apache.rocketmq.remoting.protocol.admin.ConsumeStats;
++import org.apache.rocketmq.remoting.protocol.admin.OffsetWrapper;
++import org.apache.rocketmq.remoting.protocol.body.CMResult;
++import org.apache.rocketmq.remoting.protocol.body.ClusterInfo;
++import org.apache.rocketmq.remoting.protocol.body.Connection;
++import org.apache.rocketmq.remoting.protocol.body.ConsumeMessageDirectlyResult;
++import org.apache.rocketmq.remoting.protocol.body.ConsumerConnection;
++import org.apache.rocketmq.remoting.protocol.body.GroupList;
++import org.apache.rocketmq.remoting.protocol.heartbeat.ConsumeType;
++import org.apache.rocketmq.remoting.protocol.route.BrokerData;
++import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
+ import org.apache.rocketmq.srvutil.ServerUtil;
+ import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
+ import org.apache.rocketmq.tools.admin.DefaultMQAdminExtImpl;
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/message/QueryMsgTraceByIdSubCommandTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/message/QueryMsgTraceByIdSubCommandTest.java
+index 97e0236..e5be224 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/message/QueryMsgTraceByIdSubCommandTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/message/QueryMsgTraceByIdSubCommandTest.java
+@@ -26,10 +26,10 @@ import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Options;
+ import org.apache.rocketmq.common.message.MessageDecoder;
+ import org.apache.rocketmq.common.message.MessageExt;
+-import org.apache.rocketmq.common.protocol.route.BrokerData;
+-import org.apache.rocketmq.common.protocol.route.QueueData;
+-import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+ import org.apache.rocketmq.common.topic.TopicValidator;
++import org.apache.rocketmq.remoting.protocol.route.BrokerData;
++import org.apache.rocketmq.remoting.protocol.route.QueueData;
++import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
+ import org.apache.rocketmq.srvutil.ServerUtil;
+ import org.apache.rocketmq.tools.command.SubCommandException;
+ import org.apache.rocketmq.tools.command.server.ServerResponseMocker;
+@@ -113,4 +113,4 @@ public class QueryMsgTraceByIdSubCommandTest {
+             throw new RuntimeException(e);
+         }
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/offset/GetConsumerStatusCommandTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/offset/GetConsumerStatusCommandTest.java
+index 3433b53..0429aaf 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/offset/GetConsumerStatusCommandTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/offset/GetConsumerStatusCommandTest.java
+@@ -19,7 +19,7 @@ package org.apache.rocketmq.tools.command.offset;
+ import org.apache.commons.cli.CommandLine;
+ import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Options;
+-import org.apache.rocketmq.common.protocol.body.GetConsumerStatusBody;
++import org.apache.rocketmq.remoting.protocol.body.GetConsumerStatusBody;
+ import org.apache.rocketmq.srvutil.ServerUtil;
+ import org.apache.rocketmq.tools.command.SubCommandException;
+ import org.apache.rocketmq.tools.command.server.NameServerMocker;
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/offset/ResetOffsetByTimeCommandTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/offset/ResetOffsetByTimeCommandTest.java
+index 34b44b3..d57edb8 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/offset/ResetOffsetByTimeCommandTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/offset/ResetOffsetByTimeCommandTest.java
+@@ -19,7 +19,7 @@ package org.apache.rocketmq.tools.command.offset;
+ import org.apache.commons.cli.CommandLine;
+ import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Options;
+-import org.apache.rocketmq.common.protocol.body.ResetOffsetBody;
++import org.apache.rocketmq.remoting.protocol.body.ResetOffsetBody;
+ import org.apache.rocketmq.srvutil.ServerUtil;
+ import org.apache.rocketmq.tools.command.SubCommandException;
+ import org.apache.rocketmq.tools.command.server.NameServerMocker;
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/producer/ProducerSubCommandTest.java b/tools/src/test/java/org/apache/rocketmq/tools/command/producer/ProducerSubCommandTest.java
+index 1ca0814..7039c05 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/producer/ProducerSubCommandTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/producer/ProducerSubCommandTest.java
+@@ -21,9 +21,9 @@ import java.util.HashMap;
+ import org.apache.commons.cli.CommandLine;
+ import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Options;
+-import org.apache.rocketmq.common.admin.ConsumeStats;
+-import org.apache.rocketmq.common.admin.OffsetWrapper;
+ import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.remoting.protocol.admin.ConsumeStats;
++import org.apache.rocketmq.remoting.protocol.admin.OffsetWrapper;
+ import org.apache.rocketmq.srvutil.ServerUtil;
+ import org.apache.rocketmq.tools.command.SubCommandException;
+ import org.apache.rocketmq.tools.command.server.NameServerMocker;
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/command/server/NameServerMocker.java b/tools/src/test/java/org/apache/rocketmq/tools/command/server/NameServerMocker.java
+index 6dc83db..be46b6e 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/command/server/NameServerMocker.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/command/server/NameServerMocker.java
+@@ -19,8 +19,8 @@ package org.apache.rocketmq.tools.command.server;
+ import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.List;
+-import org.apache.rocketmq.common.protocol.route.BrokerData;
+-import org.apache.rocketmq.common.protocol.route.TopicRouteData;
++import org.apache.rocketmq.remoting.protocol.route.BrokerData;
++import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
+ 
+ /**
+  * tools class
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/monitor/DefaultMonitorListenerTest.java b/tools/src/test/java/org/apache/rocketmq/tools/monitor/DefaultMonitorListenerTest.java
+index e527e6d..7200b46 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/monitor/DefaultMonitorListenerTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/monitor/DefaultMonitorListenerTest.java
+@@ -19,8 +19,8 @@ package org.apache.rocketmq.tools.monitor;
+ import java.util.Properties;
+ import java.util.TreeMap;
+ import java.util.TreeSet;
+-import org.apache.rocketmq.common.protocol.body.ConsumerRunningInfo;
+-import org.apache.rocketmq.common.protocol.topic.OffsetMovedEvent;
++import org.apache.rocketmq.remoting.protocol.body.ConsumerRunningInfo;
++import org.apache.rocketmq.remoting.protocol.topic.OffsetMovedEvent;
+ import org.junit.Before;
+ import org.junit.Test;
+ 
+@@ -79,4 +79,4 @@ public class DefaultMonitorListenerTest {
+         criTable.put("test", consumerRunningInfo);
+         defaultMonitorListener.reportConsumerRunningInfo(criTable);
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/tools/src/test/java/org/apache/rocketmq/tools/monitor/MonitorServiceTest.java b/tools/src/test/java/org/apache/rocketmq/tools/monitor/MonitorServiceTest.java
+index 0781afe..e459f5d 100644
+--- a/tools/src/test/java/org/apache/rocketmq/tools/monitor/MonitorServiceTest.java
++++ b/tools/src/test/java/org/apache/rocketmq/tools/monitor/MonitorServiceTest.java
+@@ -35,27 +35,27 @@ import org.apache.rocketmq.client.impl.MQClientAPIImpl;
+ import org.apache.rocketmq.client.impl.MQClientManager;
+ import org.apache.rocketmq.client.impl.factory.MQClientInstance;
+ import org.apache.rocketmq.common.MQVersion;
+-import org.apache.rocketmq.common.admin.ConsumeStats;
+-import org.apache.rocketmq.common.admin.OffsetWrapper;
+ import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
+ import org.apache.rocketmq.common.message.MessageQueue;
+-import org.apache.rocketmq.common.protocol.body.Connection;
+-import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
+-import org.apache.rocketmq.common.protocol.body.ConsumerRunningInfo;
+-import org.apache.rocketmq.common.protocol.body.TopicList;
+-import org.apache.rocketmq.common.protocol.heartbeat.ConsumeType;
+-import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
+-import org.apache.rocketmq.common.protocol.route.BrokerData;
+-import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+ import org.apache.rocketmq.remoting.exception.RemotingException;
+ import org.apache.rocketmq.remoting.protocol.LanguageCode;
++import org.apache.rocketmq.remoting.protocol.admin.ConsumeStats;
++import org.apache.rocketmq.remoting.protocol.admin.OffsetWrapper;
++import org.apache.rocketmq.remoting.protocol.body.Connection;
++import org.apache.rocketmq.remoting.protocol.body.ConsumerConnection;
++import org.apache.rocketmq.remoting.protocol.body.ConsumerRunningInfo;
++import org.apache.rocketmq.remoting.protocol.body.TopicList;
++import org.apache.rocketmq.remoting.protocol.heartbeat.ConsumeType;
++import org.apache.rocketmq.remoting.protocol.heartbeat.MessageModel;
++import org.apache.rocketmq.remoting.protocol.route.BrokerData;
++import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
+ import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
+ import org.apache.rocketmq.tools.admin.DefaultMQAdminExtImpl;
+ import org.junit.AfterClass;
+ import org.junit.BeforeClass;
+ import org.junit.Test;
+ 
+-import static org.apache.rocketmq.common.protocol.heartbeat.ConsumeType.CONSUME_ACTIVELY;
++import static org.apache.rocketmq.remoting.protocol.heartbeat.ConsumeType.CONSUME_ACTIVELY;
+ import static org.mockito.ArgumentMatchers.anyLong;
+ import static org.mockito.ArgumentMatchers.anyString;
+ import static org.mockito.Mockito.anyBoolean;
+@@ -174,4 +174,4 @@ public class MonitorServiceTest {
+     public void testReportConsumerRunningInfo() throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+         monitorService.reportConsumerRunningInfo("test_group");
+     }
+-}
+\ No newline at end of file
++}

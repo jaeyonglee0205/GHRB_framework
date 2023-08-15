@@ -1,0 +1,70 @@
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/dart/DartClientOptionsTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/dart/DartClientOptionsTest.java
+index 1b26856..87dabbb 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/dart/DartClientOptionsTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/dart/DartClientOptionsTest.java
+@@ -48,6 +48,8 @@ public class DartClientOptionsTest extends AbstractOptionsTest {
+         verify(clientCodegen).setPubAuthor(DartClientOptionsProvider.PUB_AUTHOR_VALUE);
+         verify(clientCodegen).setPubAuthorEmail(DartClientOptionsProvider.PUB_AUTHOR_EMAIL_VALUE);
+         verify(clientCodegen).setPubHomepage(DartClientOptionsProvider.PUB_HOMEPAGE_VALUE);
++        verify(clientCodegen).setPubRepository(DartClientOptionsProvider.PUB_REPOSITORY_VALUE);
++        verify(clientCodegen).setPubPublishTo(DartClientOptionsProvider.PUB_PUBLISH_TO_VALUE);
+         verify(clientCodegen).setSourceFolder(DartClientOptionsProvider.SOURCE_FOLDER_VALUE);
+         verify(clientCodegen).setUseEnumExtension(Boolean.parseBoolean(DartClientOptionsProvider.USE_ENUM_EXTENSION));
+         verify(clientCodegen).setEnumUnknownDefaultCase(Boolean.parseBoolean(DartClientOptionsProvider.ENUM_UNKNOWN_DEFAULT_CASE_VALUE));
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/dart/dio/DartDioClientOptionsTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/dart/dio/DartDioClientOptionsTest.java
+index 2292d11..23eee3f 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/dart/dio/DartDioClientOptionsTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/dart/dio/DartDioClientOptionsTest.java
+@@ -47,6 +47,8 @@ public class DartDioClientOptionsTest extends AbstractOptionsTest {
+         verify(clientCodegen).setPubAuthor(DartDioClientOptionsProvider.PUB_AUTHOR_VALUE);
+         verify(clientCodegen).setPubAuthorEmail(DartDioClientOptionsProvider.PUB_AUTHOR_EMAIL_VALUE);
+         verify(clientCodegen).setPubHomepage(DartDioClientOptionsProvider.PUB_HOMEPAGE_VALUE);
++        verify(clientCodegen).setPubRepository(DartDioClientOptionsProvider.PUB_REPOSITORY_VALUE);
++        verify(clientCodegen).setPubPublishTo(DartDioClientOptionsProvider.PUB_PUBLISH_TO_VALUE);
+         verify(clientCodegen).setSourceFolder(DartDioClientOptionsProvider.SOURCE_FOLDER_VALUE);
+         verify(clientCodegen).setUseEnumExtension(Boolean.parseBoolean(DartDioClientOptionsProvider.USE_ENUM_EXTENSION));
+         verify(clientCodegen).setDateLibrary(DartDioClientCodegen.DATE_LIBRARY_DEFAULT);
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/DartClientOptionsProvider.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/DartClientOptionsProvider.java
+index 5e46809..7851eb0 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/DartClientOptionsProvider.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/DartClientOptionsProvider.java
+@@ -35,6 +35,8 @@ public class DartClientOptionsProvider implements OptionsProvider {
+     public static final String PUB_AUTHOR_VALUE = "Author";
+     public static final String PUB_AUTHOR_EMAIL_VALUE = "author@homepage";
+     public static final String PUB_HOMEPAGE_VALUE = "Homepage";
++    public static final String PUB_REPOSITORY_VALUE = "Repository";
++    public static final String PUB_PUBLISH_TO_VALUE = "Publish To";
+     public static final String SOURCE_FOLDER_VALUE = "src";
+     public static final String USE_ENUM_EXTENSION = "true";
+     public static final String ALLOW_UNICODE_IDENTIFIERS_VALUE = "false";
+@@ -59,6 +61,8 @@ public class DartClientOptionsProvider implements OptionsProvider {
+                 .put(DartClientCodegen.PUB_AUTHOR, PUB_AUTHOR_VALUE)
+                 .put(DartClientCodegen.PUB_AUTHOR_EMAIL, PUB_AUTHOR_EMAIL_VALUE)
+                 .put(DartClientCodegen.PUB_HOMEPAGE, PUB_HOMEPAGE_VALUE)
++                .put(DartClientCodegen.PUB_REPOSITORY, PUB_REPOSITORY_VALUE)
++                .put(DartClientCodegen.PUB_PUBLISH_TO, PUB_PUBLISH_TO_VALUE)
+                 .put(CodegenConstants.SOURCE_FOLDER, SOURCE_FOLDER_VALUE)
+                 .put(DartClientCodegen.USE_ENUM_EXTENSION, USE_ENUM_EXTENSION)
+                 .put(CodegenConstants.ALLOW_UNICODE_IDENTIFIERS, ALLOW_UNICODE_IDENTIFIERS_VALUE)
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/DartDioClientOptionsProvider.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/DartDioClientOptionsProvider.java
+index 0072e04..60cb352 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/DartDioClientOptionsProvider.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/DartDioClientOptionsProvider.java
+@@ -37,6 +37,8 @@ public class DartDioClientOptionsProvider implements OptionsProvider {
+     public static final String PUB_AUTHOR_VALUE = "Author";
+     public static final String PUB_AUTHOR_EMAIL_VALUE = "author@homepage";
+     public static final String PUB_HOMEPAGE_VALUE = "Homepage";
++    public static final String PUB_REPOSITORY_VALUE = "Repository";
++    public static final String PUB_PUBLISH_TO_VALUE = "Publish to";
+     public static final String ENUM_UNKNOWN_DEFAULT_CASE_VALUE = "false";
+ 
+     @Override
+@@ -57,6 +59,8 @@ public class DartDioClientOptionsProvider implements OptionsProvider {
+                 .put(DartDioClientCodegen.PUB_AUTHOR, PUB_AUTHOR_VALUE)
+                 .put(DartDioClientCodegen.PUB_AUTHOR_EMAIL, PUB_AUTHOR_EMAIL_VALUE)
+                 .put(DartDioClientCodegen.PUB_HOMEPAGE, PUB_HOMEPAGE_VALUE)
++                .put(DartDioClientCodegen.PUB_REPOSITORY, PUB_REPOSITORY_VALUE)
++                .put(DartDioClientCodegen.PUB_PUBLISH_TO, PUB_PUBLISH_TO_VALUE)
+                 .put(CodegenConstants.SERIALIZATION_LIBRARY, DartDioClientCodegen.SERIALIZATION_LIBRARY_DEFAULT)
+                 .put(DartDioClientCodegen.DATE_LIBRARY, DartDioClientCodegen.DATE_LIBRARY_DEFAULT)
+                 .put(DartDioClientCodegen.FINAL_PROPERTIES, DartDioClientCodegen.FINAL_PROPERTIES_DEFAULT_VALUE)

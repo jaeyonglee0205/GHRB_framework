@@ -1,0 +1,31 @@
+diff --git a/src/test/java/com/thealgorithms/maths/KaprekarNumbersTest.java b/src/test/java/com/thealgorithms/maths/KaprekarNumbersTest.java
+index 04f8cc0..1d08f81 100644
+--- a/src/test/java/com/thealgorithms/maths/KaprekarNumbersTest.java
++++ b/src/test/java/com/thealgorithms/maths/KaprekarNumbersTest.java
+@@ -1,7 +1,7 @@
+ package com.thealgorithms.maths;
+ 
+ import org.junit.jupiter.api.Test;
+-
++import java.util.ArrayList;
+ import static org.junit.jupiter.api.Assertions.*;
+ 
+ public class KaprekarNumbersTest {
+@@ -55,4 +55,16 @@ public class KaprekarNumbersTest {
+ 		assertFalse(KaprekarNumbers.isKaprekarNumber(98));
+ 	}
+ 
++	@Test
++	void testForRangeOfNumber() { try {
++		ArrayList<Long> rangedNumbers = KaprekarNumbers.kaprekarNumberInRange(1,100000);
++		long[] allTheNumbers = {1, 9, 45, 55, 99, 297, 703, 999, 2223, 2728, 4950, 5050, 7272, 7777, 9999, 17344, 22222, 77778, 82656, 95121, 99999};
++		for (long i:allTheNumbers) {
++			assert rangedNumbers.contains(i);
++		}
++	} catch (Exception e) {
++		assert false;
++	}
++	}
++
+ }
+\ No newline at end of file

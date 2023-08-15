@@ -1,0 +1,189 @@
+diff --git a/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/checkpoint/DefaultCheckpointProviderTests.java b/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/checkpoint/DefaultCheckpointProviderTests.java
+index 197a14a..1c94991 100644
+--- a/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/checkpoint/DefaultCheckpointProviderTests.java
++++ b/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/checkpoint/DefaultCheckpointProviderTests.java
+@@ -112,7 +112,9 @@ public class DefaultCheckpointProviderTests extends ESTestCase {
+                 transformId,
+                 "Source did not resolve to any open indexes"
+             ),
+-            () -> { provider.reportSourceIndexChanges(Collections.singleton("index"), Collections.emptySet()); }
++            () -> {
++                provider.reportSourceIndexChanges(Collections.singleton("index"), Collections.emptySet());
++            }
+         );
+ 
+         assertExpectation(
+@@ -128,7 +130,9 @@ public class DefaultCheckpointProviderTests extends ESTestCase {
+                 transformId,
+                 "Source did not resolve to any concrete indexes"
+             ),
+-            () -> { provider.reportSourceIndexChanges(Collections.emptySet(), Collections.emptySet()); }
++            () -> {
++                provider.reportSourceIndexChanges(Collections.emptySet(), Collections.emptySet());
++            }
+         );
+     }
+ 
+@@ -150,7 +154,9 @@ public class DefaultCheckpointProviderTests extends ESTestCase {
+                 transformId,
+                 "Source index resolve found changes, removedIndexes: [index], new indexes: [other_index]"
+             ),
+-            () -> { provider.reportSourceIndexChanges(Collections.singleton("index"), Collections.singleton("other_index")); }
++            () -> {
++                provider.reportSourceIndexChanges(Collections.singleton("index"), Collections.singleton("other_index"));
++            }
+         );
+ 
+         assertExpectation(
+@@ -166,7 +172,9 @@ public class DefaultCheckpointProviderTests extends ESTestCase {
+                 transformId,
+                 "Source index resolve found changes, removedIndexes: [index], new indexes: []"
+             ),
+-            () -> { provider.reportSourceIndexChanges(Sets.newHashSet("index", "other_index"), Collections.singleton("other_index")); }
++            () -> {
++                provider.reportSourceIndexChanges(Sets.newHashSet("index", "other_index"), Collections.singleton("other_index"));
++            }
+         );
+         assertExpectation(
+             new MockLogAppender.SeenEventExpectation(
+@@ -181,7 +189,9 @@ public class DefaultCheckpointProviderTests extends ESTestCase {
+                 transformId,
+                 "Source index resolve found changes, removedIndexes: [], new indexes: [other_index]"
+             ),
+-            () -> { provider.reportSourceIndexChanges(Collections.singleton("index"), Sets.newHashSet("index", "other_index")); }
++            () -> {
++                provider.reportSourceIndexChanges(Collections.singleton("index"), Sets.newHashSet("index", "other_index"));
++            }
+         );
+     }
+ 
+@@ -212,7 +222,9 @@ public class DefaultCheckpointProviderTests extends ESTestCase {
+                 transformId,
+                 "Source index resolve found more than 10 changes, [50] removed indexes, [50] new indexes"
+             ),
+-            () -> { provider.reportSourceIndexChanges(oldSet, newSet); }
++            () -> {
++                provider.reportSourceIndexChanges(oldSet, newSet);
++            }
+         );
+     }
+ 
+diff --git a/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/transforms/ClientTransformIndexerTests.java b/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/transforms/ClientTransformIndexerTests.java
+index 4ffa628..30226ba 100644
+--- a/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/transforms/ClientTransformIndexerTests.java
++++ b/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/transforms/ClientTransformIndexerTests.java
+@@ -162,10 +162,9 @@ public class ClientTransformIndexerTests extends ESTestCase {
+                 false
+             );
+ 
+-            this.<SearchResponse>assertAsync(
+-                listener -> indexer.doNextSearch(0, listener),
+-                response -> { assertEquals("the_pit_id+", response.pointInTimeId()); }
+-            );
++            this.<SearchResponse>assertAsync(listener -> indexer.doNextSearch(0, listener), response -> {
++                assertEquals("the_pit_id+", response.pointInTimeId());
++            });
+ 
+             assertEquals(1L, client.getPitContextCounter());
+ 
+@@ -176,40 +175,34 @@ public class ClientTransformIndexerTests extends ESTestCase {
+             indexer.onStop();
+             assertEquals(0L, client.getPitContextCounter());
+ 
+-            this.<SearchResponse>assertAsync(
+-                listener -> indexer.doNextSearch(0, listener),
+-                response -> { assertEquals("the_pit_id+", response.pointInTimeId()); }
+-            );
++            this.<SearchResponse>assertAsync(listener -> indexer.doNextSearch(0, listener), response -> {
++                assertEquals("the_pit_id+", response.pointInTimeId());
++            });
+ 
+-            this.<SearchResponse>assertAsync(
+-                listener -> indexer.doNextSearch(0, listener),
+-                response -> { assertEquals("the_pit_id++", response.pointInTimeId()); }
+-            );
++            this.<SearchResponse>assertAsync(listener -> indexer.doNextSearch(0, listener), response -> {
++                assertEquals("the_pit_id++", response.pointInTimeId());
++            });
+ 
+-            this.<SearchResponse>assertAsync(
+-                listener -> indexer.doNextSearch(0, listener),
+-                response -> { assertEquals("the_pit_id+++", response.pointInTimeId()); }
+-            );
++            this.<SearchResponse>assertAsync(listener -> indexer.doNextSearch(0, listener), response -> {
++                assertEquals("the_pit_id+++", response.pointInTimeId());
++            });
+ 
+             assertEquals(1L, client.getPitContextCounter());
+ 
+             indexer.onStop();
+             assertEquals(0L, client.getPitContextCounter());
+ 
+-            this.<SearchResponse>assertAsync(
+-                listener -> indexer.doNextSearch(0, listener),
+-                response -> { assertEquals("the_pit_id+", response.pointInTimeId()); }
+-            );
++            this.<SearchResponse>assertAsync(listener -> indexer.doNextSearch(0, listener), response -> {
++                assertEquals("the_pit_id+", response.pointInTimeId());
++            });
+ 
+-            this.<SearchResponse>assertAsync(
+-                listener -> indexer.doNextSearch(0, listener),
+-                response -> { assertEquals("the_pit_id++", response.pointInTimeId()); }
+-            );
++            this.<SearchResponse>assertAsync(listener -> indexer.doNextSearch(0, listener), response -> {
++                assertEquals("the_pit_id++", response.pointInTimeId());
++            });
+ 
+-            this.<SearchResponse>assertAsync(
+-                listener -> indexer.doNextSearch(0, listener),
+-                response -> { assertEquals("the_pit_id+++", response.pointInTimeId()); }
+-            );
++            this.<SearchResponse>assertAsync(listener -> indexer.doNextSearch(0, listener), response -> {
++                assertEquals("the_pit_id+++", response.pointInTimeId());
++            });
+ 
+             assertEquals(1L, client.getPitContextCounter());
+ 
+diff --git a/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/transforms/TransformIndexerStateTests.java b/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/transforms/TransformIndexerStateTests.java
+index 7759f15..abc2cd1 100644
+--- a/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/transforms/TransformIndexerStateTests.java
++++ b/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/transforms/TransformIndexerStateTests.java
+@@ -782,13 +782,9 @@ public class TransformIndexerStateTests extends ESTestCase {
+     }
+ 
+     private void countResponse(Consumer<ActionListener<Void>> function, CountDownLatch latch) throws InterruptedException {
+-        LatchedActionListener<Void> listener = new LatchedActionListener<>(
+-            ActionListener.wrap(
+-                r -> { assertEquals("listener called more than once", 1, latch.getCount()); },
+-                e -> { fail("got unexpected exception: " + e.getMessage()); }
+-            ),
+-            latch
+-        );
++        LatchedActionListener<Void> listener = new LatchedActionListener<>(ActionListener.wrap(r -> {
++            assertEquals("listener called more than once", 1, latch.getCount());
++        }, e -> { fail("got unexpected exception: " + e.getMessage()); }), latch);
+         function.accept(listener);
+     }
+ 
+diff --git a/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/transforms/TransformTaskTests.java b/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/transforms/TransformTaskTests.java
+index 9885f24..44c3d82 100644
+--- a/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/transforms/TransformTaskTests.java
++++ b/x-pack/plugin/transform/src/test/java/org/elasticsearch/xpack/transform/transforms/TransformTaskTests.java
+@@ -216,13 +216,9 @@ public class TransformTaskTests extends ESTestCase {
+ 
+         transformTask.init(mock(PersistentTasksService.class), taskManager, "task-id", 42);
+         AtomicBoolean listenerCalled = new AtomicBoolean(false);
+-        transformTask.fail(
+-            "because",
+-            ActionListener.wrap(
+-                r -> { listenerCalled.compareAndSet(false, true); },
+-                e -> { fail("setting transform task to failed failed with: " + e); }
+-            )
+-        );
++        transformTask.fail("because", ActionListener.wrap(r -> { listenerCalled.compareAndSet(false, true); }, e -> {
++            fail("setting transform task to failed failed with: " + e);
++        }));
+ 
+         TransformState state = transformTask.getState();
+         assertEquals(TransformTaskState.FAILED, state.getTaskState());

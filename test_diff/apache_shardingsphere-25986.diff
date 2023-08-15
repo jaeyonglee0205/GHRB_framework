@@ -1,0 +1,241 @@
+diff --git a/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/asserts/segment/projection/ProjectionAssert.java b/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/asserts/segment/projection/ProjectionAssert.java
+index 135bf28..fb0f700 100644
+--- a/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/asserts/segment/projection/ProjectionAssert.java
++++ b/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/asserts/segment/projection/ProjectionAssert.java
+@@ -114,7 +114,7 @@ public final class ProjectionAssert {
+     }
+     
+     private static void assertSubqueryProjection(final SQLCaseAssertContext assertContext, final SubqueryProjectionSegment actual, final ExpectedSubqueryProjection expected) {
+-        assertThat(assertContext.getText("Subquery projection alias assertion error: "), actual.getAlias().orElse(null), is(expected.getAlias()));
++        assertThat(assertContext.getText("Subquery projection alias assertion error: "), actual.getAliasName().orElse(null), is(expected.getAlias()));
+         String expectedText = SQLCaseType.LITERAL == assertContext.getCaseType() && null != expected.getLiteralText() ? expected.getLiteralText() : expected.getText();
+         assertThat(assertContext.getText("Subquery projection text assertion error: "), actual.getText(), is(expectedText));
+         SelectStatementAssert.assertIs(assertContext, actual.getSubquery().getSelect(), expected.getSubquery().getSelectTestCases());
+@@ -131,7 +131,7 @@ public final class ProjectionAssert {
+     
+     private static void assertColumnProjection(final SQLCaseAssertContext assertContext, final ColumnProjectionSegment actual, final ExpectedColumnProjection expected) {
+         IdentifierValueAssert.assertIs(assertContext, actual.getColumn().getIdentifier(), expected, "Column projection");
+-        assertThat(assertContext.getText("Column projection alias assertion error: "), actual.getAlias().orElse(null), is(expected.getAlias()));
++        assertThat(assertContext.getText("Column projection alias assertion error: "), actual.getAliasName().orElse(null), is(expected.getAlias()));
+         if (null == expected.getOwner()) {
+             assertFalse(actual.getColumn().getOwner().isPresent(), assertContext.getText("Actual owner should not exist."));
+         } else {
+@@ -143,7 +143,7 @@ public final class ProjectionAssert {
+     private static void assertAggregationProjection(final SQLCaseAssertContext assertContext, final AggregationProjectionSegment actual, final ExpectedAggregationProjection expected) {
+         assertThat(assertContext.getText("Aggregation projection type assertion error: "), actual.getType().name(), is(expected.getType()));
+         assertThat(assertContext.getText("Aggregation projection inner expression assertion error: "), actual.getInnerExpression(), is(expected.getInnerExpression()));
+-        assertThat(assertContext.getText("Aggregation projection alias assertion error: "), actual.getAlias().orElse(null), is(expected.getAlias()));
++        assertThat(assertContext.getText("Aggregation projection alias assertion error: "), actual.getAliasName().orElse(null), is(expected.getAlias()));
+         if (actual instanceof AggregationDistinctProjectionSegment) {
+             assertThat(assertContext.getText("Projection type assertion error: "), expected, instanceOf(ExpectedAggregationDistinctProjection.class));
+             assertThat(assertContext.getText("Aggregation projection alias assertion error: "),
+@@ -153,7 +153,7 @@ public final class ProjectionAssert {
+     
+     private static void assertExpressionProjection(final SQLCaseAssertContext assertContext, final ExpressionProjectionSegment actual, final ExpectedExpressionProjection expected) {
+         assertThat(assertContext.getText("Expression projection alias assertion error: "),
+-                actual.getAlias().orElse(null), is(expected.getAlias()));
++                actual.getAliasName().orElse(null), is(expected.getAlias()));
+         String expectedText = SQLCaseType.LITERAL == assertContext.getCaseType() && null != expected.getLiteralText()
+                 ? expected.getLiteralText()
+                 : expected.getText();
+diff --git a/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/asserts/segment/table/TableAssert.java b/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/asserts/segment/table/TableAssert.java
+index 9a52ee3..7a40882 100644
+--- a/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/asserts/segment/table/TableAssert.java
++++ b/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/asserts/segment/table/TableAssert.java
+@@ -100,7 +100,7 @@ public final class TableAssert {
+      */
+     public static void assertIs(final SQLCaseAssertContext assertContext, final SimpleTableSegment actual, final ExpectedSimpleTable expected) {
+         IdentifierValueAssert.assertIs(assertContext, actual.getTableName().getIdentifier(), expected, "Table");
+-        assertThat(assertContext.getText("Table alias assertion error: "), actual.getAlias().orElse(null), is(expected.getAlias()));
++        assertThat(assertContext.getText("Table alias assertion error: "), actual.getAliasName().orElse(null), is(expected.getAlias()));
+         if (null == expected.getOwner()) {
+             assertFalse(actual.getOwner().isPresent(), assertContext.getText("Actual owner should not exist."));
+         } else {
+@@ -119,7 +119,7 @@ public final class TableAssert {
+      */
+     public static void assertIs(final SQLCaseAssertContext assertContext, final SubqueryTableSegment actual, final ExpectedSubqueryTable expected) {
+         SelectStatementAssert.assertIs(assertContext, actual.getSubquery().getSelect(), expected.getSubquery().getSelectTestCases());
+-        assertThat(assertContext.getText("Table alias assertion error: "), actual.getAlias().orElse(null), is(expected.getAlias()));
++        assertThat(assertContext.getText("Table alias assertion error: "), actual.getAliasName().orElse(null), is(expected.getAlias()));
+     }
+     
+     /**
+diff --git a/test/it/rewriter/src/test/resources/scenario/encrypt/case/query-with-cipher/dml/select/select-join.xml b/test/it/rewriter/src/test/resources/scenario/encrypt/case/query-with-cipher/dml/select/select-join.xml
+index 880a669..81bc6e4 100644
+--- a/test/it/rewriter/src/test/resources/scenario/encrypt/case/query-with-cipher/dml/select/select-join.xml
++++ b/test/it/rewriter/src/test/resources/scenario/encrypt/case/query-with-cipher/dml/select/select-join.xml
+@@ -39,12 +39,12 @@
+     
+     <rewrite-assertion id="select_unqualified_shorthand_projection_with_join_for_parameters" db-types="MySQL">
+         <input sql="SELECT * FROM t_account t INNER JOIN t_account_bak b ON t.id = b.id WHERE t.password = ? OR b.amount = ? AND t.certificate_number like ?" parameters="1, 2, 3" />
+-        <output sql="SELECT `t`.`account_id`, `t`.`cipher_certificate_number` AS `certificate_number`, `t`.`cipher_password` AS `password`, `t`.`cipher_amount` AS `amount`, `b`.`account_id`, `b`.`cipher_certificate_number` AS `certificate_number`, `b`.`cipher_password` AS `password`, `b`.`cipher_amount` AS `amount` FROM t_account t INNER JOIN t_account_bak b ON t.id = b.id WHERE t.assisted_query_password = ? OR b.cipher_amount = ? AND t.like_query_certificate_number like ?" parameters="assisted_query_1, encrypt_2, like_query_3" />
++        <output sql="SELECT t.`account_id`, t.`cipher_certificate_number` AS `certificate_number`, t.`cipher_password` AS `password`, t.`cipher_amount` AS `amount`, b.`account_id`, b.`cipher_certificate_number` AS `certificate_number`, b.`cipher_password` AS `password`, b.`cipher_amount` AS `amount` FROM t_account t INNER JOIN t_account_bak b ON t.id = b.id WHERE t.assisted_query_password = ? OR b.cipher_amount = ? AND t.like_query_certificate_number like ?" parameters="assisted_query_1, encrypt_2, like_query_3" />
+     </rewrite-assertion>
+     
+     <rewrite-assertion id="select_unqualified_shorthand_projection_with_join_for_literals" db-types="MySQL">
+         <input sql="SELECT * FROM t_account t INNER JOIN t_account_bak b ON t.id = b.id WHERE t.password = 1 OR b.amount = 2 AND t.certificate_number like 3" />
+-        <output sql="SELECT `t`.`account_id`, `t`.`cipher_certificate_number` AS `certificate_number`, `t`.`cipher_password` AS `password`, `t`.`cipher_amount` AS `amount`, `b`.`account_id`, `b`.`cipher_certificate_number` AS `certificate_number`, `b`.`cipher_password` AS `password`, `b`.`cipher_amount` AS `amount` FROM t_account t INNER JOIN t_account_bak b ON t.id = b.id WHERE t.assisted_query_password = 'assisted_query_1' OR b.cipher_amount = 'encrypt_2' AND t.like_query_certificate_number like 'like_query_3'"/>
++        <output sql="SELECT t.`account_id`, t.`cipher_certificate_number` AS `certificate_number`, t.`cipher_password` AS `password`, t.`cipher_amount` AS `amount`, b.`account_id`, b.`cipher_certificate_number` AS `certificate_number`, b.`cipher_password` AS `password`, b.`cipher_amount` AS `amount` FROM t_account t INNER JOIN t_account_bak b ON t.id = b.id WHERE t.assisted_query_password = 'assisted_query_1' OR b.cipher_amount = 'encrypt_2' AND t.like_query_certificate_number like 'like_query_3'"/>
+     </rewrite-assertion>
+     
+     <rewrite-assertion id="select_with_join_for_parameters" db-types="MySQL">
+diff --git a/test/it/rewriter/src/test/resources/scenario/encrypt/case/query-with-cipher/dml/select/select-projection.xml b/test/it/rewriter/src/test/resources/scenario/encrypt/case/query-with-cipher/dml/select/select-projection.xml
+index 27e4425..74a7279 100644
+--- a/test/it/rewriter/src/test/resources/scenario/encrypt/case/query-with-cipher/dml/select/select-projection.xml
++++ b/test/it/rewriter/src/test/resources/scenario/encrypt/case/query-with-cipher/dml/select/select-projection.xml
+@@ -24,12 +24,12 @@
+     
+     <rewrite-assertion id="select_with_qualified_shorthand_for_cipher" db-types="MySQL">
+         <input sql="SELECT a.* FROM t_account_bak a" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_certificate_number` AS `certificate_number`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account_bak a" />
++        <output sql="SELECT a.`account_id`, a.`cipher_certificate_number` AS `certificate_number`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account_bak a" />
+     </rewrite-assertion>
+     
+     <rewrite-assertion id="select_with_mix_qualified_shorthand_and_other_projection_for_cipher" db-types="MySQL">
+         <input sql="SELECT a.*, account_id, 1+1 FROM t_account_bak a" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_certificate_number` AS `certificate_number`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount`, account_id, 1+1 FROM t_account_bak a" />
++        <output sql="SELECT a.`account_id`, a.`cipher_certificate_number` AS `certificate_number`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount`, account_id, 1+1 FROM t_account_bak a" />
+     </rewrite-assertion>
+     
+     <rewrite-assertion id="select_for_predicate_and_right_value_should_be_matched_for_cipher_for_parameters" db-types="MySQL">
+@@ -54,12 +54,12 @@
+     
+     <rewrite-assertion id="select_with_qualified_shorthand" db-types="MySQL">
+         <input sql="SELECT a.* FROM t_account a" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_certificate_number` AS `certificate_number`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account a" />
++        <output sql="SELECT a.`account_id`, a.`cipher_certificate_number` AS `certificate_number`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account a" />
+     </rewrite-assertion>
+     
+     <rewrite-assertion id="select_with_mix_qualified_shorthand_and_other_projection" db-types="MySQL">
+         <input sql="SELECT a.*, account_id, 1+1 FROM t_account a" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_certificate_number` AS `certificate_number`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount`, account_id, 1+1 FROM t_account a" />
++        <output sql="SELECT a.`account_id`, a.`cipher_certificate_number` AS `certificate_number`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount`, account_id, 1+1 FROM t_account a" />
+     </rewrite-assertion>
+     
+     <rewrite-assertion id="select_with_schema_name_in_shorthand_projection_for_parameters" db-types="MySQL">
+diff --git a/test/it/rewriter/src/test/resources/scenario/encrypt/case/query-with-cipher/dml/select/select-subquery.xml b/test/it/rewriter/src/test/resources/scenario/encrypt/case/query-with-cipher/dml/select/select-subquery.xml
+index 8a5ccc5..f2559fa 100644
+--- a/test/it/rewriter/src/test/resources/scenario/encrypt/case/query-with-cipher/dml/select/select-subquery.xml
++++ b/test/it/rewriter/src/test/resources/scenario/encrypt/case/query-with-cipher/dml/select/select-subquery.xml
+@@ -39,7 +39,12 @@
+ 
+     <rewrite-assertion id="select_not_nested_subquery_in_table_segment_with_shorthand_project_alias" db-types="MySQL">
+         <input sql="SELECT u.amount, u.password, o.certificate_number FROM (SELECT a.* FROM t_account a) o, t_account u WHERE o.certificate_number=u.certificate_number AND u.password=?" parameters="1" />
+-        <output sql="SELECT u.cipher_amount AS amount, u.cipher_password AS password, o.cipher_certificate_number AS certificate_number FROM (SELECT `a`.`account_id`, `a`.`cipher_certificate_number`, `a`.`assisted_query_certificate_number`, `a`.`cipher_password`, `a`.`assisted_query_password`, `a`.`cipher_amount` FROM t_account a) o, t_account u WHERE o.assisted_query_certificate_number=u.assisted_query_certificate_number AND u.assisted_query_password=?" parameters="assisted_query_1" />
++        <output sql="SELECT u.cipher_amount AS amount, u.cipher_password AS password, o.cipher_certificate_number AS certificate_number FROM (SELECT a.`account_id`, a.`cipher_certificate_number`, a.`assisted_query_certificate_number`, a.`cipher_password`, a.`assisted_query_password`, a.`cipher_amount` FROM t_account a) o, t_account u WHERE o.assisted_query_certificate_number=u.assisted_query_certificate_number AND u.assisted_query_password=?" parameters="assisted_query_1" />
++    </rewrite-assertion>
++
++    <rewrite-assertion id="select_not_nested_subquery_in_table_segment_with_shorthand_project_alias_quote" db-types="MySQL">
++        <input sql="SELECT u.amount, u.password, o.certificate_number FROM (SELECT a.* FROM t_account `a`) o, t_account u WHERE o.certificate_number=u.certificate_number AND u.password=?" parameters="1" />
++        <output sql="SELECT u.cipher_amount AS amount, u.cipher_password AS password, o.cipher_certificate_number AS certificate_number FROM (SELECT `a`.`account_id`, `a`.`cipher_certificate_number`, `a`.`assisted_query_certificate_number`, `a`.`cipher_password`, `a`.`assisted_query_password`, `a`.`cipher_amount` FROM t_account `a`) o, t_account u WHERE o.assisted_query_certificate_number=u.assisted_query_certificate_number AND u.assisted_query_password=?" parameters="assisted_query_1" />
+     </rewrite-assertion>
+ 
+     <rewrite-assertion id="select_not_nested_subquery_in_table_segment_with_shorthand_project" db-types="MySQL">
+@@ -89,7 +94,7 @@
+ 
+     <rewrite-assertion id="select_not_nested_subquery_in_tablesegment_ref_shorthand" db-types="MySQL">
+         <input sql="SELECT b.* FROM (SELECT a.certificate_number as certificate_number, a.amount FROM t_account a WHERE a.amount = 1373) b" />
+-        <output sql="SELECT `b`.`cipher_certificate_number` AS `certificate_number`, `b`.`cipher_amount` AS `amount` FROM (SELECT a.cipher_certificate_number, a.assisted_query_certificate_number, a.cipher_amount FROM t_account a WHERE a.cipher_amount = 'encrypt_1373') b" />
++        <output sql="SELECT b.`cipher_certificate_number` AS `certificate_number`, b.`cipher_amount` AS `amount` FROM (SELECT a.cipher_certificate_number, a.assisted_query_certificate_number, a.cipher_amount FROM t_account a WHERE a.cipher_amount = 'encrypt_1373') b" />
+     </rewrite-assertion>
+ 
+     <rewrite-assertion id="select_with_exists_sub_query" db-types="MySQL">
+@@ -104,11 +109,11 @@
+ 
+     <rewrite-assertion id="select_shorthand_from_sub_query_with_simple_select" db-types="MySQL">
+         <input sql="SELECT * FROM (SELECT * FROM t_account a) AS temp" />
+-        <output sql="SELECT `temp`.`account_id`, `temp`.`cipher_certificate_number` AS `certificate_number`, `temp`.`cipher_password` AS `password`, `temp`.`cipher_amount` AS `amount` FROM (SELECT `a`.`account_id`, `a`.`cipher_certificate_number`, `a`.`assisted_query_certificate_number`, `a`.`cipher_password`, `a`.`assisted_query_password`, `a`.`cipher_amount` FROM t_account a) AS temp" />
++        <output sql="SELECT temp.`account_id`, temp.`cipher_certificate_number` AS `certificate_number`, temp.`cipher_password` AS `password`, temp.`cipher_amount` AS `amount` FROM (SELECT a.`account_id`, a.`cipher_certificate_number`, a.`assisted_query_certificate_number`, a.`cipher_password`, a.`assisted_query_password`, a.`cipher_amount` FROM t_account a) AS temp" />
+     </rewrite-assertion>
+ 
+     <rewrite-assertion id="select_shorthand_from_sub_query_with_select_join" db-types="MySQL">
+         <input sql="SELECT * FROM (SELECT a1.* FROM t_account a1 INNER JOIN t_account a2) AS temp" />
+-        <output sql="SELECT `temp`.`account_id`, `temp`.`cipher_certificate_number` AS `certificate_number`, `temp`.`cipher_password` AS `password`, `temp`.`cipher_amount` AS `amount` FROM (SELECT `a1`.`account_id`, `a1`.`cipher_certificate_number`, `a1`.`assisted_query_certificate_number`, `a1`.`cipher_password`, `a1`.`assisted_query_password`, `a1`.`cipher_amount` FROM t_account a1 INNER JOIN t_account a2) AS temp" />
++        <output sql="SELECT temp.`account_id`, temp.`cipher_certificate_number` AS `certificate_number`, temp.`cipher_password` AS `password`, temp.`cipher_amount` AS `amount` FROM (SELECT a1.`account_id`, a1.`cipher_certificate_number`, a1.`assisted_query_certificate_number`, a1.`cipher_password`, a1.`assisted_query_password`, a1.`cipher_amount` FROM t_account a1 INNER JOIN t_account a2) AS temp" />
+     </rewrite-assertion>
+ </rewrite-assertions>
+diff --git a/test/it/rewriter/src/test/resources/scenario/mix/case/query-with-cipher/dml/select/select-join.xml b/test/it/rewriter/src/test/resources/scenario/mix/case/query-with-cipher/dml/select/select-join.xml
+index a9fbe8b..c93f3f0 100644
+--- a/test/it/rewriter/src/test/resources/scenario/mix/case/query-with-cipher/dml/select/select-join.xml
++++ b/test/it/rewriter/src/test/resources/scenario/mix/case/query-with-cipher/dml/select/select-join.xml
+@@ -19,21 +19,21 @@
+ <rewrite-assertions yaml-rule="scenario/mix/config/query-with-cipher.yaml">
+     <rewrite-assertion id="select_with_encrypt_left_join_table" db-types="MySQL">
+         <input sql="SELECT a.* FROM t_account a left join t_account_bak b on a.password = b.account_id left join t_account_detail c on a.password = c.password" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account_0 a left join t_account_bak_0 b on a.assisted_query_password = b.account_id left join t_account_detail_0 c on a.assisted_query_password = c.assisted_query_password" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account_0 a left join t_account_bak_1 b on a.assisted_query_password = b.account_id left join t_account_detail_0 c on a.assisted_query_password = c.assisted_query_password" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account_1 a left join t_account_bak_0 b on a.assisted_query_password = b.account_id left join t_account_detail_1 c on a.assisted_query_password = c.assisted_query_password" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account_1 a left join t_account_bak_1 b on a.assisted_query_password = b.account_id left join t_account_detail_1 c on a.assisted_query_password = c.assisted_query_password" />
++        <output sql="SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account_0 a left join t_account_bak_0 b on a.assisted_query_password = b.account_id left join t_account_detail_0 c on a.assisted_query_password = c.assisted_query_password" />
++        <output sql="SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account_0 a left join t_account_bak_1 b on a.assisted_query_password = b.account_id left join t_account_detail_0 c on a.assisted_query_password = c.assisted_query_password" />
++        <output sql="SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account_1 a left join t_account_bak_0 b on a.assisted_query_password = b.account_id left join t_account_detail_1 c on a.assisted_query_password = c.assisted_query_password" />
++        <output sql="SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account_1 a left join t_account_bak_1 b on a.assisted_query_password = b.account_id left join t_account_detail_1 c on a.assisted_query_password = c.assisted_query_password" />
+     </rewrite-assertion>
+     
+     <rewrite-assertion id="select_with_encrypt_right_join_table" db-types="MySQL">
+         <input sql="SELECT a.* FROM t_account a right join t_account_detail b on a.password = b.password" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account_0 a right join t_account_detail_0 b on a.assisted_query_password = b.assisted_query_password" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account_1 a right join t_account_detail_1 b on a.assisted_query_password = b.assisted_query_password" />
++        <output sql="SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account_0 a right join t_account_detail_0 b on a.assisted_query_password = b.assisted_query_password" />
++        <output sql="SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account_1 a right join t_account_detail_1 b on a.assisted_query_password = b.assisted_query_password" />
+     </rewrite-assertion>
+     
+     <rewrite-assertion id="select_with_encrypt_join_table" db-types="MySQL">
+         <input sql="SELECT a.* FROM t_account a join t_account_detail b on a.password = b.password" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account_0 a join t_account_detail_0 b on a.assisted_query_password = b.assisted_query_password" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account_1 a join t_account_detail_1 b on a.assisted_query_password = b.assisted_query_password" />
++        <output sql="SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account_0 a join t_account_detail_0 b on a.assisted_query_password = b.assisted_query_password" />
++        <output sql="SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account_1 a join t_account_detail_1 b on a.assisted_query_password = b.assisted_query_password" />
+     </rewrite-assertion>
+ </rewrite-assertions>
+diff --git a/test/it/rewriter/src/test/resources/scenario/mix/case/query-with-cipher/dml/select/select-projection.xml b/test/it/rewriter/src/test/resources/scenario/mix/case/query-with-cipher/dml/select/select-projection.xml
+index aa00eca..77166d4 100644
+--- a/test/it/rewriter/src/test/resources/scenario/mix/case/query-with-cipher/dml/select/select-projection.xml
++++ b/test/it/rewriter/src/test/resources/scenario/mix/case/query-with-cipher/dml/select/select-projection.xml
+@@ -24,7 +24,7 @@
+     
+     <rewrite-assertion id="select_with_qualified_shorthand" db-types="MySQL">
+         <input sql="SELECT a.* FROM t_account a" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account_0 a UNION ALL SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account_1 a" />
++        <output sql="SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account_0 a UNION ALL SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account_1 a" />
+     </rewrite-assertion>
+     
+     <rewrite-assertion id="select_with_sharding_qualified_shorthand_join_table" db-types="MySQL">
+@@ -35,13 +35,13 @@
+     
+     <rewrite-assertion id="select_with_encrypt_qualified_shorthand_join_table" db-types="MySQL">
+         <input sql="SELECT a.* FROM t_account a, t_account_detail b where a.password = b.password" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account_0 a, t_account_detail_0 b where a.assisted_query_password = b.assisted_query_password" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount` FROM t_account_1 a, t_account_detail_1 b where a.assisted_query_password = b.assisted_query_password" />
++        <output sql="SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account_0 a, t_account_detail_0 b where a.assisted_query_password = b.assisted_query_password" />
++        <output sql="SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount` FROM t_account_1 a, t_account_detail_1 b where a.assisted_query_password = b.assisted_query_password" />
+     </rewrite-assertion>
+     
+     <rewrite-assertion id="select_with_mix_qualified_shorthand_and_other_projection" db-types="MySQL">
+         <input sql="SELECT a.*, account_id, 1+1 FROM t_account a" />
+-        <output sql="SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount`, account_id, 1+1 FROM t_account_0 a UNION ALL SELECT `a`.`account_id`, `a`.`cipher_password` AS `password`, `a`.`cipher_amount` AS `amount`, account_id, 1+1 FROM t_account_1 a" />
++        <output sql="SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount`, account_id, 1+1 FROM t_account_0 a UNION ALL SELECT a.`account_id`, a.`cipher_password` AS `password`, a.`cipher_amount` AS `amount`, account_id, 1+1 FROM t_account_1 a" />
+     </rewrite-assertion>
+     
+     <rewrite-assertion id="select_with_table_qualified_shorthand" db-types="MySQL">
+diff --git a/test/it/rewriter/src/test/resources/scenario/mix/case/query-with-cipher/dml/select/select-subquery.xml b/test/it/rewriter/src/test/resources/scenario/mix/case/query-with-cipher/dml/select/select-subquery.xml
+index df5e363..d36052b 100644
+--- a/test/it/rewriter/src/test/resources/scenario/mix/case/query-with-cipher/dml/select/select-subquery.xml
++++ b/test/it/rewriter/src/test/resources/scenario/mix/case/query-with-cipher/dml/select/select-subquery.xml
+@@ -25,8 +25,14 @@
+     
+     <rewrite-assertion id="select_not_nested_subquery_in_table_segment_with_shorthand_project_alias" db-types="MySQL">
+         <input sql="SELECT u.amount, u.password, o.certificate_number FROM (SELECT a.* FROM t_account a) o, t_account u WHERE o.certificate_number=u.certificate_number AND u.password=?" parameters="1" />
+-        <output sql="SELECT u.cipher_amount AS amount, u.cipher_password AS password, o.certificate_number FROM (SELECT `a`.`account_id`, `a`.`cipher_password`, `a`.`assisted_query_password`, `a`.`cipher_amount` FROM t_account_0 a) o, t_account_0 u WHERE o.certificate_number=u.certificate_number AND u.assisted_query_password=?" parameters="assisted_query_1" />
+-        <output sql="SELECT u.cipher_amount AS amount, u.cipher_password AS password, o.certificate_number FROM (SELECT `a`.`account_id`, `a`.`cipher_password`, `a`.`assisted_query_password`, `a`.`cipher_amount` FROM t_account_1 a) o, t_account_1 u WHERE o.certificate_number=u.certificate_number AND u.assisted_query_password=?" parameters="assisted_query_1" />
++        <output sql="SELECT u.cipher_amount AS amount, u.cipher_password AS password, o.certificate_number FROM (SELECT a.`account_id`, a.`cipher_password`, a.`assisted_query_password`, a.`cipher_amount` FROM t_account_0 a) o, t_account_0 u WHERE o.certificate_number=u.certificate_number AND u.assisted_query_password=?" parameters="assisted_query_1" />
++        <output sql="SELECT u.cipher_amount AS amount, u.cipher_password AS password, o.certificate_number FROM (SELECT a.`account_id`, a.`cipher_password`, a.`assisted_query_password`, a.`cipher_amount` FROM t_account_1 a) o, t_account_1 u WHERE o.certificate_number=u.certificate_number AND u.assisted_query_password=?" parameters="assisted_query_1" />
++    </rewrite-assertion>
++
++    <rewrite-assertion id="select_not_nested_subquery_in_table_segment_with_shorthand_project_alias_quote" db-types="MySQL">
++        <input sql="SELECT u.amount, u.password, o.certificate_number FROM (SELECT `a`.* FROM t_account `a`) o, t_account u WHERE o.certificate_number=u.certificate_number AND u.password=?" parameters="1" />
++        <output sql="SELECT u.cipher_amount AS amount, u.cipher_password AS password, o.certificate_number FROM (SELECT `a`.`account_id`, `a`.`cipher_password`, `a`.`assisted_query_password`, `a`.`cipher_amount` FROM t_account_0 `a`) o, t_account_0 u WHERE o.certificate_number=u.certificate_number AND u.assisted_query_password=?" parameters="assisted_query_1" />
++        <output sql="SELECT u.cipher_amount AS amount, u.cipher_password AS password, o.certificate_number FROM (SELECT `a`.`account_id`, `a`.`cipher_password`, `a`.`assisted_query_password`, `a`.`cipher_amount` FROM t_account_1 `a`) o, t_account_1 u WHERE o.certificate_number=u.certificate_number AND u.assisted_query_password=?" parameters="assisted_query_1" />
+     </rewrite-assertion>
+     
+     <rewrite-assertion id="select_not_nested_subquery_in_table_segment_alias" db-types="MySQL">

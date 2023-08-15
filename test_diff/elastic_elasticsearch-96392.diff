@@ -1,0 +1,12 @@
+diff --git a/modules/mapper-extras/src/test/java/org/elasticsearch/index/mapper/extras/RankFeatureFieldTypeTests.java b/modules/mapper-extras/src/test/java/org/elasticsearch/index/mapper/extras/RankFeatureFieldTypeTests.java
+index f859d6d..c9bb726 100644
+--- a/modules/mapper-extras/src/test/java/org/elasticsearch/index/mapper/extras/RankFeatureFieldTypeTests.java
++++ b/modules/mapper-extras/src/test/java/org/elasticsearch/index/mapper/extras/RankFeatureFieldTypeTests.java
+@@ -30,6 +30,6 @@ public class RankFeatureFieldTypeTests extends FieldTypeTestCase {
+ 
+         assertEquals(List.of(3.14f), fetchSourceValue(mapper, 3.14));
+         assertEquals(List.of(42.9f), fetchSourceValue(mapper, "42.9"));
+-        assertEquals(List.of(2.0f), fetchSourceValue(mapper, ""));
++        assertEquals(List.of(2.0f), fetchSourceValue(mapper, null));
+     }
+ }

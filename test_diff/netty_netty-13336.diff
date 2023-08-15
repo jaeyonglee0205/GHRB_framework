@@ -1,0 +1,32 @@
+diff --git a/common/src/test/java/io/netty/util/concurrent/SingleThreadEventExecutorTest.java b/common/src/test/java/io/netty/util/concurrent/SingleThreadEventExecutorTest.java
+index 8465ea8..dc12034 100644
+--- a/common/src/test/java/io/netty/util/concurrent/SingleThreadEventExecutorTest.java
++++ b/common/src/test/java/io/netty/util/concurrent/SingleThreadEventExecutorTest.java
+@@ -17,7 +17,6 @@ package io.netty.util.concurrent;
+ 
+ import org.junit.jupiter.api.Test;
+ 
+-import io.netty.util.concurrent.AbstractEventExecutor.LazyRunnable;
+ import org.junit.jupiter.api.Timeout;
+ import org.junit.jupiter.api.function.Executable;
+ 
+@@ -208,12 +207,18 @@ public class SingleThreadEventExecutorTest {
+         }
+     }
+ 
+-    static class LazyLatchTask extends LatchTask implements LazyRunnable { }
++    static class LazyLatchTask extends LatchTask { }
+ 
+     @Test
+     public void testLazyExecution() throws Exception {
+         final SingleThreadEventExecutor executor = new SingleThreadEventExecutor(null,
+                 Executors.defaultThreadFactory(), false) {
++
++            @Override
++            protected boolean wakesUpForTask(final Runnable task) {
++                return !(task instanceof LazyLatchTask);
++            }
++
+             @Override
+             protected void run() {
+                 while (!confirmShutdown()) {

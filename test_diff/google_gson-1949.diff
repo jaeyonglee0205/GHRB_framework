@@ -1,0 +1,106 @@
+diff --git a/proto/src/test/java/com/google/gson/protobuf/functional/ProtosWithAnnotationsTest.java b/proto/src/test/java/com/google/gson/protobuf/functional/ProtosWithAnnotationsTest.java
+index 2bb6f18..0a508f9 100644
+--- a/proto/src/test/java/com/google/gson/protobuf/functional/ProtosWithAnnotationsTest.java
++++ b/proto/src/test/java/com/google/gson/protobuf/functional/ProtosWithAnnotationsTest.java
+@@ -16,7 +16,7 @@
+ package com.google.gson.protobuf.functional;
+ 
+ import static com.google.common.truth.Truth.assertThat;
+-import static com.google.common.truth.Truth.assert_;
++import static com.google.common.truth.Truth.assertWithMessage;
+ 
+ import com.google.common.base.CaseFormat;
+ import com.google.gson.Gson;
+@@ -30,8 +30,7 @@ import com.google.gson.protobuf.generated.Bag.ProtoWithAnnotations;
+ import com.google.gson.protobuf.generated.Bag.ProtoWithAnnotations.InnerMessage;
+ import com.google.gson.protobuf.generated.Bag.ProtoWithAnnotations.InnerMessage.Data;
+ import com.google.gson.protobuf.generated.Bag.ProtoWithAnnotations.InnerMessage.Type;
+-import com.google.protobuf.GeneratedMessage;
+-
++import com.google.protobuf.GeneratedMessageV3;
+ import junit.framework.TestCase;
+ 
+ /**
+@@ -52,15 +51,15 @@ public class ProtosWithAnnotationsTest extends TestCase {
+         .addSerializedNameExtension(Annotations.serializedName)
+         .addSerializedEnumValueExtension(Annotations.serializedValue);
+     gson = new GsonBuilder()
+-        .registerTypeHierarchyAdapter(GeneratedMessage.class, protoTypeAdapter.build())
++        .registerTypeHierarchyAdapter(GeneratedMessageV3.class, protoTypeAdapter.build())
+         .create();
+     gsonWithEnumNumbers = new GsonBuilder()
+-        .registerTypeHierarchyAdapter(GeneratedMessage.class, protoTypeAdapter
++        .registerTypeHierarchyAdapter(GeneratedMessageV3.class, protoTypeAdapter
+             .setEnumSerialization(EnumSerialization.NUMBER)
+             .build())
+         .create();
+     gsonWithLowerHyphen = new GsonBuilder()
+-        .registerTypeHierarchyAdapter(GeneratedMessage.class, protoTypeAdapter
++        .registerTypeHierarchyAdapter(GeneratedMessageV3.class, protoTypeAdapter
+             .setFieldNameSerializationFormat(CaseFormat.LOWER_UNDERSCORE, CaseFormat.LOWER_HYPHEN)
+             .build())
+         .create();
+@@ -157,7 +156,7 @@ public class ProtosWithAnnotationsTest extends TestCase {
+         + "}");
+     try {
+       gson.fromJson(json, InnerMessage.class);
+-      assert_().fail("Should have thrown");
++      assertWithMessage("Should have thrown").fail();
+     } catch (JsonParseException e) {
+       // expected
+     }
+diff --git a/proto/src/test/java/com/google/gson/protobuf/functional/ProtosWithComplexAndRepeatedFieldsTest.java b/proto/src/test/java/com/google/gson/protobuf/functional/ProtosWithComplexAndRepeatedFieldsTest.java
+index b61d3f5..8e59d5d 100644
+--- a/proto/src/test/java/com/google/gson/protobuf/functional/ProtosWithComplexAndRepeatedFieldsTest.java
++++ b/proto/src/test/java/com/google/gson/protobuf/functional/ProtosWithComplexAndRepeatedFieldsTest.java
+@@ -24,8 +24,7 @@ import com.google.gson.protobuf.ProtoTypeAdapter.EnumSerialization;
+ import com.google.gson.protobuf.generated.Bag.ProtoWithDifferentCaseFormat;
+ import com.google.gson.protobuf.generated.Bag.ProtoWithRepeatedFields;
+ import com.google.gson.protobuf.generated.Bag.SimpleProto;
+-import com.google.protobuf.GeneratedMessage;
+-
++import com.google.protobuf.GeneratedMessageV3;
+ import junit.framework.TestCase;
+ 
+ /**
+@@ -42,7 +41,7 @@ public class ProtosWithComplexAndRepeatedFieldsTest extends TestCase {
+     super.setUp();
+     gson =
+         new GsonBuilder()
+-            .registerTypeHierarchyAdapter(GeneratedMessage.class,
++            .registerTypeHierarchyAdapter(GeneratedMessageV3.class,
+                 ProtoTypeAdapter.newBuilder()
+                     .setEnumSerialization(EnumSerialization.NUMBER)
+                     .build())
+@@ -50,7 +49,7 @@ public class ProtosWithComplexAndRepeatedFieldsTest extends TestCase {
+     upperCamelGson =
+         new GsonBuilder()
+             .registerTypeHierarchyAdapter(
+-                GeneratedMessage.class, ProtoTypeAdapter.newBuilder()
++                GeneratedMessageV3.class, ProtoTypeAdapter.newBuilder()
+                     .setFieldNameSerializationFormat(
+                         CaseFormat.LOWER_UNDERSCORE, CaseFormat.UPPER_CAMEL)
+                     .build())
+diff --git a/proto/src/test/java/com/google/gson/protobuf/functional/ProtosWithPrimitiveTypesTest.java b/proto/src/test/java/com/google/gson/protobuf/functional/ProtosWithPrimitiveTypesTest.java
+index 69b877e..2e9d0e1 100644
+--- a/proto/src/test/java/com/google/gson/protobuf/functional/ProtosWithPrimitiveTypesTest.java
++++ b/proto/src/test/java/com/google/gson/protobuf/functional/ProtosWithPrimitiveTypesTest.java
+@@ -21,8 +21,7 @@ import com.google.gson.protobuf.ProtoTypeAdapter;
+ import com.google.gson.protobuf.ProtoTypeAdapter.EnumSerialization;
+ import com.google.gson.protobuf.generated.Bag.SimpleProto;
+ import com.google.protobuf.Descriptors.Descriptor;
+-import com.google.protobuf.GeneratedMessage;
+-
++import com.google.protobuf.GeneratedMessageV3;
+ import junit.framework.TestCase;
+ 
+ public class ProtosWithPrimitiveTypesTest extends TestCase {
+@@ -32,7 +31,7 @@ public class ProtosWithPrimitiveTypesTest extends TestCase {
+   protected void setUp() throws Exception {
+     super.setUp();
+     gson = new GsonBuilder().registerTypeHierarchyAdapter(
+-      GeneratedMessage.class, ProtoTypeAdapter.newBuilder()
++      GeneratedMessageV3.class, ProtoTypeAdapter.newBuilder()
+           .setEnumSerialization(EnumSerialization.NUMBER)
+           .build())
+       .create();

@@ -1,0 +1,173 @@
+diff --git a/server/src/test/java/org/elasticsearch/search/aggregations/metrics/AbstractPercentilesTestCase.java b/server/src/test/java/org/elasticsearch/search/aggregations/metrics/AbstractPercentilesTestCase.java
+index 6f8b554..d5867c8 100644
+--- a/server/src/test/java/org/elasticsearch/search/aggregations/metrics/AbstractPercentilesTestCase.java
++++ b/server/src/test/java/org/elasticsearch/search/aggregations/metrics/AbstractPercentilesTestCase.java
+@@ -24,9 +24,11 @@ import java.util.Collections;
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Map;
++import java.util.NoSuchElementException;
+ import java.util.function.Predicate;
+ import java.util.stream.Stream;
+ 
++import static java.util.Collections.emptyMap;
+ import static java.util.stream.Collectors.toList;
+ import static org.hamcrest.Matchers.equalTo;
+ import static org.mockito.Mockito.mock;
+@@ -55,7 +57,7 @@ public abstract class AbstractPercentilesTestCase<T extends InternalAggregation
+         for (int i = 0; i < numValues; ++i) {
+             values[i] = randomDouble();
+         }
+-        return createTestInstance(name, metadata, keyed, format, percents, values);
++        return createTestInstance(name, metadata, keyed, format, percents, values, false);
+     }
+ 
+     protected abstract T createTestInstance(
+@@ -64,7 +66,8 @@ public abstract class AbstractPercentilesTestCase<T extends InternalAggregation
+         boolean keyed,
+         DocValueFormat format,
+         double[] percents,
+-        double[] values
++        double[] values,
++        boolean empty
+     );
+ 
+     protected abstract Class<? extends ParsedPercentiles> implementationClass();
+@@ -104,7 +107,7 @@ public abstract class AbstractPercentilesTestCase<T extends InternalAggregation
+         boolean keyed = randomBoolean();
+         DocValueFormat docValueFormat = randomNumericDocValueFormat();
+ 
+-        T agg = createTestInstance("test", Collections.emptyMap(), keyed, docValueFormat, percents, new double[0]);
++        T agg = createTestInstance("test", Collections.emptyMap(), keyed, docValueFormat, percents, new double[0], false);
+ 
+         for (Percentile percentile : agg) {
+             Double value = percentile.getValue();
+@@ -147,4 +150,26 @@ public abstract class AbstractPercentilesTestCase<T extends InternalAggregation
+ 
+         assertThat(Strings.toString(builder), equalTo(expected));
+     }
++
++    public void testEmptyIterator() {
++        final double[] percents = randomPercents(false);
++
++        final Iterable<?> aggregation = createTestInstance(
++            "test",
++            emptyMap(),
++            false,
++            randomNumericDocValueFormat(),
++            percents,
++            new double[] {},
++            true
++        );
++
++        for (var ignored : aggregation) {
++            fail("empty expected");
++        }
++
++        final Iterator<?> it = aggregation.iterator();
++        assertFalse(it.hasNext());
++        expectThrows(NoSuchElementException.class, it::next);
++    }
+ }
+diff --git a/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalHDRPercentilesRanksTests.java b/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalHDRPercentilesRanksTests.java
+index 4701520..ac43929 100644
+--- a/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalHDRPercentilesRanksTests.java
++++ b/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalHDRPercentilesRanksTests.java
+@@ -30,9 +30,13 @@ public class InternalHDRPercentilesRanksTests extends InternalPercentilesRanksTe
+         boolean keyed,
+         DocValueFormat format,
+         double[] percents,
+-        double[] values
++        double[] values,
++        boolean empty
+     ) {
+ 
++        if (empty) {
++            return new InternalHDRPercentileRanks(name, percents, null, keyed, format, metadata);
++        }
+         final DoubleHistogram state = new DoubleHistogram(3);
+         Arrays.stream(values).forEach(state::recordValue);
+ 
+diff --git a/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalHDRPercentilesTests.java b/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalHDRPercentilesTests.java
+index 6e986f6..1c9cb88 100644
+--- a/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalHDRPercentilesTests.java
++++ b/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalHDRPercentilesTests.java
+@@ -31,9 +31,14 @@ public class InternalHDRPercentilesTests extends InternalPercentilesTestCase<Int
+         boolean keyed,
+         DocValueFormat format,
+         double[] percents,
+-        double[] values
++        double[] values,
++        boolean empty
+     ) {
+ 
++        if (empty) {
++            return new InternalHDRPercentiles(name, percents, null, keyed, format, metadata);
++        }
++
+         final DoubleHistogram state = new DoubleHistogram(3);
+         Arrays.stream(values).forEach(state::recordValue);
+ 
+@@ -76,7 +81,15 @@ public class InternalHDRPercentilesTests extends InternalPercentilesTestCase<Int
+             values[i] = randomDouble();
+         }
+ 
+-        InternalHDRPercentiles aggregation = createTestInstance("test", emptyMap(), false, randomNumericDocValueFormat(), percents, values);
++        InternalHDRPercentiles aggregation = createTestInstance(
++            "test",
++            emptyMap(),
++            false,
++            randomNumericDocValueFormat(),
++            percents,
++            values,
++            false
++        );
+ 
+         Iterator<Percentile> iterator = aggregation.iterator();
+         Iterator<String> nameIterator = aggregation.valueNames().iterator();
+diff --git a/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalTDigestPercentilesRanksTests.java b/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalTDigestPercentilesRanksTests.java
+index 27d3faf..cdefca8 100644
+--- a/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalTDigestPercentilesRanksTests.java
++++ b/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalTDigestPercentilesRanksTests.java
+@@ -29,8 +29,12 @@ public class InternalTDigestPercentilesRanksTests extends InternalPercentilesRan
+         boolean keyed,
+         DocValueFormat format,
+         double[] percents,
+-        double[] values
++        double[] values,
++        boolean empty
+     ) {
++        if (empty) {
++            return new InternalTDigestPercentileRanks(name, percents, null, keyed, format, metadata);
++        }
+         final TDigestState state = new TDigestState(100);
+         Arrays.stream(values).forEach(state::add);
+ 
+diff --git a/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalTDigestPercentilesTests.java b/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalTDigestPercentilesTests.java
+index 5c8e6aa..1df9e81 100644
+--- a/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalTDigestPercentilesTests.java
++++ b/server/src/test/java/org/elasticsearch/search/aggregations/metrics/InternalTDigestPercentilesTests.java
+@@ -30,8 +30,12 @@ public class InternalTDigestPercentilesTests extends InternalPercentilesTestCase
+         boolean keyed,
+         DocValueFormat format,
+         double[] percents,
+-        double[] values
++        double[] values,
++        boolean empty
+     ) {
++        if (empty) {
++            return new InternalTDigestPercentiles(name, percents, null, keyed, format, metadata);
++        }
+         final TDigestState state = new TDigestState(100);
+         Arrays.stream(values).forEach(state::add);
+ 
+@@ -126,7 +130,8 @@ public class InternalTDigestPercentilesTests extends InternalPercentilesTestCase
+             false,
+             randomNumericDocValueFormat(),
+             percents,
+-            values
++            values,
++            false
+         );
+ 
+         Iterator<Percentile> iterator = aggregation.iterator();

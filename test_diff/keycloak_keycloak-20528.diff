@@ -1,0 +1,166 @@
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/BruteForceTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/BruteForceTest.java
+index cc96529..697a613 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/BruteForceTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/BruteForceTest.java
+@@ -36,6 +36,7 @@ import org.keycloak.services.managers.BruteForceProtector;
+ import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
+ import org.keycloak.testsuite.AssertEvents;
+ import org.keycloak.testsuite.AssertEvents.ExpectedEvent;
++import org.keycloak.testsuite.arquillian.annotation.IgnoreBrowserDriver;
+ import org.keycloak.testsuite.pages.AppPage;
+ import org.keycloak.testsuite.pages.AppPage.RequestType;
+ import org.keycloak.testsuite.pages.LoginPage;
+@@ -50,6 +51,9 @@ import org.keycloak.testsuite.util.RealmRepUtil;
+ import org.keycloak.testsuite.util.UserBuilder;
+ 
+ import jakarta.mail.internet.MimeMessage;
++import org.openqa.selenium.chrome.ChromeDriver;
++import org.openqa.selenium.firefox.FirefoxDriver;
++
+ import java.net.MalformedURLException;
+ import java.util.Calendar;
+ import java.util.Collections;
+@@ -564,6 +568,8 @@ public class BruteForceTest extends AbstractTestRealmKeycloakTest {
+     }
+ 
+     @Test
++    @IgnoreBrowserDriver(FirefoxDriver.class) // TODO: https://github.com/keycloak/keycloak/issues/20525
++    @IgnoreBrowserDriver(ChromeDriver.class)
+     public void testResetPassword() throws Exception {
+         String userId = adminClient.realm("test").users().search("user2", null, null, null, 0, 1).get(0).getId();
+ 
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/RecoveryAuthnCodesAuthenticatorTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/RecoveryAuthnCodesAuthenticatorTest.java
+index fcb8012..06b211a 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/RecoveryAuthnCodesAuthenticatorTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/RecoveryAuthnCodesAuthenticatorTest.java
+@@ -18,6 +18,7 @@ import org.keycloak.representations.idm.RequiredActionProviderSimpleRepresentati
+ import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
+ import org.keycloak.testsuite.admin.ApiUtil;
+ import org.keycloak.testsuite.arquillian.annotation.EnableFeature;
++import org.keycloak.testsuite.arquillian.annotation.IgnoreBrowserDriver;
+ import org.keycloak.testsuite.client.KeycloakTestingClient;
+ import org.keycloak.testsuite.pages.EnterRecoveryAuthnCodePage;
+ import org.keycloak.testsuite.pages.LoginPage;
+@@ -28,6 +29,8 @@ import org.keycloak.testsuite.pages.SetupRecoveryAuthnCodesPage;
+ import org.keycloak.testsuite.util.FlowUtil;
+ import org.openqa.selenium.WebDriver;
+ import org.junit.Assert;
++import org.openqa.selenium.chrome.ChromeDriver;
++import org.openqa.selenium.firefox.FirefoxDriver;
+ 
+ import java.util.Arrays;
+ import java.util.List;
+@@ -141,6 +144,8 @@ public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeyclo
+ 
+     //// In a sub-flow with alternative credential executors, test whether setup Recovery Authentication Codes flow is working
+     @Test
++    @IgnoreBrowserDriver(FirefoxDriver.class)
++    @IgnoreBrowserDriver(ChromeDriver.class)
+     public void testSetupRecoveryAuthnCodes() {
+         try {
+             configureBrowserFlowWithRecoveryAuthnCodes(testingClient);
+@@ -171,6 +176,8 @@ public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeyclo
+ 
+ 
+     @Test
++    @IgnoreBrowserDriver(FirefoxDriver.class) // TODO: https://github.com/keycloak/keycloak/issues/13543
++    @IgnoreBrowserDriver(ChromeDriver.class)
+     public void testBruteforceProtectionRecoveryAuthnCodes() {
+         try {
+             configureBrowserFlowWithRecoveryAuthnCodes(testingClient);
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/RegisterTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/RegisterTest.java
+index cff5c58..f99fa10 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/RegisterTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/RegisterTest.java
+@@ -38,6 +38,7 @@ import org.keycloak.representations.idm.UserRepresentation;
+ import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
+ import org.keycloak.testsuite.AssertEvents;
+ import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
++import org.keycloak.testsuite.arquillian.annotation.IgnoreBrowserDriver;
+ import org.keycloak.testsuite.pages.AppPage;
+ import org.keycloak.testsuite.pages.AppPage.RequestType;
+ import org.keycloak.testsuite.pages.LoginPage;
+@@ -53,6 +54,9 @@ import org.keycloak.testsuite.util.AccountHelper;
+ 
+ import jakarta.mail.internet.MimeMessage;
+ import jakarta.ws.rs.core.Response;
++import org.openqa.selenium.chrome.ChromeDriver;
++import org.openqa.selenium.firefox.FirefoxDriver;
++
+ import java.io.IOException;
+ import java.util.UUID;
+ 
+@@ -649,6 +653,8 @@ public class RegisterTest extends AbstractTestRealmKeycloakTest {
+ 
+     //KEYCLOAK-15244
+     @Test
++    @IgnoreBrowserDriver(ChromeDriver.class) // TODO: https://github.com/keycloak/keycloak/issues/20992
++    @IgnoreBrowserDriver(FirefoxDriver.class)
+     public void registerUserMissingTermsAcceptance() {
+         configureRegistrationFlowWithCustomRegistrationPageForm(UUID.randomUUID().toString(),
+                 AuthenticationExecutionModel.Requirement.REQUIRED);
+@@ -675,6 +681,8 @@ public class RegisterTest extends AbstractTestRealmKeycloakTest {
+ 
+     //KEYCLOAK-15244
+     @Test
++    @IgnoreBrowserDriver(ChromeDriver.class) // TODO: https://github.com/keycloak/keycloak/issues/20992
++    @IgnoreBrowserDriver(FirefoxDriver.class)
+     public void registerUserSuccessTermsAcceptance() {
+         configureRegistrationFlowWithCustomRegistrationPageForm(UUID.randomUUID().toString(),
+                 AuthenticationExecutionModel.Requirement.REQUIRED);
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/ResetPasswordTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/ResetPasswordTest.java
+index 96954f0..3a70c33 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/ResetPasswordTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/ResetPasswordTest.java
+@@ -38,6 +38,7 @@ import org.keycloak.testsuite.AssertEvents;
+ import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
+ import org.keycloak.testsuite.admin.ApiUtil;
+ import org.keycloak.testsuite.arquillian.annotation.DisableFeature;
++import org.keycloak.testsuite.arquillian.annotation.IgnoreBrowserDriver;
+ import org.keycloak.testsuite.federation.kerberos.AbstractKerberosTest;
+ import org.keycloak.testsuite.pages.AppPage;
+ import org.keycloak.testsuite.pages.AppPage.RequestType;
+@@ -80,6 +81,7 @@ import org.junit.*;
+ import org.openqa.selenium.By;
+ import org.openqa.selenium.WebDriver;
+ import org.openqa.selenium.WebElement;
++import org.openqa.selenium.firefox.FirefoxDriver;
+ 
+ import static org.hamcrest.MatcherAssert.assertThat;
+ import static org.junit.Assert.*;
+@@ -1078,6 +1080,7 @@ public class ResetPasswordTest extends AbstractTestRealmKeycloakTest {
+ 
+     // KEYCLOAK-15239
+     @Test
++    @IgnoreBrowserDriver(FirefoxDriver.class) // TODO: https://github.com/keycloak/keycloak/issues/20526
+     public void resetPasswordWithSpnegoEnabled() throws IOException, MessagingException {
+         KerberosUtils.assumeKerberosSupportExpected();
+ 
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/SSOTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/SSOTest.java
+index 3fdbac2..2da4948 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/SSOTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/SSOTest.java
+@@ -32,6 +32,7 @@ import org.keycloak.representations.idm.RealmRepresentation;
+ import org.keycloak.representations.idm.UserRepresentation;
+ import org.keycloak.testsuite.AssertEvents;
+ import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
++import org.keycloak.testsuite.arquillian.annotation.IgnoreBrowserDriver;
+ import org.keycloak.testsuite.drone.Different;
+ import org.keycloak.testsuite.pages.AppPage;
+ import org.keycloak.testsuite.pages.AppPage.RequestType;
+@@ -40,6 +41,7 @@ import org.keycloak.testsuite.pages.LoginPasswordUpdatePage;
+ import org.keycloak.testsuite.util.MutualTLSUtils;
+ import org.keycloak.testsuite.util.OAuthClient;
+ import org.openqa.selenium.WebDriver;
++import org.openqa.selenium.firefox.FirefoxDriver;
+ 
+ import static org.junit.Assert.assertEquals;
+ import static org.junit.Assert.assertNotEquals;
+@@ -52,6 +54,7 @@ import javax.ws.rs.core.Response;
+  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
+  * @author Stan Silvert ssilvert@redhat.com (C) 2016 Red Hat Inc.
+  */
++@IgnoreBrowserDriver(FirefoxDriver.class) // TODO: https://github.com/keycloak/keycloak/issues/20527
+ public class SSOTest extends AbstractTestRealmKeycloakTest {
+ 
+     @Drone

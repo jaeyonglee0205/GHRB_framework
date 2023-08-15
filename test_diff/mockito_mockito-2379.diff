@@ -1,0 +1,140 @@
+diff --git a/src/test/java/org/mockito/StaticMockingExperimentTest.java b/src/test/java/org/mockito/StaticMockingExperimentTest.java
+index afe049e..361ac13 100644
+--- a/src/test/java/org/mockito/StaticMockingExperimentTest.java
++++ b/src/test/java/org/mockito/StaticMockingExperimentTest.java
+@@ -180,7 +180,7 @@ public class StaticMockingExperimentTest extends TestBase {
+     @Test
+     public void do_answer_stubbing_static_method() throws Throwable {
+         // register stubbed return value
+-        doReturn("hey").when(mock);
++        Object ignored = doReturn("hey").when(mock);
+ 
+         // complete stubbing by triggering an invocation that needs to be stubbed
+         Invocation invocation =
+@@ -242,7 +242,7 @@ public class StaticMockingExperimentTest extends TestBase {
+         Method adapter = ConstructorMethodAdapter.class.getDeclaredMethods()[0];
+ 
+         // stub constructor
+-        doReturn(new Foo("hey!")).when(mock);
++        Object ignored = doReturn(new Foo("hey!")).when(mock);
+         Invocation constructor =
+                 Mockito.framework()
+                         .getInvocationFactory()
+diff --git a/src/test/java/org/mockito/internal/InvalidStateDetectionTest.java b/src/test/java/org/mockito/internal/InvalidStateDetectionTest.java
+index 62d120d..ae31893 100644
+--- a/src/test/java/org/mockito/internal/InvalidStateDetectionTest.java
++++ b/src/test/java/org/mockito/internal/InvalidStateDetectionTest.java
+@@ -128,28 +128,28 @@ public class InvalidStateDetectionTest extends TestBase {
+ 
+     @Test
+     public void shouldDetectMisplacedArgumentMatcher() {
+-        anyObject();
++        Object ignored = anyObject();
+         detectsAndCleansUp(new OnVerify(), InvalidUseOfMatchersException.class);
+ 
+-        anyObject();
++        ignored = anyObject();
+         detectsAndCleansUp(new OnVerifyInOrder(), InvalidUseOfMatchersException.class);
+ 
+-        anyObject();
++        ignored = anyObject();
+         detectsAndCleansUp(new OnVerifyZeroInteractions(), InvalidUseOfMatchersException.class);
+ 
+-        anyObject();
++        ignored = anyObject();
+         detectsAndCleansUp(new OnVerifyNoMoreInteractions(), InvalidUseOfMatchersException.class);
+ 
+-        anyObject();
++        ignored = anyObject();
+         detectsAndCleansUp(new OnVerifyNoInteractions(), InvalidUseOfMatchersException.class);
+ 
+-        anyObject();
++        ignored = anyObject();
+         detectsAndCleansUp(new OnDoAnswer(), InvalidUseOfMatchersException.class);
+     }
+ 
+     @Test
+     public void shouldCorrectStateAfterDetectingUnfinishedStubbing() {
+-        doThrow(new RuntimeException()).when(mock);
++        Object ignored = doThrow(new RuntimeException()).when(mock);
+ 
+         try {
+             doThrow(new RuntimeException()).when(mock).oneArg(true);
+diff --git a/src/test/java/org/mockitousage/misuse/DetectingMisusedMatchersTest.java b/src/test/java/org/mockitousage/misuse/DetectingMisusedMatchersTest.java
+index a1c2459..04690b9 100644
+--- a/src/test/java/org/mockitousage/misuse/DetectingMisusedMatchersTest.java
++++ b/src/test/java/org/mockitousage/misuse/DetectingMisusedMatchersTest.java
+@@ -40,15 +40,15 @@ public class DetectingMisusedMatchersTest extends TestBase {
+     }
+ 
+     private void misplaced_anyObject_argument_matcher() {
+-        anyObject();
++        Object ignored = anyObject();
+     }
+ 
+     private void misplaced_anyInt_argument_matcher() {
+-        anyInt();
++        int ignored = anyInt();
+     }
+ 
+     private void misplaced_anyBoolean_argument_matcher() {
+-        anyBoolean();
++        boolean ignored = anyBoolean();
+     }
+ 
+     @Test
+diff --git a/src/test/java/org/mockitousage/stacktrace/ClickableStackTracesWhenFrameworkMisusedTest.java b/src/test/java/org/mockitousage/stacktrace/ClickableStackTracesWhenFrameworkMisusedTest.java
+index 94ae071..2bd7e0c 100644
+--- a/src/test/java/org/mockitousage/stacktrace/ClickableStackTracesWhenFrameworkMisusedTest.java
++++ b/src/test/java/org/mockitousage/stacktrace/ClickableStackTracesWhenFrameworkMisusedTest.java
+@@ -27,7 +27,7 @@ public class ClickableStackTracesWhenFrameworkMisusedTest extends TestBase {
+     }
+ 
+     private void misplacedArgumentMatcherHere() {
+-        anyString();
++        String ignored = anyString();
+     }
+ 
+     @Test
+diff --git a/src/test/java/org/mockitousage/stacktrace/ModellingDescriptiveMessagesTest.java b/src/test/java/org/mockitousage/stacktrace/ModellingDescriptiveMessagesTest.java
+index 48aa302..ba6aed4 100644
+--- a/src/test/java/org/mockitousage/stacktrace/ModellingDescriptiveMessagesTest.java
++++ b/src/test/java/org/mockitousage/stacktrace/ModellingDescriptiveMessagesTest.java
+@@ -164,8 +164,8 @@ public class ModellingDescriptiveMessagesTest extends TestBase {
+     @Test
+     public void shouldShowExampleOfCorrectArgumentCapturing() {
+         ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+-        argument.capture();
+-        argument.getValue();
++        Object ignored = argument.capture();
++        String ignoredValue = argument.getValue();
+     }
+ 
+     @SuppressWarnings({"CheckReturnValue", "MockitoUsage"})
+diff --git a/src/test/java/org/mockitousage/verification/VerificationExcludingStubsTest.java b/src/test/java/org/mockitousage/verification/VerificationExcludingStubsTest.java
+index 9bad45a..4a8ad67 100644
+--- a/src/test/java/org/mockitousage/verification/VerificationExcludingStubsTest.java
++++ b/src/test/java/org/mockitousage/verification/VerificationExcludingStubsTest.java
+@@ -40,7 +40,7 @@ public class VerificationExcludingStubsTest extends TestBase {
+         }
+ 
+         // but it works when stubs are ignored:
+-        ignoreStubs(mock);
++        Object[] ignored = ignoreStubs(mock);
+         verifyNoMoreInteractions(mock);
+     }
+ 
+@@ -64,11 +64,11 @@ public class VerificationExcludingStubsTest extends TestBase {
+ 
+     @Test(expected = NotAMockException.class)
+     public void shouldIgnoringStubsDetectNulls() throws Exception {
+-        ignoreStubs(mock, null);
++        Object ignored = ignoreStubs(mock, null);
+     }
+ 
+     @Test(expected = NotAMockException.class)
+     public void shouldIgnoringStubsDetectNonMocks() throws Exception {
+-        ignoreStubs(mock, new Object());
++        Object ignored = ignoreStubs(mock, new Object());
+     }
+ }

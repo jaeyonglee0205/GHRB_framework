@@ -1,0 +1,15 @@
+diff --git a/resolver-dns/src/test/java/io/netty/resolver/dns/NativeImageHandlerMetadataTest.java b/resolver-dns/src/test/java/io/netty/resolver/dns/NativeImageHandlerMetadataTest.java
+index a170a74..be27ee3 100644
+--- a/resolver-dns/src/test/java/io/netty/resolver/dns/NativeImageHandlerMetadataTest.java
++++ b/resolver-dns/src/test/java/io/netty/resolver/dns/NativeImageHandlerMetadataTest.java
+@@ -22,9 +22,7 @@ public class NativeImageHandlerMetadataTest {
+ 
+     @Test
+     public void collectAndCompareMetadata() {
+-        ChannelHandlerMetadataUtil.generateMetadata(
+-                "resolver-dns-handlers/reflect-config.json",
+-                "io.netty.resolver.dns");
++        ChannelHandlerMetadataUtil.generateMetadata("io.netty.resolver.dns");
+     }
+ 
+ }

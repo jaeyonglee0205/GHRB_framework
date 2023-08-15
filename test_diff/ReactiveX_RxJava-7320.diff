@@ -1,0 +1,1563 @@
+diff --git a/src/test/java/io/reactivex/rxjava3/flowable/FlowableFuseableTest.java b/src/test/java/io/reactivex/rxjava3/flowable/FlowableFuseableTest.java
+index 678fbd9..7bf54e8 100644
+--- a/src/test/java/io/reactivex/rxjava3/flowable/FlowableFuseableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/flowable/FlowableFuseableTest.java
+@@ -18,7 +18,7 @@ import java.util.Arrays;
+ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.testsupport.TestHelper;
+ 
+ public class FlowableFuseableTest extends RxJavaTest {
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/disposables/EmptyDisposableTest.java b/src/test/java/io/reactivex/rxjava3/internal/disposables/EmptyDisposableTest.java
+index 5851b79..1f0d370 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/disposables/EmptyDisposableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/disposables/EmptyDisposableTest.java
+@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
+ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.RxJavaTest;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.testsupport.TestHelper;
+ 
+ public class EmptyDisposableTest extends RxJavaTest {
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/jdk8/FlowableFromStreamTest.java b/src/test/java/io/reactivex/rxjava3/internal/jdk8/FlowableFromStreamTest.java
+index edf5a3e..57a8caf 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/jdk8/FlowableFromStreamTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/jdk8/FlowableFromStreamTest.java
+@@ -26,7 +26,9 @@ import org.reactivestreams.Subscription;
+ import io.reactivex.rxjava3.annotations.NonNull;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+-import io.reactivex.rxjava3.internal.fuseable.*;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
++import io.reactivex.rxjava3.operators.SimpleQueue;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/jdk8/FlowableMapOptionalTest.java b/src/test/java/io/reactivex/rxjava3/internal/jdk8/FlowableMapOptionalTest.java
+index 04d9bf7..fbffd79 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/jdk8/FlowableMapOptionalTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/jdk8/FlowableMapOptionalTest.java
+@@ -23,9 +23,9 @@ import org.reactivestreams.Subscriber;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.internal.schedulers.ImmediateThinScheduler;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.processors.*;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/jdk8/MaybeFlattenStreamAsFlowableTest.java b/src/test/java/io/reactivex/rxjava3/internal/jdk8/MaybeFlattenStreamAsFlowableTest.java
+index a4c31bc..d8377ea 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/jdk8/MaybeFlattenStreamAsFlowableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/jdk8/MaybeFlattenStreamAsFlowableTest.java
+@@ -28,8 +28,9 @@ import io.reactivex.rxjava3.annotations.NonNull;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ import io.reactivex.rxjava3.subjects.MaybeSubject;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/jdk8/MaybeFlattenStreamAsObservableTest.java b/src/test/java/io/reactivex/rxjava3/internal/jdk8/MaybeFlattenStreamAsObservableTest.java
+index 47e78b0..1451129 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/jdk8/MaybeFlattenStreamAsObservableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/jdk8/MaybeFlattenStreamAsObservableTest.java
+@@ -27,8 +27,9 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueDisposable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.subjects.MaybeSubject;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/jdk8/ObservableFromStreamTest.java b/src/test/java/io/reactivex/rxjava3/internal/jdk8/ObservableFromStreamTest.java
+index c73190c..2b943e5 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/jdk8/ObservableFromStreamTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/jdk8/ObservableFromStreamTest.java
+@@ -26,8 +26,10 @@ import io.reactivex.rxjava3.annotations.NonNull;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.exceptions.TestException;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueDisposable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.SimpleQueue;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+ public class ObservableFromStreamTest extends RxJavaTest {
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/jdk8/ObservableMapOptionalTest.java b/src/test/java/io/reactivex/rxjava3/internal/jdk8/ObservableMapOptionalTest.java
+index 379477c..1b0a7f0 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/jdk8/ObservableMapOptionalTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/jdk8/ObservableMapOptionalTest.java
+@@ -23,7 +23,7 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.subjects.*;
+ import io.reactivex.rxjava3.testsupport.TestHelper;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/jdk8/SingleFlattenStreamAsFlowableTest.java b/src/test/java/io/reactivex/rxjava3/internal/jdk8/SingleFlattenStreamAsFlowableTest.java
+index 66e68ac..6e74b42 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/jdk8/SingleFlattenStreamAsFlowableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/jdk8/SingleFlattenStreamAsFlowableTest.java
+@@ -28,8 +28,9 @@ import io.reactivex.rxjava3.annotations.NonNull;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ import io.reactivex.rxjava3.subjects.SingleSubject;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/jdk8/SingleFlattenStreamAsObservableTest.java b/src/test/java/io/reactivex/rxjava3/internal/jdk8/SingleFlattenStreamAsObservableTest.java
+index 6d3bdd8..2c50634 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/jdk8/SingleFlattenStreamAsObservableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/jdk8/SingleFlattenStreamAsObservableTest.java
+@@ -27,8 +27,9 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueDisposable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.subjects.SingleSubject;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/observers/DeferredScalarObserverTest.java b/src/test/java/io/reactivex/rxjava3/internal/observers/DeferredScalarObserverTest.java
+index 7e60355..165de9b 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/observers/DeferredScalarObserverTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/observers/DeferredScalarObserverTest.java
+@@ -22,8 +22,9 @@ import org.junit.Test;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.disposables.*;
+ import io.reactivex.rxjava3.exceptions.*;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueDisposable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/observers/QueueDrainObserverTest.java b/src/test/java/io/reactivex/rxjava3/internal/observers/QueueDrainObserverTest.java
+index 84f4398..eb2523a 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/observers/QueueDrainObserverTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/observers/QueueDrainObserverTest.java
+@@ -17,8 +17,8 @@ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.disposables.*;
+-import io.reactivex.rxjava3.internal.queue.SpscArrayQueue;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.SpscArrayQueue;
+ import io.reactivex.rxjava3.testsupport.TestHelper;
+ 
+ public class QueueDrainObserverTest extends RxJavaTest {
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableCombineLatestTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableCombineLatestTest.java
+index 78e776f..0f07148 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableCombineLatestTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableCombineLatestTest.java
+@@ -30,9 +30,9 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.internal.operators.flowable.FlowableZipTest.ArgsToString;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.PublishProcessor;
+ import io.reactivex.rxjava3.schedulers.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDistinctTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDistinctTest.java
+index b05941b..362283c 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDistinctTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDistinctTest.java
+@@ -27,9 +27,10 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
+ import io.reactivex.rxjava3.internal.util.ExceptionHelper;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.UnicastProcessor;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDistinctUntilChangedTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDistinctUntilChangedTest.java
+index 7ad389e..00525b5 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDistinctUntilChangedTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDistinctUntilChangedTest.java
+@@ -28,8 +28,8 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.*;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDoAfterNextTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDoAfterNextTest.java
+index 3c70726..1e36eee 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDoAfterNextTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDoAfterNextTest.java
+@@ -23,7 +23,7 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Consumer;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.processors.UnicastProcessor;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDoFinallyTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDoFinallyTest.java
+index 0dd123e..79cba18 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDoFinallyTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDoFinallyTest.java
+@@ -24,7 +24,8 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.*;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.UnicastProcessor;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDoOnEachTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDoOnEachTest.java
+index aae4a0b..484d62c 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDoOnEachTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableDoOnEachTest.java
+@@ -29,8 +29,9 @@ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.flowables.ConnectableFlowable;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.ConditionalSubscriber;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.UnicastProcessor;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFilterTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFilterTest.java
+index a3c69d1..4b62f1e 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFilterTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFilterTest.java
+@@ -28,8 +28,9 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.ConditionalSubscriber;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.*;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFlatMapCompletableTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFlatMapCompletableTest.java
+index f212607..5e4e5c8 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFlatMapCompletableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFlatMapCompletableTest.java
+@@ -26,8 +26,9 @@ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ import io.reactivex.rxjava3.processors.PublishProcessor;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFlattenIterableTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFlattenIterableTest.java
+index 867c71a..27e4ca1 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFlattenIterableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFlattenIterableTest.java
+@@ -26,10 +26,11 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.operators.flowable.FlowableFlattenIterable.FlattenIterableSubscriber;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
+ import io.reactivex.rxjava3.internal.util.ExceptionHelper;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.PublishProcessor;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromActionTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromActionTest.java
+index baee7ea..5395ae3 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromActionTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromActionTest.java
+@@ -24,7 +24,7 @@ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.functions.*;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromArrayTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromArrayTest.java
+index bfdf0ed..d3195ad 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromArrayTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromArrayTest.java
+@@ -18,7 +18,7 @@ import org.junit.*;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.functions.Predicate;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.ScalarSupplier;
++import io.reactivex.rxjava3.operators.ScalarSupplier;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+ import io.reactivex.rxjava3.testsupport.TestHelper;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromCompletableTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromCompletableTest.java
+index 3b789d8..fc8e4ec 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromCompletableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromCompletableTest.java
+@@ -25,6 +25,7 @@ import org.junit.Test;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.fuseable.*;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromIterableTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromIterableTest.java
+index b73a3f3..5fe804a 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromIterableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromIterableTest.java
+@@ -30,8 +30,10 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Function;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.util.CrashingIterable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
++import io.reactivex.rxjava3.operators.SimpleQueue;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.subscribers.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromMaybeTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromMaybeTest.java
+index eb6932b..d33b9f1 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromMaybeTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromMaybeTest.java
+@@ -19,7 +19,7 @@ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.subjects.MaybeSubject;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+ import io.reactivex.rxjava3.testsupport.TestSubscriberEx;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromRunnableTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromRunnableTest.java
+index c376e23..19ef5eb 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromRunnableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromRunnableTest.java
+@@ -25,7 +25,7 @@ import org.junit.Test;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Supplier;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromSingleTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromSingleTest.java
+index 492e485..1aa1503 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromSingleTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableFromSingleTest.java
+@@ -19,7 +19,7 @@ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.subjects.SingleSubject;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+ import io.reactivex.rxjava3.testsupport.TestSubscriberEx;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableGroupByTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableGroupByTest.java
+index ea90631..d0d7dbe 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableGroupByTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableGroupByTest.java
+@@ -35,9 +35,9 @@ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.flowables.GroupedFlowable;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.internal.schedulers.ImmediateThinScheduler;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.processors.PublishProcessor;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.subjects.PublishSubject;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableIgnoreElementsTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableIgnoreElementsTest.java
+index db7c46f..dfc0e11 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableIgnoreElementsTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableIgnoreElementsTest.java
+@@ -23,8 +23,9 @@ import org.reactivestreams.Subscription;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.*;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.observers.DisposableCompletableObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ import io.reactivex.rxjava3.processors.PublishProcessor;
+ import io.reactivex.rxjava3.subscribers.*;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableMapTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableMapTest.java
+index 7bad2de..3d77fe5 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableMapTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableMapTest.java
+@@ -27,9 +27,10 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.schedulers.ImmediateThinScheduler;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.ConditionalSubscriber;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.*;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableObserveOnTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableObserveOnTest.java
+index 59f38ee..a4839b4 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableObserveOnTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableObserveOnTest.java
+@@ -31,11 +31,13 @@ import io.reactivex.rxjava3.disposables.*;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.operators.flowable.FlowableObserveOn.BaseObserveOnSubscriber;
+ import io.reactivex.rxjava3.internal.schedulers.ImmediateThinScheduler;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
++import io.reactivex.rxjava3.operators.SimpleQueue;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.*;
+ import io.reactivex.rxjava3.schedulers.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableOnBackpressureBufferTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableOnBackpressureBufferTest.java
+index bea1022..5a02218 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableOnBackpressureBufferTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableOnBackpressureBufferTest.java
+@@ -26,9 +26,9 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.PublishProcessor;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowablePublishMulticastTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowablePublishMulticastTest.java
+index 625e147..0e1bdbb 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowablePublishMulticastTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowablePublishMulticastTest.java
+@@ -20,9 +20,9 @@ import java.util.List;
+ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.RxJavaTest;
+-import io.reactivex.rxjava3.internal.fuseable.QueueSubscription;
+ import io.reactivex.rxjava3.internal.operators.flowable.FlowablePublishMulticast.*;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.UnicastProcessor;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableRangeLongTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableRangeLongTest.java
+index ace5fe8..bc24ab7 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableRangeLongTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableRangeLongTest.java
+@@ -26,7 +26,7 @@ import org.reactivestreams.Subscriber;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.subscribers.*;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableRangeTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableRangeTest.java
+index f34e8f8..53264bd 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableRangeTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableRangeTest.java
+@@ -26,7 +26,7 @@ import org.reactivestreams.Subscriber;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.subscribers.*;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableZipTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableZipTest.java
+index 4c038dd..47bbd49 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableZipTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/flowable/FlowableZipTest.java
+@@ -30,8 +30,8 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueSubscription;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.PublishProcessor;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeEmptyTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeEmptyTest.java
+index 2bf3ee5..a219718 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeEmptyTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeEmptyTest.java
+@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
+ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+-import io.reactivex.rxjava3.internal.fuseable.ScalarSupplier;
++import io.reactivex.rxjava3.operators.ScalarSupplier;
+ 
+ public class MaybeEmptyTest extends RxJavaTest {
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeFlatMapIterableFlowableTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeFlatMapIterableFlowableTest.java
+index c4db76e..e4bcaa9 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeFlatMapIterableFlowableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeFlatMapIterableFlowableTest.java
+@@ -24,8 +24,9 @@ import org.reactivestreams.Subscription;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.util.CrashingIterable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.subjects.*;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeFlatMapIterableObservableTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeFlatMapIterableObservableTest.java
+index 64b7a55..d06f626 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeFlatMapIterableObservableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeFlatMapIterableObservableTest.java
+@@ -25,8 +25,9 @@ import io.reactivex.rxjava3.core.Observer;
+ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.util.CrashingIterable;
++import io.reactivex.rxjava3.operators.QueueDisposable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeHideTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeHideTest.java
+index af5005e..11a1cbb 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeHideTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeHideTest.java
+@@ -20,7 +20,7 @@ import org.junit.Test;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.ScalarSupplier;
++import io.reactivex.rxjava3.operators.ScalarSupplier;
+ import io.reactivex.rxjava3.processors.PublishProcessor;
+ import io.reactivex.rxjava3.testsupport.TestHelper;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeJustTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeJustTest.java
+index f84cd69..a49ac11 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeJustTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeJustTest.java
+@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
+ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+-import io.reactivex.rxjava3.internal.fuseable.ScalarSupplier;
++import io.reactivex.rxjava3.operators.ScalarSupplier;
+ 
+ public class MaybeJustTest extends RxJavaTest {
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeMergeArrayTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeMergeArrayTest.java
+index 09da629..bf4f731 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeMergeArrayTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/maybe/MaybeMergeArrayTest.java
+@@ -23,8 +23,9 @@ import org.reactivestreams.Subscription;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.exceptions.TestException;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.operators.maybe.MaybeMergeArray.MergeMaybeObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.subjects.*;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDistinctTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDistinctTest.java
+index 7e4e0db..178f700 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDistinctTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDistinctTest.java
+@@ -29,8 +29,9 @@ import io.reactivex.rxjava3.disposables.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.util.ExceptionHelper;
++import io.reactivex.rxjava3.operators.QueueDisposable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.subjects.UnicastSubject;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDistinctUntilChangedTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDistinctUntilChangedTest.java
+index 1ae0975..7f58ab2 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDistinctUntilChangedTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDistinctUntilChangedTest.java
+@@ -26,8 +26,8 @@ import org.mockito.InOrder;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.*;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.subjects.*;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDoAfterNextTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDoAfterNextTest.java
+index d75da53..8338d2c 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDoAfterNextTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDoAfterNextTest.java
+@@ -24,8 +24,8 @@ import io.reactivex.rxjava3.core.RxJavaTest;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Consumer;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.subjects.UnicastSubject;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDoFinallyTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDoFinallyTest.java
+index b72bf11..3753b41 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDoFinallyTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDoFinallyTest.java
+@@ -26,7 +26,8 @@ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.*;
++import io.reactivex.rxjava3.operators.QueueDisposable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.subjects.UnicastSubject;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDoOnEachTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDoOnEachTest.java
+index f7eec91..1f71d2b 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDoOnEachTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableDoOnEachTest.java
+@@ -28,8 +28,8 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.subjects.UnicastSubject;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFilterTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFilterTest.java
+index 1d3ad04..71585b1 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFilterTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFilterTest.java
+@@ -23,7 +23,7 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.subjects.UnicastSubject;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFlatMapCompletableTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFlatMapCompletableTest.java
+index 2cde801..facfb08 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFlatMapCompletableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFlatMapCompletableTest.java
+@@ -24,8 +24,9 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.disposables.*;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueDisposable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.subjects.PublishSubject;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromActionTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromActionTest.java
+index 3c1eb5d..eb20166 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromActionTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromActionTest.java
+@@ -24,8 +24,8 @@ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.functions.*;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromCompletableTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromCompletableTest.java
+index b309796..6cfd2eb 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromCompletableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromCompletableTest.java
+@@ -26,6 +26,7 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromIterableTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromIterableTest.java
+index 856de7a..b816baf 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromIterableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromIterableTest.java
+@@ -29,9 +29,10 @@ import io.reactivex.rxjava3.core.Observer;
+ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.util.CrashingIterable;
+ import io.reactivex.rxjava3.observers.*;
++import io.reactivex.rxjava3.operators.QueueDisposable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+ public class ObservableFromIterableTest extends RxJavaTest {
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromMaybeTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromMaybeTest.java
+index c82dd5d..e0175b4 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromMaybeTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromMaybeTest.java
+@@ -19,8 +19,8 @@ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.subjects.MaybeSubject;
+ import io.reactivex.rxjava3.testsupport.TestObserverEx;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromRunnableTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromRunnableTest.java
+index aebb9da..b566f66 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromRunnableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromRunnableTest.java
+@@ -25,8 +25,8 @@ import org.junit.Test;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Supplier;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromSingleTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromSingleTest.java
+index b6ff777..aaabb51 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromSingleTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromSingleTest.java
+@@ -19,8 +19,8 @@ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.subjects.SingleSubject;
+ import io.reactivex.rxjava3.testsupport.TestObserverEx;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromTest.java
+index 017d8b4..639d3c4 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableFromTest.java
+@@ -21,7 +21,8 @@ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.*;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.ScalarSupplier;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableMapTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableMapTest.java
+index dca27d4..4919a74 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableMapTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableMapTest.java
+@@ -26,7 +26,7 @@ import io.reactivex.rxjava3.core.Observable;
+ import io.reactivex.rxjava3.core.Observer;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.subjects.UnicastSubject;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableObserveOnTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableObserveOnTest.java
+index afbd79a..5f41470 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableObserveOnTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableObserveOnTest.java
+@@ -31,11 +31,13 @@ import io.reactivex.rxjava3.core.Observer;
+ import io.reactivex.rxjava3.disposables.*;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.*;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.operators.flowable.FlowableObserveOnTest.DisposeTrackingScheduler;
+ import io.reactivex.rxjava3.internal.operators.observable.ObservableObserveOn.ObserveOnObserver;
+ import io.reactivex.rxjava3.internal.schedulers.ImmediateThinScheduler;
+ import io.reactivex.rxjava3.observers.*;
++import io.reactivex.rxjava3.operators.QueueDisposable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.SimpleQueue;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.schedulers.*;
+ import io.reactivex.rxjava3.subjects.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableRangeLongTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableRangeLongTest.java
+index 6954ec4..c19219c 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableRangeLongTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableRangeLongTest.java
+@@ -24,8 +24,8 @@ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.functions.Consumer;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.observers.*;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+ public class ObservableRangeLongTest extends RxJavaTest {
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableRangeTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableRangeTest.java
+index 7e24222..0f461a7 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableRangeTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableRangeTest.java
+@@ -24,8 +24,8 @@ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.functions.Consumer;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.observers.*;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+ public class ObservableRangeTest extends RxJavaTest {
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableScalarXMapTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableScalarXMapTest.java
+index 6fe9616..c27b2e1 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableScalarXMapTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/observable/ObservableScalarXMapTest.java
+@@ -21,9 +21,9 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.disposables.EmptyDisposable;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.internal.operators.observable.ObservableScalarXMap.ScalarDisposable;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.testsupport.TestHelper;
+ 
+ public class ObservableScalarXMapTest extends RxJavaTest {
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/single/SingleFlatMapIterableFlowableTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/single/SingleFlatMapIterableFlowableTest.java
+index c408387..277b9aa 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/single/SingleFlatMapIterableFlowableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/single/SingleFlatMapIterableFlowableTest.java
+@@ -25,8 +25,9 @@ import io.reactivex.rxjava3.annotations.NonNull;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.util.CrashingIterable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.subjects.*;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/operators/single/SingleFlatMapIterableObservableTest.java b/src/test/java/io/reactivex/rxjava3/internal/operators/single/SingleFlatMapIterableObservableTest.java
+index a170d8c..8244874 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/operators/single/SingleFlatMapIterableObservableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/operators/single/SingleFlatMapIterableObservableTest.java
+@@ -25,8 +25,9 @@ import io.reactivex.rxjava3.core.Observer;
+ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Function;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.util.CrashingIterable;
++import io.reactivex.rxjava3.operators.QueueDisposable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/queue/SimpleQueueTest.java b/src/test/java/io/reactivex/rxjava3/internal/queue/SimpleQueueTest.java
+deleted file mode 100644
+index d712aeb..0000000
+--- a/src/test/java/io/reactivex/rxjava3/internal/queue/SimpleQueueTest.java
++++ /dev/null
+@@ -1,179 +0,0 @@
+-/*
+- * Copyright (c) 2016-present, RxJava Contributors.
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
+- * compliance with the License. You may obtain a copy of the License at
+- *
+- * http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software distributed under the License is
+- * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See
+- * the License for the specific language governing permissions and limitations under the License.
+- */
+-
+-/*
+- * The code was inspired by the similarly named JCTools class:
+- * https://github.com/JCTools/JCTools/blob/master/jctools-core/src/main/java/org/jctools/queues/atomic
+- */
+-
+-package io.reactivex.rxjava3.internal.queue;
+-
+-import static org.junit.Assert.*;
+-
+-import java.util.concurrent.atomic.*;
+-
+-import org.junit.Test;
+-
+-import io.reactivex.rxjava3.core.RxJavaTest;
+-
+-public class SimpleQueueTest extends RxJavaTest {
+-
+-    @Test(expected = NullPointerException.class)
+-    public void spscArrayQueueNull() {
+-        SpscArrayQueue<Object> q = new SpscArrayQueue<>(16);
+-        q.offer(null);
+-    }
+-
+-    @Test(expected = NullPointerException.class)
+-    public void spscLinkedArrayQueueNull() {
+-        SpscLinkedArrayQueue<Object> q = new SpscLinkedArrayQueue<>(16);
+-        q.offer(null);
+-    }
+-
+-    @Test(expected = NullPointerException.class)
+-    public void mpscLinkedQueueNull() {
+-        MpscLinkedQueue<Object> q = new MpscLinkedQueue<>();
+-        q.offer(null);
+-    }
+-
+-    @Test
+-    public void spscArrayQueueBiOffer() {
+-        SpscArrayQueue<Object> q = new SpscArrayQueue<>(16);
+-        q.offer(1, 2);
+-
+-        assertEquals(1, q.poll());
+-        assertEquals(2, q.poll());
+-        assertNull(q.poll());
+-    }
+-
+-    @Test
+-    public void spscLinkedArrayQueueBiOffer() {
+-        SpscLinkedArrayQueue<Object> q = new SpscLinkedArrayQueue<>(16);
+-        q.offer(1, 2);
+-
+-        assertEquals(1, q.poll());
+-        assertEquals(2, q.poll());
+-        assertNull(q.poll());
+-    }
+-
+-    @Test
+-    public void mpscLinkedQueueBiOffer() {
+-        MpscLinkedQueue<Object> q = new MpscLinkedQueue<>();
+-        q.offer(1, 2);
+-
+-        assertEquals(1, q.poll());
+-        assertEquals(2, q.poll());
+-        assertNull(q.poll());
+-    }
+-
+-    @Test
+-    public void spscBiOfferCapacity() {
+-        SpscArrayQueue<Integer> q = new SpscArrayQueue<>(8);
+-        assertTrue(q.offer(1, 2));
+-        assertTrue(q.offer(3, 4));
+-        assertTrue(q.offer(5, 6));
+-        assertTrue(q.offer(7));
+-
+-        assertFalse(q.offer(8, 9));
+-        assertFalse(q.offer(9, 10));
+-    }
+-
+-    @Test
+-    public void spscLinkedNewBufferPeek() {
+-        SpscLinkedArrayQueue<Integer> q = new SpscLinkedArrayQueue<>(8);
+-        assertTrue(q.offer(1, 2));
+-        assertTrue(q.offer(3, 4));
+-        assertTrue(q.offer(5, 6));
+-        assertTrue(q.offer(7, 8)); // this should trigger a new buffer
+-
+-        for (int i = 0; i < 8; i++) {
+-            assertEquals(i + 1, q.peek().intValue());
+-            assertEquals(i + 1, q.poll().intValue());
+-        }
+-
+-        assertNull(q.peek());
+-        assertNull(q.poll());
+-    }
+-
+-    @Test
+-    public void mpscOfferPollRace() throws Exception {
+-        final MpscLinkedQueue<Integer> q = new MpscLinkedQueue<>();
+-
+-        final AtomicInteger c = new AtomicInteger(3);
+-
+-        Thread t1 = new Thread(new Runnable() {
+-            int i;
+-            @Override
+-            public void run() {
+-                c.decrementAndGet();
+-                while (c.get() != 0) { }
+-
+-                while (i++ < 10000) {
+-                    q.offer(i);
+-                }
+-            }
+-        });
+-        t1.start();
+-
+-        Thread t2 = new Thread(new Runnable() {
+-            int i = 10000;
+-            @Override
+-            public void run() {
+-                c.decrementAndGet();
+-                while (c.get() != 0) { }
+-
+-                while (i++ < 10000) {
+-                    q.offer(i);
+-                }
+-            }
+-        });
+-        t2.start();
+-
+-        Runnable r3 = new Runnable() {
+-            int i = 20000;
+-            @Override
+-            public void run() {
+-                c.decrementAndGet();
+-                while (c.get() != 0) { }
+-
+-                while (--i > 0) {
+-                    q.poll();
+-                }
+-            }
+-        };
+-
+-        r3.run();
+-
+-        t1.join();
+-        t2.join();
+-    }
+-
+-    @Test
+-    public void spscLinkedArrayQueueNoNepotism() {
+-        SpscLinkedArrayQueue<Integer> q = new SpscLinkedArrayQueue<>(16);
+-
+-        AtomicReferenceArray<Object> ara = q.producerBuffer;
+-
+-        for (int i = 0; i < 20; i++) {
+-            q.offer(i);
+-        }
+-
+-        assertNotNull(ara.get(16));
+-
+-        for (int i = 0; i < 20; i++) {
+-            assertEquals(i, q.poll().intValue());
+-        }
+-
+-        assertNull(ara.get(16));
+-    }
+-}
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/subscribers/BasicFuseableConditionalSubscriberTest.java b/src/test/java/io/reactivex/rxjava3/internal/subscribers/BasicFuseableConditionalSubscriberTest.java
+index 7124405..c58d015 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/subscribers/BasicFuseableConditionalSubscriberTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/subscribers/BasicFuseableConditionalSubscriberTest.java
+@@ -22,8 +22,9 @@ import org.reactivestreams.Subscription;
+ 
+ import io.reactivex.rxjava3.annotations.*;
+ import io.reactivex.rxjava3.core.*;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.subscriptions.*;
++import io.reactivex.rxjava3.operators.ConditionalSubscriber;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+ public class BasicFuseableConditionalSubscriberTest extends RxJavaTest {
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/subscribers/QueueDrainSubscriberTest.java b/src/test/java/io/reactivex/rxjava3/internal/subscribers/QueueDrainSubscriberTest.java
+index f914d46..985705b 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/subscribers/QueueDrainSubscriberTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/subscribers/QueueDrainSubscriberTest.java
+@@ -23,8 +23,8 @@ import org.reactivestreams.*;
+ import io.reactivex.rxjava3.core.RxJavaTest;
+ import io.reactivex.rxjava3.disposables.*;
+ import io.reactivex.rxjava3.exceptions.MissingBackpressureException;
+-import io.reactivex.rxjava3.internal.queue.SpscArrayQueue;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.SpscArrayQueue;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+ import io.reactivex.rxjava3.testsupport.TestHelper;
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/subscriptions/DeferredScalarSubscriptionTest.java b/src/test/java/io/reactivex/rxjava3/internal/subscriptions/DeferredScalarSubscriptionTest.java
+index 046205e..7ea8d58 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/subscriptions/DeferredScalarSubscriptionTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/subscriptions/DeferredScalarSubscriptionTest.java
+@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
+ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.RxJavaTest;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+ import io.reactivex.rxjava3.testsupport.TestHelper;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/internal/util/QueueDrainHelperTest.java b/src/test/java/io/reactivex/rxjava3/internal/util/QueueDrainHelperTest.java
+index 0f78a2b..7929ea8 100644
+--- a/src/test/java/io/reactivex/rxjava3/internal/util/QueueDrainHelperTest.java
++++ b/src/test/java/io/reactivex/rxjava3/internal/util/QueueDrainHelperTest.java
+@@ -27,9 +27,9 @@ import io.reactivex.rxjava3.core.RxJavaTest;
+ import io.reactivex.rxjava3.disposables.*;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.BooleanSupplier;
+-import io.reactivex.rxjava3.internal.queue.SpscArrayQueue;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.SpscArrayQueue;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+ import io.reactivex.rxjava3.testsupport.TestHelper;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/maybe/MaybeTest.java b/src/test/java/io/reactivex/rxjava3/maybe/MaybeTest.java
+index c1e6ada..acc7066 100644
+--- a/src/test/java/io/reactivex/rxjava3/maybe/MaybeTest.java
++++ b/src/test/java/io/reactivex/rxjava3/maybe/MaybeTest.java
+@@ -30,10 +30,10 @@ import io.reactivex.rxjava3.disposables.*;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.internal.operators.flowable.FlowableZipTest.ArgsToString;
+ import io.reactivex.rxjava3.internal.operators.maybe.*;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.PublishProcessor;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+diff --git a/src/test/java/io/reactivex/rxjava3/observable/ObservableFuseableTest.java b/src/test/java/io/reactivex/rxjava3/observable/ObservableFuseableTest.java
+index 1d18ee7..8de9b9b 100644
+--- a/src/test/java/io/reactivex/rxjava3/observable/ObservableFuseableTest.java
++++ b/src/test/java/io/reactivex/rxjava3/observable/ObservableFuseableTest.java
+@@ -18,7 +18,7 @@ import java.util.Arrays;
+ import org.junit.Test;
+ 
+ import io.reactivex.rxjava3.core.*;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.testsupport.TestHelper;
+ 
+ public class ObservableFuseableTest extends RxJavaTest {
+diff --git a/src/test/java/io/reactivex/rxjava3/operators/SimpleQueueTest.java b/src/test/java/io/reactivex/rxjava3/operators/SimpleQueueTest.java
+new file mode 100644
+index 0000000..b9f998c
+--- /dev/null
++++ b/src/test/java/io/reactivex/rxjava3/operators/SimpleQueueTest.java
+@@ -0,0 +1,180 @@
++/*
++ * Copyright (c) 2016-present, RxJava Contributors.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
++ * compliance with the License. You may obtain a copy of the License at
++ *
++ * http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software distributed under the License is
++ * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See
++ * the License for the specific language governing permissions and limitations under the License.
++ */
++
++/*
++ * The code was inspired by the similarly named JCTools class:
++ * https://github.com/JCTools/JCTools/blob/master/jctools-core/src/main/java/org/jctools/queues/atomic
++ */
++
++package io.reactivex.rxjava3.operators;
++
++import static org.junit.Assert.*;
++
++import java.util.concurrent.atomic.*;
++
++import org.junit.Test;
++
++import io.reactivex.rxjava3.core.RxJavaTest;
++import io.reactivex.rxjava3.internal.queue.MpscLinkedQueue;
++
++public class SimpleQueueTest extends RxJavaTest {
++
++    @Test(expected = NullPointerException.class)
++    public void spscArrayQueueNull() {
++        SpscArrayQueue<Object> q = new SpscArrayQueue<>(16);
++        q.offer(null);
++    }
++
++    @Test(expected = NullPointerException.class)
++    public void spscLinkedArrayQueueNull() {
++        SpscLinkedArrayQueue<Object> q = new SpscLinkedArrayQueue<>(16);
++        q.offer(null);
++    }
++
++    @Test(expected = NullPointerException.class)
++    public void mpscLinkedQueueNull() {
++        MpscLinkedQueue<Object> q = new MpscLinkedQueue<>();
++        q.offer(null);
++    }
++
++    @Test
++    public void spscArrayQueueBiOffer() {
++        SpscArrayQueue<Object> q = new SpscArrayQueue<>(16);
++        q.offer(1, 2);
++
++        assertEquals(1, q.poll());
++        assertEquals(2, q.poll());
++        assertNull(q.poll());
++    }
++
++    @Test
++    public void spscLinkedArrayQueueBiOffer() {
++        SpscLinkedArrayQueue<Object> q = new SpscLinkedArrayQueue<>(16);
++        q.offer(1, 2);
++
++        assertEquals(1, q.poll());
++        assertEquals(2, q.poll());
++        assertNull(q.poll());
++    }
++
++    @Test
++    public void mpscLinkedQueueBiOffer() {
++        MpscLinkedQueue<Object> q = new MpscLinkedQueue<>();
++        q.offer(1, 2);
++
++        assertEquals(1, q.poll());
++        assertEquals(2, q.poll());
++        assertNull(q.poll());
++    }
++
++    @Test
++    public void spscBiOfferCapacity() {
++        SpscArrayQueue<Integer> q = new SpscArrayQueue<>(8);
++        assertTrue(q.offer(1, 2));
++        assertTrue(q.offer(3, 4));
++        assertTrue(q.offer(5, 6));
++        assertTrue(q.offer(7));
++
++        assertFalse(q.offer(8, 9));
++        assertFalse(q.offer(9, 10));
++    }
++
++    @Test
++    public void spscLinkedNewBufferPeek() {
++        SpscLinkedArrayQueue<Integer> q = new SpscLinkedArrayQueue<>(8);
++        assertTrue(q.offer(1, 2));
++        assertTrue(q.offer(3, 4));
++        assertTrue(q.offer(5, 6));
++        assertTrue(q.offer(7, 8)); // this should trigger a new buffer
++
++        for (int i = 0; i < 8; i++) {
++            assertEquals(i + 1, q.peek().intValue());
++            assertEquals(i + 1, q.poll().intValue());
++        }
++
++        assertNull(q.peek());
++        assertNull(q.poll());
++    }
++
++    @Test
++    public void mpscOfferPollRace() throws Exception {
++        final MpscLinkedQueue<Integer> q = new MpscLinkedQueue<>();
++
++        final AtomicInteger c = new AtomicInteger(3);
++
++        Thread t1 = new Thread(new Runnable() {
++            int i;
++            @Override
++            public void run() {
++                c.decrementAndGet();
++                while (c.get() != 0) { }
++
++                while (i++ < 10000) {
++                    q.offer(i);
++                }
++            }
++        });
++        t1.start();
++
++        Thread t2 = new Thread(new Runnable() {
++            int i = 10000;
++            @Override
++            public void run() {
++                c.decrementAndGet();
++                while (c.get() != 0) { }
++
++                while (i++ < 10000) {
++                    q.offer(i);
++                }
++            }
++        });
++        t2.start();
++
++        Runnable r3 = new Runnable() {
++            int i = 20000;
++            @Override
++            public void run() {
++                c.decrementAndGet();
++                while (c.get() != 0) { }
++
++                while (--i > 0) {
++                    q.poll();
++                }
++            }
++        };
++
++        r3.run();
++
++        t1.join();
++        t2.join();
++    }
++
++    @Test
++    public void spscLinkedArrayQueueNoNepotism() {
++        SpscLinkedArrayQueue<Integer> q = new SpscLinkedArrayQueue<>(16);
++
++        AtomicReferenceArray<Object> ara = q.producerBuffer;
++
++        for (int i = 0; i < 20; i++) {
++            q.offer(i);
++        }
++
++        assertNotNull(ara.get(16));
++
++        for (int i = 0; i < 20; i++) {
++            assertEquals(i, q.poll().intValue());
++        }
++
++        assertNull(ara.get(16));
++    }
++}
+diff --git a/src/test/java/io/reactivex/rxjava3/parallel/ParallelFromPublisherTest.java b/src/test/java/io/reactivex/rxjava3/parallel/ParallelFromPublisherTest.java
+index 4421044..c0aafdd 100644
+--- a/src/test/java/io/reactivex/rxjava3/parallel/ParallelFromPublisherTest.java
++++ b/src/test/java/io/reactivex/rxjava3/parallel/ParallelFromPublisherTest.java
+@@ -26,9 +26,10 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.subscribers.BasicFuseableSubscriber;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ import io.reactivex.rxjava3.processors.*;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/parallel/ParallelMapTest.java b/src/test/java/io/reactivex/rxjava3/parallel/ParallelMapTest.java
+index 0f9e7eb..493b74d 100644
+--- a/src/test/java/io/reactivex/rxjava3/parallel/ParallelMapTest.java
++++ b/src/test/java/io/reactivex/rxjava3/parallel/ParallelMapTest.java
+@@ -26,8 +26,8 @@ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.ConditionalSubscriber;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.ConditionalSubscriber;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.testsupport.TestHelper;
+diff --git a/src/test/java/io/reactivex/rxjava3/processors/AsyncProcessorTest.java b/src/test/java/io/reactivex/rxjava3/processors/AsyncProcessorTest.java
+index 363b211..81afc97 100644
+--- a/src/test/java/io/reactivex/rxjava3/processors/AsyncProcessorTest.java
++++ b/src/test/java/io/reactivex/rxjava3/processors/AsyncProcessorTest.java
+@@ -26,8 +26,8 @@ import org.reactivestreams.Subscriber;
+ 
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Consumer;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/processors/UnicastProcessorTest.java b/src/test/java/io/reactivex/rxjava3/processors/UnicastProcessorTest.java
+index d55f58e..f65cc46 100644
+--- a/src/test/java/io/reactivex/rxjava3/processors/UnicastProcessorTest.java
++++ b/src/test/java/io/reactivex/rxjava3/processors/UnicastProcessorTest.java
+@@ -25,9 +25,9 @@ import io.reactivex.rxjava3.core.Observable;
+ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.subscribers.TestSubscriber;
+diff --git a/src/test/java/io/reactivex/rxjava3/subjects/AsyncSubjectTest.java b/src/test/java/io/reactivex/rxjava3/subjects/AsyncSubjectTest.java
+index f01a7c3..8228b74 100644
+--- a/src/test/java/io/reactivex/rxjava3/subjects/AsyncSubjectTest.java
++++ b/src/test/java/io/reactivex/rxjava3/subjects/AsyncSubjectTest.java
+@@ -27,8 +27,8 @@ import io.reactivex.rxjava3.core.Observer;
+ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.Consumer;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.testsupport.*;
+ 
+ public class AsyncSubjectTest extends SubjectTest<Integer> {
+diff --git a/src/test/java/io/reactivex/rxjava3/subjects/UnicastSubjectTest.java b/src/test/java/io/reactivex/rxjava3/subjects/UnicastSubjectTest.java
+index 85cb20b..8ae6183 100644
+--- a/src/test/java/io/reactivex/rxjava3/subjects/UnicastSubjectTest.java
++++ b/src/test/java/io/reactivex/rxjava3/subjects/UnicastSubjectTest.java
+@@ -26,8 +26,8 @@ import io.reactivex.rxjava3.core.Observable;
+ import io.reactivex.rxjava3.disposables.*;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.testsupport.*;
+diff --git a/src/test/java/io/reactivex/rxjava3/testsupport/BaseTestConsumerEx.java b/src/test/java/io/reactivex/rxjava3/testsupport/BaseTestConsumerEx.java
+index 212e10a..05004da 100644
+--- a/src/test/java/io/reactivex/rxjava3/testsupport/BaseTestConsumerEx.java
++++ b/src/test/java/io/reactivex/rxjava3/testsupport/BaseTestConsumerEx.java
+@@ -16,9 +16,10 @@ package io.reactivex.rxjava3.testsupport;
+ import java.util.List;
+ 
+ import io.reactivex.rxjava3.functions.Predicate;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.internal.util.ExceptionHelper;
+ import io.reactivex.rxjava3.observers.BaseTestConsumer;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++
+ import java.util.Objects;
+ 
+ /**
+diff --git a/src/test/java/io/reactivex/rxjava3/testsupport/TestHelper.java b/src/test/java/io/reactivex/rxjava3/testsupport/TestHelper.java
+index 3f72c43..362b1d1 100644
+--- a/src/test/java/io/reactivex/rxjava3/testsupport/TestHelper.java
++++ b/src/test/java/io/reactivex/rxjava3/testsupport/TestHelper.java
+@@ -37,13 +37,17 @@ import io.reactivex.rxjava3.core.Observer;
+ import io.reactivex.rxjava3.disposables.*;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.*;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.operators.completable.CompletableToFlowable;
+ import io.reactivex.rxjava3.internal.operators.maybe.MaybeToFlowable;
+ import io.reactivex.rxjava3.internal.operators.single.SingleToFlowable;
+ import io.reactivex.rxjava3.internal.subscriptions.*;
+ import io.reactivex.rxjava3.internal.util.ExceptionHelper;
+ import io.reactivex.rxjava3.observers.BaseTestConsumer;
++import io.reactivex.rxjava3.operators.ConditionalSubscriber;
++import io.reactivex.rxjava3.operators.QueueDisposable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
++import io.reactivex.rxjava3.operators.SimpleQueue;
+ import io.reactivex.rxjava3.parallel.ParallelFlowable;
+ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+ import io.reactivex.rxjava3.processors.PublishProcessor;
+diff --git a/src/test/java/io/reactivex/rxjava3/testsupport/TestObserverEx.java b/src/test/java/io/reactivex/rxjava3/testsupport/TestObserverEx.java
+index ce2b050..8b09c4e 100644
+--- a/src/test/java/io/reactivex/rxjava3/testsupport/TestObserverEx.java
++++ b/src/test/java/io/reactivex/rxjava3/testsupport/TestObserverEx.java
+@@ -18,7 +18,8 @@ import java.util.concurrent.atomic.AtomicReference;
+ import io.reactivex.rxjava3.core.*;
+ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.internal.disposables.DisposableHelper;
+-import io.reactivex.rxjava3.internal.fuseable.*;
++import io.reactivex.rxjava3.operators.QueueDisposable;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ 
+ /**
+  * An  extended test Observer that records events and allows making assertions about them.
+diff --git a/src/test/java/io/reactivex/rxjava3/testsupport/TestObserverExTest.java b/src/test/java/io/reactivex/rxjava3/testsupport/TestObserverExTest.java
+index 278969b..127435b 100644
+--- a/src/test/java/io/reactivex/rxjava3/testsupport/TestObserverExTest.java
++++ b/src/test/java/io/reactivex/rxjava3/testsupport/TestObserverExTest.java
+@@ -30,9 +30,9 @@ import io.reactivex.rxjava3.disposables.Disposable;
+ import io.reactivex.rxjava3.exceptions.TestException;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.internal.operators.observable.ObservableScalarXMap.ScalarDisposable;
+ import io.reactivex.rxjava3.observers.TestObserver;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ import io.reactivex.rxjava3.subjects.*;
+ 
+diff --git a/src/test/java/io/reactivex/rxjava3/testsupport/TestSubscriberEx.java b/src/test/java/io/reactivex/rxjava3/testsupport/TestSubscriberEx.java
+index b7f157c..46b41b3 100644
+--- a/src/test/java/io/reactivex/rxjava3/testsupport/TestSubscriberEx.java
++++ b/src/test/java/io/reactivex/rxjava3/testsupport/TestSubscriberEx.java
+@@ -18,8 +18,9 @@ import java.util.concurrent.atomic.*;
+ import org.reactivestreams.*;
+ 
+ import io.reactivex.rxjava3.core.FlowableSubscriber;
+-import io.reactivex.rxjava3.internal.fuseable.*;
+ import io.reactivex.rxjava3.internal.subscriptions.SubscriptionHelper;
++import io.reactivex.rxjava3.operators.QueueFuseable;
++import io.reactivex.rxjava3.operators.QueueSubscription;
+ 
+ /**
+  * An extended test subscriber that records events and allows making assertions about them.
+diff --git a/src/test/java/io/reactivex/rxjava3/testsupport/TestSubscriberExTest.java b/src/test/java/io/reactivex/rxjava3/testsupport/TestSubscriberExTest.java
+index 26644db..f3d19f9 100644
+--- a/src/test/java/io/reactivex/rxjava3/testsupport/TestSubscriberExTest.java
++++ b/src/test/java/io/reactivex/rxjava3/testsupport/TestSubscriberExTest.java
+@@ -30,8 +30,8 @@ import io.reactivex.rxjava3.core.Scheduler.Worker;
+ import io.reactivex.rxjava3.exceptions.*;
+ import io.reactivex.rxjava3.functions.*;
+ import io.reactivex.rxjava3.internal.functions.Functions;
+-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
+ import io.reactivex.rxjava3.internal.subscriptions.*;
++import io.reactivex.rxjava3.operators.QueueFuseable;
+ import io.reactivex.rxjava3.processors.*;
+ import io.reactivex.rxjava3.schedulers.Schedulers;
+ 

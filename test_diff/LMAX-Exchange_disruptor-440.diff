@@ -1,0 +1,343 @@
+diff --git a/src/test/java/com/lmax/disruptor/BatchEventProcessorTest.java b/src/test/java/com/lmax/disruptor/BatchEventProcessorTest.java
+index 4e42e4a..acd9b40 100644
+--- a/src/test/java/com/lmax/disruptor/BatchEventProcessorTest.java
++++ b/src/test/java/com/lmax/disruptor/BatchEventProcessorTest.java
+@@ -44,7 +44,7 @@ public final class BatchEventProcessorTest
+     {
+         assertThrows(NullPointerException.class, () ->
+         {
+-            final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessor<>(
++            final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessorBuilder().build(
+                     ringBuffer, sequenceBarrier, new ExceptionEventHandler());
+             batchEventProcessor.setExceptionHandler(null);
+         });
+@@ -56,7 +56,7 @@ public final class BatchEventProcessorTest
+     {
+         CountDownLatch eventLatch = new CountDownLatch(3);
+         LatchEventHandler eventHandler = new LatchEventHandler(eventLatch);
+-        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessor<>(
++        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessorBuilder().build(
+                 ringBuffer, sequenceBarrier, eventHandler);
+ 
+         ringBuffer.addGatingSequences(batchEventProcessor.getSequence());
+@@ -80,7 +80,7 @@ public final class BatchEventProcessorTest
+     {
+         CountDownLatch exceptionLatch = new CountDownLatch(1);
+         LatchExceptionHandler latchExceptionHandler = new LatchExceptionHandler(exceptionLatch);
+-        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessor<>(
++        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessorBuilder().build(
+                 ringBuffer, sequenceBarrier, new ExceptionEventHandler());
+         ringBuffer.addGatingSequences(batchEventProcessor.getSequence());
+ 
+@@ -180,7 +180,7 @@ public final class BatchEventProcessorTest
+         }
+ 
+         final BatchEventProcessor<StubEvent> batchEventProcessor =
+-                new BatchEventProcessor<>(
++                new BatchEventProcessorBuilder().build(
+                         ringBuffer, sequenceBarrier, new LoopbackEventHandler());
+ 
+         ringBuffer.publish(ringBuffer.next());
+@@ -207,7 +207,7 @@ public final class BatchEventProcessorTest
+         DataProvider<Object> dp = sequence -> null;
+ 
+         final LatchLifeCycleHandler h1 = new LatchLifeCycleHandler();
+-        final BatchEventProcessor p1 = new BatchEventProcessor<>(dp, barrier, h1);
++        final BatchEventProcessor p1 = new BatchEventProcessorBuilder().build(dp, barrier, h1);
+ 
+         Thread t1 = new Thread(p1);
+         p1.halt();
+@@ -219,7 +219,7 @@ public final class BatchEventProcessorTest
+         for (int i = 0; i < 1000; i++)
+         {
+             final LatchLifeCycleHandler h2 = new LatchLifeCycleHandler();
+-            final BatchEventProcessor p2 = new BatchEventProcessor<>(dp, barrier, h2);
++            final BatchEventProcessor p2 = new BatchEventProcessorBuilder().build(dp, barrier, h2);
+             Thread t2 = new Thread(p2);
+             t2.start();
+             p2.halt();
+@@ -231,7 +231,7 @@ public final class BatchEventProcessorTest
+         for (int i = 0; i < 1000; i++)
+         {
+             final LatchLifeCycleHandler h2 = new LatchLifeCycleHandler();
+-            final BatchEventProcessor p2 = new BatchEventProcessor<>(dp, barrier, h2);
++            final BatchEventProcessor p2 = new BatchEventProcessorBuilder().build(dp, barrier, h2);
+             Thread t2 = new Thread(p2);
+             t2.start();
+             Thread.yield();
+@@ -282,7 +282,7 @@ public final class BatchEventProcessorTest
+     {
+         BatchAwareEventHandler eventHandler = new BatchAwareEventHandler();
+ 
+-        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessor<>(
++        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessorBuilder().build(
+                 ringBuffer, new DelegatingSequenceBarrier(this.sequenceBarrier), eventHandler);
+ 
+         ringBuffer.addGatingSequences(batchEventProcessor.getSequence());
+diff --git a/src/test/java/com/lmax/disruptor/LifecycleAwareTest.java b/src/test/java/com/lmax/disruptor/LifecycleAwareTest.java
+index 09544ab..7c23e2d 100644
+--- a/src/test/java/com/lmax/disruptor/LifecycleAwareTest.java
++++ b/src/test/java/com/lmax/disruptor/LifecycleAwareTest.java
+@@ -34,7 +34,7 @@ public final class LifecycleAwareTest
+     private final SequenceBarrier sequenceBarrier = ringBuffer.newBarrier();
+     private final LifecycleAwareEventHandler handler = new LifecycleAwareEventHandler();
+     private final BatchEventProcessor<StubEvent> batchEventProcessor =
+-            new BatchEventProcessor<>(ringBuffer, sequenceBarrier, handler);
++            new BatchEventProcessorBuilder().build(ringBuffer, sequenceBarrier, handler);
+ 
+     @Test
+     public void shouldNotifyOfBatchProcessorLifecycle() throws Exception
+diff --git a/src/test/java/com/lmax/disruptor/MaxBatchSizeEventProcessorTest.java b/src/test/java/com/lmax/disruptor/MaxBatchSizeEventProcessorTest.java
+index cda7e41..90cff32 100644
+--- a/src/test/java/com/lmax/disruptor/MaxBatchSizeEventProcessorTest.java
++++ b/src/test/java/com/lmax/disruptor/MaxBatchSizeEventProcessorTest.java
+@@ -45,8 +45,9 @@ public final class MaxBatchSizeEventProcessorTest
+         countDownLatch = new CountDownLatch(PUBLISH_COUNT);
+         eventHandler = new BatchLimitRecordingHandler(countDownLatch);
+ 
+-        batchEventProcessor = new BatchEventProcessor<>(
+-                ringBuffer, this.sequenceBarrier, eventHandler, MAX_BATCH_SIZE);
++        batchEventProcessor = new BatchEventProcessorBuilder()
++                .setMaxBatchSize(MAX_BATCH_SIZE)
++                .build(ringBuffer, this.sequenceBarrier, eventHandler);
+ 
+         ringBuffer.addGatingSequences(batchEventProcessor.getSequence());
+ 
+diff --git a/src/test/java/com/lmax/disruptor/RewindBatchEventProcessorTest.java b/src/test/java/com/lmax/disruptor/RewindBatchEventProcessorTest.java
+index 934f993..0ed6bd4 100644
+--- a/src/test/java/com/lmax/disruptor/RewindBatchEventProcessorTest.java
++++ b/src/test/java/com/lmax/disruptor/RewindBatchEventProcessorTest.java
+@@ -19,6 +19,7 @@ import static java.util.Collections.emptyList;
+ import static java.util.Collections.singletonList;
+ import static org.hamcrest.MatcherAssert.assertThat;
+ import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertThrows;
+ 
+ public class RewindBatchEventProcessorTest
+ {
+@@ -308,11 +309,11 @@ public class RewindBatchEventProcessorTest
+                 singletonList(rewind(15, 3)),
+                 lastSequenceNumber,
+                 -1);
+-        final BatchEventProcessor<LongEvent> eventProcessor = create(eventHandler);
++        CountingBatchRewindStrategy rewindPauseStrategy = new CountingBatchRewindStrategy();
++        final BatchEventProcessor<LongEvent> eventProcessor = create(eventHandler, rewindPauseStrategy);
++
+         eventHandler.setRewindable(eventProcessor);
+ 
+-        CountingBatchRewindStrategy rewindPauseStrategy = new CountingBatchRewindStrategy();
+-        eventProcessor.setRewindStrategy(rewindPauseStrategy);
+         eventProcessor.run();
+ 
+         assertThat(values, containsExactSequence(
+@@ -335,11 +336,11 @@ public class RewindBatchEventProcessorTest
+                 singletonList(rewind(-1, -1)),
+                 lastSequenceNumber,
+                 -1);
+-        final BatchEventProcessor<LongEvent> eventProcessor = create(eventHandler);
++        CountingBatchRewindStrategy rewindPauseStrategy = new CountingBatchRewindStrategy();
++        final BatchEventProcessor<LongEvent> eventProcessor = create(eventHandler, rewindPauseStrategy);
++
+         eventHandler.setRewindable(eventProcessor);
+ 
+-        CountingBatchRewindStrategy rewindPauseStrategy = new CountingBatchRewindStrategy();
+-        eventProcessor.setRewindStrategy(rewindPauseStrategy);
+         eventProcessor.run();
+ 
+         assertThat(values, containsExactSequence(
+@@ -359,10 +360,10 @@ public class RewindBatchEventProcessorTest
+                 singletonList(rewind(15, 3)),
+                 lastSequenceNumber,
+                 -1);
+-        final BatchEventProcessor<LongEvent> eventProcessor = create(eventHandler);
++        final BatchEventProcessor<LongEvent> eventProcessor = create(eventHandler, new NanosecondPauseBatchRewindStrategy(1000));
++
+         eventHandler.setRewindable(eventProcessor);
+ 
+-        eventProcessor.setRewindStrategy(new NanosecondPauseBatchRewindStrategy(1000));
+         eventProcessor.run();
+ 
+         assertThat(values, containsExactSequence(
+@@ -381,19 +382,18 @@ public class RewindBatchEventProcessorTest
+         int lastSequenceNumber = ringBufferEntries - 1;
+         fill(ringBuffer, ringBufferEntries);
+ 
+-        EventuallyGiveUpBatchRewindStrategy batchRewindStrategy = new EventuallyGiveUpBatchRewindStrategy(3);
+-
+         final TestEventHandler eventHandler = new TestEventHandler(values,
+                 asList(rewind(15, 99), rewind(25, 99)),
+                 lastSequenceNumber,
+                 -1);
+-        final BatchEventProcessor<LongEvent> eventProcessor = create(eventHandler);
++        EventuallyGiveUpBatchRewindStrategy batchRewindStrategy = new EventuallyGiveUpBatchRewindStrategy(3);
++        final BatchEventProcessor<LongEvent> eventProcessor = create(eventHandler, batchRewindStrategy);
++
+         eventHandler.setRewindable(eventProcessor);
+ 
+         AtomicReference<Throwable> exceptionHandled = new AtomicReference<>();
+         eventProcessor.setExceptionHandler(new StubExceptionHandler(exceptionHandled));
+ 
+-        eventProcessor.setRewindStrategy(batchRewindStrategy);
+         eventProcessor.run();
+ 
+         assertThat(values, containsExactSequence(
+@@ -406,6 +406,16 @@ public class RewindBatchEventProcessorTest
+                 event(26, lastSequenceNumber))); // unable to process 25 so it ends up skipping it
+     }
+ 
++    @Test
++    void shouldNotAllowNullBatchRewindStrategy()
++    {
++        final TestEventHandler eventHandler = new TestEventHandler(values,
++                asList(rewind(15, 99), rewind(25, 99)),
++                -1,
++                -1);
++        final BatchEventProcessorBuilder batchEventProcessorBuilder = new BatchEventProcessorBuilder();
++        assertThrows(NullPointerException.class, () -> batchEventProcessorBuilder.build(ringBuffer, ringBuffer.newBarrier(), eventHandler, null));
++    }
+ 
+     private static ForceRewindSequence rewind(final long sequenceNumberToFailOn, final long timesToFail)
+     {
+@@ -419,13 +429,19 @@ public class RewindBatchEventProcessorTest
+ 
+     private BatchEventProcessor<LongEvent> create(final TestEventHandler eventHandler)
+     {
+-        return new BatchEventProcessor<>(
++        return create(eventHandler, new SimpleBatchRewindStrategy());
++    }
++
++    private BatchEventProcessor<LongEvent> create(final TestEventHandler eventHandler, final BatchRewindStrategy batchRewindStrategy)
++    {
++        return new BatchEventProcessorBuilder().build(
+                 ringBuffer,
+                 ringBuffer.newBarrier(),
+-                eventHandler);
++                eventHandler,
++                batchRewindStrategy);
+     }
+ 
+-    private final class TestEventHandler implements EventHandler<LongEvent>
++    private final class TestEventHandler implements RewindableEventHandler<LongEvent>
+     {
+         private final List<EventResult> values;
+         private BatchEventProcessor<LongEvent> processor;
+@@ -452,7 +468,7 @@ public class RewindBatchEventProcessorTest
+         }
+ 
+         @Override
+-        public void onEvent(final LongEvent event, final long sequence, final boolean endOfBatch) throws Exception
++        public void onEvent(final LongEvent event, final long sequence, final boolean endOfBatch) throws RewindableException, Exception
+         {
+ 
+             if (sequence == nonRewindableErrorSequence)
+diff --git a/src/test/java/com/lmax/disruptor/SequenceReportingCallbackTest.java b/src/test/java/com/lmax/disruptor/SequenceReportingCallbackTest.java
+index 3928c79..0bf1085 100644
+--- a/src/test/java/com/lmax/disruptor/SequenceReportingCallbackTest.java
++++ b/src/test/java/com/lmax/disruptor/SequenceReportingCallbackTest.java
+@@ -35,7 +35,7 @@ public class SequenceReportingCallbackTest
+         final RingBuffer<StubEvent> ringBuffer = createMultiProducer(StubEvent.EVENT_FACTORY, 16);
+         final SequenceBarrier sequenceBarrier = ringBuffer.newBarrier();
+         final EventHandler<StubEvent> handler = new TestSequenceReportingEventHandler();
+-        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessor<>(
++        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessorBuilder().build(
+                 ringBuffer, sequenceBarrier, handler);
+         ringBuffer.addGatingSequences(batchEventProcessor.getSequence());
+ 
+diff --git a/src/test/java/com/lmax/disruptor/dsl/DisruptorTest.java b/src/test/java/com/lmax/disruptor/dsl/DisruptorTest.java
+index 212deef..6791873 100644
+--- a/src/test/java/com/lmax/disruptor/dsl/DisruptorTest.java
++++ b/src/test/java/com/lmax/disruptor/dsl/DisruptorTest.java
+@@ -16,6 +16,7 @@
+ package com.lmax.disruptor.dsl;
+ 
+ import com.lmax.disruptor.BatchEventProcessor;
++import com.lmax.disruptor.BatchEventProcessorBuilder;
+ import com.lmax.disruptor.BlockingWaitStrategy;
+ import com.lmax.disruptor.EventHandler;
+ import com.lmax.disruptor.ExceptionHandler;
+@@ -135,11 +136,11 @@ public class DisruptorTest
+     public void shouldAddEventProcessorsAfterPublishing() throws Exception
+     {
+         RingBuffer<TestEvent> rb = disruptor.getRingBuffer();
+-        BatchEventProcessor<TestEvent> b1 = new BatchEventProcessor<>(
++        BatchEventProcessor<TestEvent> b1 = new BatchEventProcessorBuilder().build(
+                 rb, rb.newBarrier(), new SleepingEventHandler());
+-        BatchEventProcessor<TestEvent> b2 = new BatchEventProcessor<>(
++        BatchEventProcessor<TestEvent> b2 = new BatchEventProcessorBuilder().build(
+                 rb, rb.newBarrier(b1.getSequence()), new SleepingEventHandler());
+-        BatchEventProcessor<TestEvent> b3 = new BatchEventProcessor<>(
++        BatchEventProcessor<TestEvent> b3 = new BatchEventProcessorBuilder().build(
+                 rb, rb.newBarrier(b2.getSequence()), new SleepingEventHandler());
+ 
+         assertThat(b1.getSequence().get(), is(-1L));
+@@ -228,9 +229,9 @@ public class DisruptorTest
+         throws Exception
+     {
+         RingBuffer<TestEvent> rb = disruptor.getRingBuffer();
+-        BatchEventProcessor<TestEvent> b1 = new BatchEventProcessor<>(
++        BatchEventProcessor<TestEvent> b1 = new BatchEventProcessorBuilder().build(
+                 rb, rb.newBarrier(), new SleepingEventHandler());
+-        EventProcessorFactory<TestEvent> b2 = (ringBuffer, barrierSequences) -> new BatchEventProcessor<>(
++        EventProcessorFactory<TestEvent> b2 = (ringBuffer, barrierSequences) -> new BatchEventProcessorBuilder().build(
+                 ringBuffer, ringBuffer.newBarrier(barrierSequences), new SleepingEventHandler());
+ 
+         disruptor.handleEventsWith(b1).then(b2);
+@@ -462,7 +463,7 @@ public class DisruptorTest
+         EventHandler<TestEvent> handlerWithBarrier = new EventHandlerStub<>(countDownLatch);
+ 
+         final BatchEventProcessor<TestEvent> processor =
+-                new BatchEventProcessor<>(ringBuffer, ringBuffer.newBarrier(), delayedEventHandler);
++                new BatchEventProcessorBuilder().build(ringBuffer, ringBuffer.newBarrier(), delayedEventHandler);
+ 
+         disruptor.handleEventsWith(processor).then(handlerWithBarrier);
+ 
+@@ -485,7 +486,7 @@ public class DisruptorTest
+ 
+         final SequenceBarrier sequenceBarrier = disruptor.after(delayedEventHandler).asSequenceBarrier();
+         final BatchEventProcessor<TestEvent> processor =
+-                new BatchEventProcessor<>(ringBuffer, sequenceBarrier, handlerWithBarrier);
++                new BatchEventProcessorBuilder().build(ringBuffer, sequenceBarrier, handlerWithBarrier);
+         disruptor.handleEventsWith(processor);
+ 
+         ensureTwoEventsProcessedAccordingToDependencies(countDownLatch, delayedEventHandler);
+@@ -507,7 +508,7 @@ public class DisruptorTest
+ 
+         final SequenceBarrier sequenceBarrier = disruptor.after(delayedEventHandler1).asSequenceBarrier();
+         final BatchEventProcessor<TestEvent> processor =
+-                new BatchEventProcessor<>(ringBuffer, sequenceBarrier, delayedEventHandler2);
++                new BatchEventProcessorBuilder().build(ringBuffer, sequenceBarrier, delayedEventHandler2);
+ 
+         disruptor.after(delayedEventHandler1).and(processor).handleEventsWith(handlerWithBarrier);
+ 
+@@ -525,11 +526,11 @@ public class DisruptorTest
+ 
+         final DelayedEventHandler delayedEventHandler1 = createDelayedEventHandler();
+         final BatchEventProcessor<TestEvent> processor1 =
+-                new BatchEventProcessor<>(ringBuffer, ringBuffer.newBarrier(), delayedEventHandler1);
++                new BatchEventProcessorBuilder().build(ringBuffer, ringBuffer.newBarrier(), delayedEventHandler1);
+ 
+         final DelayedEventHandler delayedEventHandler2 = createDelayedEventHandler();
+         final BatchEventProcessor<TestEvent> processor2 =
+-                new BatchEventProcessor<>(ringBuffer, ringBuffer.newBarrier(), delayedEventHandler2);
++                new BatchEventProcessorBuilder().build(ringBuffer, ringBuffer.newBarrier(), delayedEventHandler2);
+ 
+         disruptor.handleEventsWith(processor1, processor2);
+         disruptor.after(processor1, processor2).handleEventsWith(handlerWithBarrier);
+@@ -610,7 +611,7 @@ public class DisruptorTest
+                 {
+                     assertEquals(0, barrierSequences.length,
+                             "Should not have had any barrier sequences");
+-                    return new BatchEventProcessor<>(
++                    return new BatchEventProcessorBuilder().build(
+                             disruptor.getRingBuffer(), ringBuffer.newBarrier(
+                             barrierSequences), eventHandler);
+                 });
+@@ -629,7 +630,7 @@ public class DisruptorTest
+                 (ringBuffer, barrierSequences) ->
+                 {
+                     assertSame(1, barrierSequences.length, "Should have had a barrier sequence");
+-                    return new BatchEventProcessor<>(
++                    return new BatchEventProcessorBuilder().build(
+                             disruptor.getRingBuffer(), ringBuffer.newBarrier(
+                             barrierSequences), eventHandler);
+                 });

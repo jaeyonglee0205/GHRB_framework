@@ -1,0 +1,17 @@
+diff --git a/quarkus/runtime/src/test/java/org/keycloak/quarkus/runtime/configuration/test/ConfigurationTest.java b/quarkus/runtime/src/test/java/org/keycloak/quarkus/runtime/configuration/test/ConfigurationTest.java
+index f1d95b5..48de36c 100644
+--- a/quarkus/runtime/src/test/java/org/keycloak/quarkus/runtime/configuration/test/ConfigurationTest.java
++++ b/quarkus/runtime/src/test/java/org/keycloak/quarkus/runtime/configuration/test/ConfigurationTest.java
+@@ -443,12 +443,6 @@ public class ConfigurationTest {
+ 
+         assertEquals("com.microsoft.sqlserver.jdbc.SQLServerXADataSource", xaConfig.getConfigValue("quarkus.datasource.jdbc.driver").getValue());
+         assertEquals("xa", xaConfig.getConfigValue("quarkus.datasource.jdbc.transactions").getValue());
+-
+-        System.setProperty(CLI_ARGS, "--db=mssql" + ARG_SEPARATOR + "--transaction-jta-enabled=false");
+-        SmallRyeConfig jtaDisabledConfig = createConfig();
+-
+-        assertEquals("com.microsoft.sqlserver.jdbc.SQLServerDriver", jtaDisabledConfig.getConfigValue("quarkus.datasource.jdbc.driver").getValue());
+-        assertEquals("disabled", jtaDisabledConfig.getConfigValue("quarkus.datasource.jdbc.transactions").getValue());
+     }
+ 
+     @Test

@@ -1,0 +1,795 @@
+diff --git a/store/src/test/java/org/apache/rocketmq/store/AppendCallbackTest.java b/store/src/test/java/org/apache/rocketmq/store/AppendCallbackTest.java
+index 0ebd931..dc1af78 100644
+--- a/store/src/test/java/org/apache/rocketmq/store/AppendCallbackTest.java
++++ b/store/src/test/java/org/apache/rocketmq/store/AppendCallbackTest.java
+@@ -31,7 +31,6 @@ import org.apache.rocketmq.common.message.Message;
+ import org.apache.rocketmq.common.message.MessageDecoder;
+ import org.apache.rocketmq.common.message.MessageExt;
+ import org.apache.rocketmq.common.message.MessageExtBatch;
+-import org.apache.rocketmq.store.CommitLog.MessageExtEncoder;
+ import org.apache.rocketmq.store.config.MessageStoreConfig;
+ import org.junit.After;
+ import org.junit.Before;
+diff --git a/store/src/test/java/org/apache/rocketmq/store/DefaultMessageStoreTest.java b/store/src/test/java/org/apache/rocketmq/store/DefaultMessageStoreTest.java
+index 63d496e..f0939ec 100644
+--- a/store/src/test/java/org/apache/rocketmq/store/DefaultMessageStoreTest.java
++++ b/store/src/test/java/org/apache/rocketmq/store/DefaultMessageStoreTest.java
+@@ -812,7 +812,7 @@ public class DefaultMessageStoreTest {
+         MessageExtBrokerInner messageExtBrokerInner = buildMessage();
+         CommitLog commitLog = ((DefaultMessageStore) messageStore).getCommitLog();
+         MessageStoreConfig messageStoreConfig = ((DefaultMessageStore) messageStore).getMessageStoreConfig();
+-        CommitLog.PutMessageThreadLocal putMessageThreadLocal = commitLog.getPutMessageThreadLocal().get();
++        MessageExtEncoder.PutMessageThreadLocal putMessageThreadLocal = commitLog.getPutMessageThreadLocal().get();
+ 
+         //body size, topic size, properties size exactly equal to max size
+         messageExtBrokerInner.setBody(new byte[messageStoreConfig.getMaxMessageSize()]);
+diff --git a/store/src/test/java/org/apache/rocketmq/store/MappedFileQueueTest.java b/store/src/test/java/org/apache/rocketmq/store/MappedFileQueueTest.java
+index ecb7114..669fe3d 100644
+--- a/store/src/test/java/org/apache/rocketmq/store/MappedFileQueueTest.java
++++ b/store/src/test/java/org/apache/rocketmq/store/MappedFileQueueTest.java
+@@ -18,18 +18,24 @@
+ package org.apache.rocketmq.store;
+ 
+ import java.util.concurrent.CountDownLatch;
++import org.apache.commons.lang3.RandomStringUtils;
+ import org.apache.rocketmq.common.ThreadFactoryImpl;
+ import org.apache.rocketmq.common.UtilAll;
+ import org.apache.rocketmq.store.logfile.DefaultMappedFile;
+ import org.apache.rocketmq.store.logfile.MappedFile;
++import org.assertj.core.util.Lists;
+ import org.junit.After;
+ import org.junit.Test;
+ 
+ import java.io.File;
++import java.io.IOException;
+ import java.nio.ByteBuffer;
+ import java.nio.charset.StandardCharsets;
+ import java.util.Arrays;
++import java.util.List;
++import java.util.concurrent.Executors;
+ import java.util.concurrent.LinkedBlockingQueue;
++import java.util.concurrent.ScheduledExecutorService;
+ import java.util.concurrent.ThreadPoolExecutor;
+ import java.util.concurrent.TimeUnit;
+ import java.util.concurrent.atomic.AtomicBoolean;
+@@ -383,6 +389,91 @@ public class MappedFileQueueTest {
+         assertThat(hasException.get()).isFalse();
+     }
+ 
++    @Test
++    public void testMappedFile_Rename() throws IOException, InterruptedException {
++        final String fixedMsg = RandomStringUtils.randomAlphanumeric(128);
++        final byte[] msgByteArr = fixedMsg.getBytes(StandardCharsets.UTF_8);
++        final int mappedFileSize = 5 * 1024 * 1024;
++
++        MappedFileQueue mappedFileQueue =
++            new MappedFileQueue("target/unit_test_store", mappedFileSize, null);
++
++        int currentSize = 0;
++        while (currentSize <= 2 * mappedFileSize) {
++            MappedFile mappedFile = mappedFileQueue.getLastMappedFile(0);
++            mappedFile.appendMessage(msgByteArr);
++            currentSize += fixedMsg.length();
++        }
++
++        assertThat(mappedFileQueue.getMappedFiles().size()).isEqualTo(3);
++
++        ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
++        ses.scheduleWithFixedDelay(() -> {
++            MappedFile mappedFile = mappedFileQueue.getLastMappedFile(0);
++            mappedFile.appendMessage(msgByteArr);
++        }, 1,1, TimeUnit.MILLISECONDS);
++
++        List<MappedFile> mappedFileList = Lists.newArrayList(mappedFileQueue.getMappedFiles());
++        mappedFileList.remove(mappedFileList.size() - 1);
++
++        MappedFileQueue compactingMappedFileQueue =
++            new MappedFileQueue("target/unit_test_store/compacting", mappedFileSize, null);
++
++        currentSize = 0;
++        while (currentSize < (2 * mappedFileSize - mappedFileSize / 2)) {
++            MappedFile mappedFile = compactingMappedFileQueue.getLastMappedFile(0);
++            mappedFile.appendMessage(msgByteArr);
++            currentSize += fixedMsg.length();
++        }
++
++
++        mappedFileList.forEach(MappedFile::renameToDelete);
++        assertThat(mappedFileQueue.getFirstMappedFile().getFileName()).endsWith(".delete");
++        assertThat(mappedFileQueue.findMappedFileByOffset(mappedFileSize + fixedMsg.length()).getFileName()).endsWith(".delete");
++
++        SelectMappedBufferResult sbr = mappedFileList.get(mappedFileList.size() - 1).selectMappedBuffer(0, msgByteArr.length);
++        assertThat(sbr).isNotNull();
++        try {
++            assertThat(sbr.getMappedFile().getFileName().endsWith(".delete")).isTrue();
++            if (sbr.getByteBuffer().hasArray()) {
++                assertThat(sbr.getByteBuffer().array()).isEqualTo(msgByteArr);
++            } else {
++                for (int i = 0; i < msgByteArr.length; i++) {
++                    assertThat(sbr.getByteBuffer().get(i)).isEqualTo(msgByteArr[i]);
++                }
++            }
++        } finally {
++            sbr.release();
++        }
++
++
++        compactingMappedFileQueue.getMappedFiles().forEach(mappedFile -> {
++            try {
++                mappedFile.moveToParent();
++            } catch (IOException e) {
++                e.printStackTrace();
++            }
++        });
++
++        mappedFileQueue.getMappedFiles().stream()
++            .filter(m -> !mappedFileList.contains(m))
++            .forEach(m -> compactingMappedFileQueue.getMappedFiles().add(m));
++
++        int wrotePosition = mappedFileQueue.getLastMappedFile().getWrotePosition();
++
++        mappedFileList.forEach(mappedFile -> {
++            mappedFile.destroy(1000);
++        });
++
++        TimeUnit.SECONDS.sleep(3);
++        ses.shutdown();
++
++        mappedFileQueue.getMappedFiles().clear();
++        mappedFileQueue.getMappedFiles().addAll(compactingMappedFileQueue.getMappedFiles());
++
++        TimeUnit.SECONDS.sleep(3);
++    }
++
+     @After
+     public void destroy() {
+         File file = new File(storePath);
+diff --git a/store/src/test/java/org/apache/rocketmq/store/kv/CompactionLogTest.java b/store/src/test/java/org/apache/rocketmq/store/kv/CompactionLogTest.java
+new file mode 100644
+index 0000000..1fba7d2
+--- /dev/null
++++ b/store/src/test/java/org/apache/rocketmq/store/kv/CompactionLogTest.java
+@@ -0,0 +1,264 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.store.kv;
++
++import com.google.common.collect.Lists;
++import org.apache.commons.lang3.RandomStringUtils;
++import org.apache.commons.lang3.reflect.FieldUtils;
++import org.apache.rocketmq.common.message.MessageDecoder;
++import org.apache.rocketmq.common.message.MessageExt;
++import org.apache.rocketmq.common.message.MessageExtBrokerInner;
++import org.apache.rocketmq.store.AppendMessageResult;
++import org.apache.rocketmq.store.AppendMessageStatus;
++import org.apache.rocketmq.store.CommitLog;
++import org.apache.rocketmq.store.DefaultMessageStore;
++import org.apache.rocketmq.store.MappedFileQueue;
++import org.apache.rocketmq.store.MessageExtEncoder;
++import org.apache.rocketmq.store.MessageStore;
++import org.apache.rocketmq.store.PutMessageResult;
++import org.apache.rocketmq.store.PutMessageSpinLock;
++import org.apache.rocketmq.store.PutMessageStatus;
++import org.apache.rocketmq.store.SelectMappedBufferResult;
++import org.apache.rocketmq.store.config.MessageStoreConfig;
++import org.apache.rocketmq.store.logfile.DefaultMappedFile;
++import org.apache.rocketmq.store.logfile.MappedFile;
++import org.apache.rocketmq.store.queue.SparseConsumeQueue;
++import org.junit.Before;
++import org.junit.Rule;
++import org.junit.Test;
++import org.junit.rules.TemporaryFolder;
++import org.mockito.stubbing.Answer;
++
++import java.io.File;
++import java.io.IOException;
++import java.net.InetAddress;
++import java.net.InetSocketAddress;
++import java.net.SocketAddress;
++import java.net.UnknownHostException;
++import java.nio.ByteBuffer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++import java.nio.file.StandardOpenOption;
++import java.security.DigestException;
++import java.security.NoSuchAlgorithmException;
++import java.util.Iterator;
++import java.util.List;
++import java.util.concurrent.CompletableFuture;
++
++import static org.apache.rocketmq.store.kv.CompactionLog.COMPACTING_SUB_FOLDER;
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.assertFalse;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.anyList;
++import static org.mockito.Mockito.doCallRealMethod;
++import static org.mockito.Mockito.doNothing;
++import static org.mockito.Mockito.doReturn;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++public class CompactionLogTest {
++    CompactionLog clog;
++    MessageStoreConfig storeConfig;
++    MessageStore defaultMessageStore;
++    CompactionPositionMgr positionMgr;
++    String topic = "ctopic";
++    int queueId = 0;
++    int offsetMemorySize = 1024;
++    int compactionFileSize = 10240;
++    int compactionCqFileSize = 1024;
++
++
++    private static MessageExtEncoder encoder = new MessageExtEncoder(1024);
++    private static SocketAddress storeHost;
++    private static SocketAddress bornHost;
++
++    @Rule
++    public TemporaryFolder tmpFolder = new TemporaryFolder();
++    String logPath;
++    String cqPath;
++
++    static {
++        try {
++            storeHost = new InetSocketAddress(InetAddress.getLocalHost(), 8123);
++        } catch (UnknownHostException e) {
++        }
++        try {
++            bornHost = new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 0);
++        } catch (UnknownHostException e) {
++        }
++    }
++
++    @Before
++    public void setUp() throws IOException {
++        File file = tmpFolder.newFolder("compaction");
++        logPath = Paths.get(file.getAbsolutePath(), "compactionLog").toString();
++        cqPath = Paths.get(file.getAbsolutePath(), "compactionCq").toString();
++
++        storeConfig = mock(MessageStoreConfig.class);
++        doReturn(compactionFileSize).when(storeConfig).getCompactionMappedFileSize();
++        doReturn(compactionCqFileSize).when(storeConfig).getCompactionCqMappedFileSize();
++        defaultMessageStore = mock(DefaultMessageStore.class);
++        doReturn(storeConfig).when(defaultMessageStore).getMessageStoreConfig();
++        positionMgr = mock(CompactionPositionMgr.class);
++        doReturn(-1L).when(positionMgr).getOffset(topic, queueId);
++    }
++
++    static int queueOffset = 0;
++    static int keyCount = 10;
++    public static ByteBuffer buildMessage() {
++        MessageExtBrokerInner msg = new MessageExtBrokerInner();
++        msg.setTopic("ctopic");
++        msg.setTags(System.currentTimeMillis() + "TAG");
++        msg.setKeys(String.valueOf(queueOffset % keyCount));
++        msg.setBody(RandomStringUtils.randomAlphabetic(100).getBytes(StandardCharsets.UTF_8));
++        msg.setQueueId(0);
++        msg.setSysFlag(0);
++        msg.setBornTimestamp(System.currentTimeMillis());
++        msg.setStoreHost(storeHost);
++        msg.setBornHost(bornHost);
++        msg.setQueueOffset(queueOffset);
++        queueOffset++;
++        for (int i = 1; i < 3; i++) {
++            msg.putUserProperty(String.valueOf(i), "xxx" + i);
++        }
++        msg.setPropertiesString(MessageDecoder.messageProperties2String(msg.getProperties()));
++        encoder.encode(msg);
++        return encoder.getEncoderBuffer();
++    }
++
++
++    @Test
++    public void testCheck() throws IllegalAccessException {
++        MappedFileQueue mfq = mock(MappedFileQueue.class);
++        MappedFileQueue smfq = mock(MappedFileQueue.class);
++        SparseConsumeQueue scq = mock(SparseConsumeQueue.class);
++        doReturn(smfq).when(scq).getMappedFileQueue();
++        CompactionLog.TopicPartitionLog tpLog = mock(CompactionLog.TopicPartitionLog.class);
++        FieldUtils.writeField(tpLog, "mappedFileQueue", mfq, true);
++        FieldUtils.writeField(tpLog, "consumeQueue", scq, true);
++
++        doReturn(Lists.newArrayList()).when(mfq).getMappedFiles();
++        doReturn(Lists.newArrayList()).when(smfq).getMappedFiles();
++
++        doCallRealMethod().when(tpLog).sanityCheck();
++        tpLog.sanityCheck();
++    }
++
++    @Test(expected = RuntimeException.class)
++    public void testCheckWithException() throws IllegalAccessException, IOException {
++        MappedFileQueue mfq = mock(MappedFileQueue.class);
++        MappedFileQueue smfq = mock(MappedFileQueue.class);
++        SparseConsumeQueue scq = mock(SparseConsumeQueue.class);
++        doReturn(smfq).when(scq).getMappedFileQueue();
++        CompactionLog.TopicPartitionLog tpLog = mock(CompactionLog.TopicPartitionLog.class);
++        FieldUtils.writeField(tpLog, "mappedFileQueue", mfq, true);
++        FieldUtils.writeField(tpLog, "consumeQueue", scq, true);
++
++        Files.createDirectories(Paths.get(logPath, topic, String.valueOf(queueId)));
++        Files.write(Paths.get(logPath, topic, String.valueOf(queueId), "102400"),
++            RandomStringUtils.randomAlphanumeric(compactionFileSize).getBytes(StandardCharsets.UTF_8),
++            StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
++        MappedFile mappedFile = new DefaultMappedFile(
++            Paths.get(logPath, topic, String.valueOf(queueId), "102400").toFile().getAbsolutePath(),
++            compactionFileSize);
++        doReturn(Lists.newArrayList(mappedFile)).when(mfq).getMappedFiles();
++        doReturn(Lists.newArrayList()).when(smfq).getMappedFiles();
++
++        doCallRealMethod().when(tpLog).sanityCheck();
++        tpLog.sanityCheck();
++    }
++
++    @Test
++    public void testCompaction() throws DigestException, NoSuchAlgorithmException, IllegalAccessException {
++        Iterator<SelectMappedBufferResult> iterator = mock(Iterator.class);
++        SelectMappedBufferResult smb = mock(SelectMappedBufferResult.class);
++        when(iterator.hasNext()).thenAnswer((Answer<Boolean>)invocationOnMock -> queueOffset < 1024);
++        when(iterator.next()).thenAnswer((Answer<SelectMappedBufferResult>)invocation ->
++            new SelectMappedBufferResult(0, buildMessage(), 0, null));
++
++        MappedFile mf = mock(MappedFile.class);
++        List<MappedFile> mappedFileList = Lists.newArrayList(mf);
++        doReturn(iterator).when(mf).iterator(0);
++
++        MessageStore messageStore = mock(DefaultMessageStore.class);
++        CommitLog commitLog = mock(CommitLog.class);
++        when(messageStore.getCommitLog()).thenReturn(commitLog);
++        when(commitLog.getCommitLogSize()).thenReturn(1024 * 1024);
++        CompactionLog clog = mock(CompactionLog.class);
++        FieldUtils.writeField(clog, "defaultMessageStore", messageStore, true);
++        doCallRealMethod().when(clog).getOffsetMap(any());
++        FieldUtils.writeField(clog, "positionMgr", positionMgr, true);
++
++        queueOffset = 0;
++        CompactionLog.OffsetMap offsetMap = clog.getOffsetMap(mappedFileList);
++        assertEquals(1023, offsetMap.getLastOffset());
++
++        doCallRealMethod().when(clog).compaction(any(List.class), any(CompactionLog.OffsetMap.class));
++        doNothing().when(clog).putEndMessage(any(MappedFileQueue.class));
++        doCallRealMethod().when(clog).checkAndPutMessage(any(SelectMappedBufferResult.class),
++            any(MessageExt.class), any(CompactionLog.OffsetMap.class), any(CompactionLog.TopicPartitionLog.class));
++        doCallRealMethod().when(clog).shouldRetainMsg(any(MessageExt.class), any(CompactionLog.OffsetMap.class));
++        List<MessageExt> compactResult = Lists.newArrayList();
++        when(clog.asyncPutMessage(any(ByteBuffer.class), any(MessageExt.class),
++            any(CompactionLog.TopicPartitionLog.class)))
++            .thenAnswer((Answer<CompletableFuture<PutMessageResult>>)invocation -> {
++                compactResult.add(invocation.getArgument(1));
++                return CompletableFuture.completedFuture(new PutMessageResult(PutMessageStatus.PUT_OK,
++                    new AppendMessageResult(AppendMessageStatus.PUT_OK)));
++            });
++        queueOffset = 0;
++        clog.compaction(mappedFileList, offsetMap);
++        assertEquals(keyCount, compactResult.size());
++        assertEquals(1014, compactResult.stream().mapToLong(MessageExt::getQueueOffset).min().orElse(1024));
++        assertEquals(1023, compactResult.stream().mapToLong(MessageExt::getQueueOffset).max().orElse(0));
++    }
++
++    @Test
++    public void testReplaceFiles() throws IOException, IllegalAccessException {
++        CompactionLog clog = mock(CompactionLog.class);
++        doCallRealMethod().when(clog).replaceFiles(anyList(), any(CompactionLog.TopicPartitionLog.class),
++            any(CompactionLog.TopicPartitionLog.class));
++        doCallRealMethod().when(clog).replaceCqFiles(any(SparseConsumeQueue.class),
++            any(SparseConsumeQueue.class), anyList());
++
++        CompactionLog.TopicPartitionLog dest = mock(CompactionLog.TopicPartitionLog.class);
++        MappedFileQueue destMFQ = mock(MappedFileQueue.class);
++        when(dest.getLog()).thenReturn(destMFQ);
++        List<MappedFile> destFiles = Lists.newArrayList();
++        when(destMFQ.getMappedFiles()).thenReturn(destFiles);
++
++        List<MappedFile> srcFiles = Lists.newArrayList();
++        String fileName = logPath + File.separator + COMPACTING_SUB_FOLDER + File.separator + String.format("%010d", 0);
++        MappedFile mf = new DefaultMappedFile(fileName, 1024);
++        srcFiles.add(mf);
++        MappedFileQueue srcMFQ = mock(MappedFileQueue.class);
++        when(srcMFQ.getMappedFiles()).thenReturn(srcFiles);
++        CompactionLog.TopicPartitionLog src = mock(CompactionLog.TopicPartitionLog.class);
++        when(src.getLog()).thenReturn(srcMFQ);
++
++        FieldUtils.writeField(clog, "readMessageLock", new PutMessageSpinLock(), true);
++
++        clog.replaceFiles(Lists.newArrayList(), dest, src);
++        assertEquals(destFiles.size(), 1);
++        destFiles.forEach(f -> {
++            assertFalse(f.getFileName().contains(COMPACTING_SUB_FOLDER));
++        });
++    }
++
++}
+\ No newline at end of file
+diff --git a/store/src/test/java/org/apache/rocketmq/store/kv/CompactionPositionMgrTest.java b/store/src/test/java/org/apache/rocketmq/store/kv/CompactionPositionMgrTest.java
+new file mode 100644
+index 0000000..9206fcc
+--- /dev/null
++++ b/store/src/test/java/org/apache/rocketmq/store/kv/CompactionPositionMgrTest.java
+@@ -0,0 +1,65 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.store.kv;
++
++import org.junit.Before;
++import org.junit.Rule;
++import org.junit.Test;
++import org.junit.rules.TemporaryFolder;
++
++import java.io.File;
++import java.io.IOException;
++
++import static org.junit.Assert.assertEquals;
++
++public class CompactionPositionMgrTest {
++
++    @Rule
++    public TemporaryFolder tmpFolder = new TemporaryFolder();
++
++    File file;
++
++    @Before
++    public void setUp() throws IOException  {
++        file = tmpFolder.newFolder("compaction");
++    }
++
++    @Test
++    public void testGetAndSet() {
++        CompactionPositionMgr mgr = new CompactionPositionMgr(file.getAbsolutePath());
++        mgr.setOffset("topic1", 1, 1);
++        assertEquals(1, mgr.getOffset("topic1", 1));
++        mgr.setOffset("topic1", 1, 2);
++        assertEquals(2, mgr.getOffset("topic1", 1));
++        mgr.setOffset("topic1", 2, 1);
++        assertEquals(1, mgr.getOffset("topic1", 2));
++    }
++
++    @Test
++    public void testLoadAndPersist() throws IOException {
++        CompactionPositionMgr mgr = new CompactionPositionMgr(file.getAbsolutePath());
++        mgr.setOffset("topic1", 1, 2);
++        mgr.setOffset("topic1", 2, 1);
++        mgr.persist();
++        mgr = null;
++
++        CompactionPositionMgr mgr2 = new CompactionPositionMgr(file.getAbsolutePath());
++        mgr2.load();
++        assertEquals(2, mgr2.getOffset("topic1", 1));
++        assertEquals(1, mgr2.getOffset("topic1", 2));
++    }
++}
+\ No newline at end of file
+diff --git a/store/src/test/java/org/apache/rocketmq/store/kv/OffsetMapTest.java b/store/src/test/java/org/apache/rocketmq/store/kv/OffsetMapTest.java
+new file mode 100644
+index 0000000..e520c6a
+--- /dev/null
++++ b/store/src/test/java/org/apache/rocketmq/store/kv/OffsetMapTest.java
+@@ -0,0 +1,53 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.store.kv;
++
++import org.apache.rocketmq.store.kv.CompactionLog.OffsetMap;
++import org.junit.Test;
++
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.assertNotEquals;
++import static org.junit.Assert.assertThrows;
++
++public class OffsetMapTest {
++
++    @Test
++    public void testPutAndGet() throws Exception {
++        OffsetMap offsetMap = new OffsetMap(0);     //min 100 entry
++        offsetMap.put("abcde", 1);
++        offsetMap.put("abc", 3);
++        offsetMap.put("cde", 4);
++        offsetMap.put("abcde", 9);
++        assertEquals(offsetMap.get("abcde"), 9);
++        assertEquals(offsetMap.get("cde"), 4);
++        assertEquals(offsetMap.get("not_exist"), -1);
++        assertEquals(offsetMap.getLastOffset(), 9);
++    }
++
++    @Test
++    public void testFull() throws Exception {
++        OffsetMap offsetMap = new OffsetMap(0);     //min 100 entry
++        for (int i = 0; i < 100; i++) {
++            offsetMap.put(String.valueOf(i), i);
++        }
++
++        assertEquals(offsetMap.get("66"), 66);
++        assertNotEquals(offsetMap.get("55"), 56);
++        assertEquals(offsetMap.getLastOffset(), 99);
++        assertThrows(IllegalArgumentException.class, () -> offsetMap.put(String.valueOf(100), 100));
++    }
++}
+\ No newline at end of file
+diff --git a/store/src/test/java/org/apache/rocketmq/store/logfile/DefaultMappedFileTest.java b/store/src/test/java/org/apache/rocketmq/store/logfile/DefaultMappedFileTest.java
+new file mode 100644
+index 0000000..c150aae
+--- /dev/null
++++ b/store/src/test/java/org/apache/rocketmq/store/logfile/DefaultMappedFileTest.java
+@@ -0,0 +1,64 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.store.logfile;
++
++import org.junit.Before;
++import org.junit.Rule;
++import org.junit.Test;
++import org.junit.rules.TemporaryFolder;
++
++import java.io.IOException;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++import java.nio.file.StandardOpenOption;
++import java.util.List;
++
++import static org.junit.Assert.assertEquals;
++
++public class DefaultMappedFileTest {
++
++    @Rule
++    public TemporaryFolder tmpFolder = new TemporaryFolder();
++
++    String path;
++
++    @Before
++    public void setUp() throws IOException  {
++        path = tmpFolder.newFolder("compaction").getAbsolutePath();
++    }
++
++    @Test
++    public void testWriteFile() throws IOException  {
++        Files.write(Paths.get(path,"test.file"), "111".getBytes(StandardCharsets.UTF_8),
++            StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
++
++        Files.write(Paths.get(path,"test.file"), "111".getBytes(StandardCharsets.UTF_8),
++            StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
++
++        List<String> positions = Files.readAllLines(Paths.get(path, "test.file"), StandardCharsets.UTF_8);
++        int p = Integer.parseInt(positions.stream().findFirst().orElse("0"));
++        assertEquals(111, p);
++
++        Files.write(Paths.get(path,"test.file"), "222".getBytes(StandardCharsets.UTF_8),
++            StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
++        positions = Files.readAllLines(Paths.get(path,"test.file"), StandardCharsets.UTF_8);
++        p = Integer.parseInt(positions.stream().findFirst().orElse("0"));
++        assertEquals(222, p);
++    }
++
++}
+\ No newline at end of file
+diff --git a/store/src/test/java/org/apache/rocketmq/store/queue/SparseConsumeQueueTest.java b/store/src/test/java/org/apache/rocketmq/store/queue/SparseConsumeQueueTest.java
+new file mode 100644
+index 0000000..c9e290b
+--- /dev/null
++++ b/store/src/test/java/org/apache/rocketmq/store/queue/SparseConsumeQueueTest.java
+@@ -0,0 +1,168 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.store.queue;
++
++import org.apache.rocketmq.common.UtilAll;
++import org.apache.rocketmq.store.CommitLog;
++import org.apache.rocketmq.store.DefaultMessageStore;
++import org.apache.rocketmq.store.MessageStore;
++import org.apache.rocketmq.store.config.MessageStoreConfig;
++import org.junit.Before;
++import org.junit.Rule;
++import org.junit.Test;
++import org.junit.rules.TemporaryFolder;
++
++import java.io.IOException;
++import java.nio.ByteBuffer;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++import java.nio.file.StandardOpenOption;
++import java.util.concurrent.ThreadLocalRandom;
++
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.assertNotNull;
++import static org.junit.Assert.assertNull;
++import static org.junit.Assert.assertTrue;
++import static org.mockito.Mockito.doReturn;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++public class SparseConsumeQueueTest {
++    @Rule
++    public TemporaryFolder tempFolder = new TemporaryFolder();
++    String path;
++
++    MessageStore defaultMessageStore;
++    SparseConsumeQueue scq;
++
++    String topic = "topic1";
++    int queueId = 1;
++
++    @Before
++    public void setUp() throws IOException {
++        path = tempFolder.newFolder("scq").getAbsolutePath();
++        defaultMessageStore = mock(DefaultMessageStore.class);
++        CommitLog commitLog = mock(CommitLog.class);
++        when(defaultMessageStore.getCommitLog()).thenReturn(commitLog);
++        when(commitLog.getCommitLogSize()).thenReturn(10 * 1024 * 1024);
++        MessageStoreConfig config = mock(MessageStoreConfig.class);
++        doReturn(config).when(defaultMessageStore).getMessageStoreConfig();
++        doReturn(true).when(config).isSearchBcqByCacheEnable();
++    }
++
++    private void fillByteBuf(ByteBuffer bb, long phyOffset, long queueOffset) {
++        bb.putLong(phyOffset);
++        bb.putInt("size".length());
++        bb.putLong("tagsCode".length());
++        bb.putLong(System.currentTimeMillis());
++        bb.putLong(queueOffset);
++        bb.putShort((short)1);
++        bb.putInt(0);
++        bb.putInt(0); // 4 bytes reserved
++    }
++
++    @Test
++    public void testLoad() throws IOException {
++        scq = new SparseConsumeQueue(topic, queueId, path, BatchConsumeQueue.CQ_STORE_UNIT_SIZE, defaultMessageStore);
++
++        String file1 = UtilAll.offset2FileName(111111);
++        String file2 = UtilAll.offset2FileName(222222);
++
++        long phyOffset = 10;
++        long queueOffset = 1;
++        ByteBuffer bb = ByteBuffer.allocate(BatchConsumeQueue.CQ_STORE_UNIT_SIZE);
++        fillByteBuf(bb, phyOffset, queueOffset);
++        Files.createDirectories(Paths.get(path, topic, String.valueOf(queueId)));
++        Files.write(Paths.get(path, topic, String.valueOf(queueId), file1), bb.array(),
++            StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
++        bb.clear();
++        fillByteBuf(bb, phyOffset + 1, queueOffset + 1);
++        Files.write(Paths.get(path, topic, String.valueOf(queueId), file2), bb.array(),
++            StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
++
++        scq.load();
++        scq.recover();
++        assertEquals(scq.get(queueOffset + 1).getPos(), phyOffset + 1);
++    }
++
++    private void fillByteBufSeq(ByteBuffer bb, int circle, long basePhyOffset, long baseQueueOffset) {
++        long phyOffset = basePhyOffset;
++        long queueOffset = baseQueueOffset;
++
++        for (int i = 0; i < circle; i++) {
++            fillByteBuf(bb, phyOffset, queueOffset);
++            phyOffset++;
++            queueOffset++;
++        }
++    }
++
++    @Test
++    public void testSearch() throws IOException {
++        int fileSize = 10 * BatchConsumeQueue.CQ_STORE_UNIT_SIZE;
++        scq = new SparseConsumeQueue(topic, queueId, path, fileSize, defaultMessageStore);
++
++        ByteBuffer bb = ByteBuffer.allocate(fileSize);
++        long basePhyOffset = 101;
++        long baseQueueOffset = 101;
++
++        /* 101 -> 101 ... 110 -> 110
++           201 -> 201 ... 210 -> 210
++           301 -> 301 ... 310 -> 310
++           ...
++         */
++        for (int i = 0; i < 5; i++) {
++            String fileName = UtilAll.offset2FileName(i * fileSize);
++            fillByteBufSeq(bb, 10, basePhyOffset, baseQueueOffset);
++            Files.createDirectories(Paths.get(path, topic, String.valueOf(queueId)));
++            Files.write(Paths.get(path, topic, String.valueOf(queueId), fileName), bb.array(),
++                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
++            basePhyOffset = i * 100 + 1;
++            baseQueueOffset = i * 100 + 1;
++            bb.clear();
++        }
++
++        scq.load();
++        scq.recover();
++
++        ReferredIterator<CqUnit> bufferConsumeQueue = scq.iterateFromOrNext(105);   //in the file
++        assertNotNull(bufferConsumeQueue);
++        assertTrue(bufferConsumeQueue.hasNext());
++        assertEquals(bufferConsumeQueue.next().getQueueOffset(), 105);
++        bufferConsumeQueue.release();
++
++        bufferConsumeQueue = scq.iterateFromOrNext(120);    // in the next file
++        assertNotNull(bufferConsumeQueue);
++        assertTrue(bufferConsumeQueue.hasNext());
++        assertEquals(bufferConsumeQueue.next().getQueueOffset(), 201);
++        bufferConsumeQueue.release();
++
++        bufferConsumeQueue = scq.iterateFromOrNext(600);       // not in the file
++        assertNull(bufferConsumeQueue);
++    }
++
++    @Test
++    public void testCreateFile() throws IOException {
++        scq = new SparseConsumeQueue(topic, queueId, path, BatchConsumeQueue.CQ_STORE_UNIT_SIZE, defaultMessageStore);
++        long physicalOffset = Math.abs(ThreadLocalRandom.current().nextLong());
++        String formatName = UtilAll.offset2FileName(physicalOffset);
++        scq.createFile(physicalOffset);
++
++        assertTrue(Files.exists(Paths.get(path, topic, String.valueOf(queueId), formatName)));
++        scq.putBatchMessagePositionInfo(5,4,3,2,1,(short)1);
++        assertEquals(4, scq.get(1).getSize());
++    }
++}
+\ No newline at end of file

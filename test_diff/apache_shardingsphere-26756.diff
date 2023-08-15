@@ -1,0 +1,14 @@
+diff --git a/infra/common/src/test/java/org/apache/shardingsphere/infra/rule/builder/fixture/FixtureDatabaseRuleConfiguration.java b/infra/common/src/test/java/org/apache/shardingsphere/infra/rule/builder/fixture/FixtureDatabaseRuleConfiguration.java
+index 50e7f4d..a5066c2 100644
+--- a/infra/common/src/test/java/org/apache/shardingsphere/infra/rule/builder/fixture/FixtureDatabaseRuleConfiguration.java
++++ b/infra/common/src/test/java/org/apache/shardingsphere/infra/rule/builder/fixture/FixtureDatabaseRuleConfiguration.java
+@@ -20,4 +20,9 @@ package org.apache.shardingsphere.infra.rule.builder.fixture;
+ import org.apache.shardingsphere.infra.config.rule.scope.DatabaseRuleConfiguration;
+ 
+ public final class FixtureDatabaseRuleConfiguration implements DatabaseRuleConfiguration {
++    
++    @Override
++    public boolean isEmpty() {
++        return false;
++    }
+ }

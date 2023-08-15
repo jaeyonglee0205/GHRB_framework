@@ -1,0 +1,142 @@
+diff --git a/jadx-gui/src/test/java/jadx/gui/utils/JumpManagerTest.java b/jadx-gui/src/test/java/jadx/gui/utils/JumpManagerTest.java
+index ce53e05..02b9080 100644
+--- a/jadx-gui/src/test/java/jadx/gui/utils/JumpManagerTest.java
++++ b/jadx-gui/src/test/java/jadx/gui/utils/JumpManagerTest.java
+@@ -118,6 +118,6 @@ class JumpManagerTest {
+ 	}
+ 
+ 	private JumpPosition makeJumpPos() {
+-		return new JumpPosition(new TextNode(""), 0, 0);
++		return new JumpPosition(new TextNode(""), 0);
+ 	}
+ }
+diff --git a/jadx-gui/src/test/java/jadx/gui/utils/codecache/DiskCodeCacheTest.java b/jadx-gui/src/test/java/jadx/gui/utils/codecache/DiskCodeCacheTest.java
+new file mode 100644
+index 0000000..a41af1d
+--- /dev/null
++++ b/jadx-gui/src/test/java/jadx/gui/utils/codecache/DiskCodeCacheTest.java
+@@ -0,0 +1,47 @@
++package jadx.gui.utils.codecache;
++
++import java.io.IOException;
++import java.nio.file.Path;
++
++import org.junit.jupiter.api.Test;
++import org.junit.jupiter.api.io.TempDir;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++
++import jadx.api.ICodeInfo;
++import jadx.api.impl.NoOpCodeCache;
++import jadx.core.dex.nodes.ClassNode;
++import jadx.gui.utils.codecache.disk.DiskCodeCache;
++import jadx.tests.api.IntegrationTest;
++
++import static org.assertj.core.api.Assertions.assertThat;
++
++class DiskCodeCacheTest extends IntegrationTest {
++	private static final Logger LOG = LoggerFactory.getLogger(DiskCodeCacheTest.class);
++
++	@TempDir
++	public Path tempDir;
++
++	@Test
++	public void test() throws IOException {
++		disableCompilation();
++		getArgs().setCodeCache(NoOpCodeCache.INSTANCE);
++		ClassNode clsNode = getClassNode(DiskCodeCacheTest.class);
++		ICodeInfo codeInfo = clsNode.getCode();
++
++		DiskCodeCache cache = new DiskCodeCache(clsNode.root(), tempDir);
++
++		String clsKey = clsNode.getFullName();
++		cache.add(clsKey, codeInfo);
++
++		ICodeInfo readCodeInfo = cache.get(clsKey);
++
++		assertThat(readCodeInfo).isNotNull();
++		assertThat(readCodeInfo.getCodeStr()).isEqualTo(codeInfo.getCodeStr());
++		assertThat(readCodeInfo.getCodeMetadata().getLineMapping()).isEqualTo(codeInfo.getCodeMetadata().getLineMapping());
++		LOG.info("Disk code annotations: {}", readCodeInfo.getCodeMetadata().getAsMap());
++		assertThat(readCodeInfo.getCodeMetadata().getAsMap()).hasSameSizeAs(codeInfo.getCodeMetadata().getAsMap());
++
++		cache.close();
++	}
++}
+diff --git a/jadx-gui/src/test/java/jadx/gui/utils/search/StringRefTest.java b/jadx-gui/src/test/java/jadx/gui/utils/search/StringRefTest.java
+deleted file mode 100644
+index b6dd624..0000000
+--- a/jadx-gui/src/test/java/jadx/gui/utils/search/StringRefTest.java
++++ /dev/null
+@@ -1,71 +0,0 @@
+-package jadx.gui.utils.search;
+-
+-import java.util.List;
+-import java.util.stream.Collectors;
+-import java.util.stream.Stream;
+-
+-import org.junit.jupiter.api.Test;
+-
+-import static jadx.gui.utils.search.StringRef.fromStr;
+-import static jadx.gui.utils.search.StringRef.subString;
+-import static org.hamcrest.MatcherAssert.assertThat;
+-import static org.hamcrest.Matchers.is;
+-
+-class StringRefTest {
+-
+-	@Test
+-	public void testConvert() {
+-		assertThat(fromStr("a").toString(), is("a"));
+-	}
+-
+-	@Test
+-	public void testSubstring() {
+-		checkStr(subString("a", 0), "a");
+-		checkStr(subString("a", 1), "");
+-		checkStr(subString("a", 0, 0), "");
+-		checkStr(subString("a", 0, 1), "a");
+-		checkStr(subString("abc", 1, 2), "b");
+-		checkStr(subString("abc", 2), "c");
+-		checkStr(subString("abc", 2, 3), "c");
+-	}
+-
+-	public static void checkStr(StringRef ref, String str) {
+-		assertThat(ref.toString(), is(str));
+-		assertThat(ref, is(fromStr(str)));
+-	}
+-
+-	@Test
+-	public void testTrim() {
+-		checkTrim(fromStr("a"), "a");
+-		checkTrim(fromStr(" a "), "a");
+-		checkTrim(fromStr("\ta"), "a");
+-		checkTrim(subString("a b c", 1), "b c");
+-		checkTrim(subString("a b\tc", 1, 4), "b");
+-		checkTrim(subString("a b\tc", 2, 3), "b");
+-	}
+-
+-	private static void checkTrim(StringRef ref, String result) {
+-		assertThat(ref.trim().toString(), is(result));
+-	}
+-
+-	@Test
+-	public void testSplit() {
+-		checkSplit("abc", "b", "a", "c");
+-		checkSplit("abc", "a", "", "bc");
+-		checkSplit("abc", "c", "ab");
+-		checkSplit("abc", "d", "abc");
+-		checkSplit("abbbc", "b", "a", "", "", "c");
+-		checkSplit("abbbc", "bb", "a", "bc");
+-		checkSplit("abbbc", "bbb", "a", "c");
+-		checkSplit("abbbc", "bbc", "ab");
+-		checkSplit("abbbc", "bbbc", "a");
+-	}
+-
+-	private static void checkSplit(String str, String splitBy, String... result) {
+-		List<StringRef> expectedStringRegList = Stream.of(result).map(StringRef::fromStr).collect(Collectors.toList());
+-		assertThat(StringRef.split(str, splitBy), is(expectedStringRegList));
+-
+-		// compare with original split
+-		assertThat(str.split(splitBy), is(result));
+-	}
+-}

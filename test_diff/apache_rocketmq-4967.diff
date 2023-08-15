@@ -1,0 +1,12 @@
+diff --git a/store/src/test/java/org/apache/rocketmq/store/stats/BrokerStatsManagerTest.java b/store/src/test/java/org/apache/rocketmq/store/stats/BrokerStatsManagerTest.java
+index 9ffc135..6dcdfc2 100644
+--- a/store/src/test/java/org/apache/rocketmq/store/stats/BrokerStatsManagerTest.java
++++ b/store/src/test/java/org/apache/rocketmq/store/stats/BrokerStatsManagerTest.java
+@@ -17,7 +17,6 @@
+ 
+ package org.apache.rocketmq.store.stats;
+ 
+-import org.apache.rocketmq.store.stats.BrokerStatsManager;
+ import org.junit.After;
+ import org.junit.Assert;
+ import org.junit.Before;

@@ -1,0 +1,229 @@
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
+index 8cbcb1f..6da7162 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
+@@ -79,6 +79,10 @@ public class KeycloakDeploymentTest extends BaseOperatorTest {
+             Log.info("Checking Keycloak pod has ready replicas == 1");
+             assertThat(k8sclient.apps().statefulSets().inNamespace(namespace).withName(deploymentName).get().getStatus().getReadyReplicas()).isEqualTo(1);
+ 
++            Log.info("Checking observedGeneration is the same as the spec");
++            Keycloak latest = k8sclient.resource(kc).get();
++            assertThat(latest.getMetadata().getGeneration()).isEqualTo(latest.getStatus().getObservedGeneration());
++
+             // Delete CR
+             Log.info("Deleting Keycloak CR and watching cleanup");
+             k8sclient.resource(kc).delete();
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/unit/KeycloakDistConfiguratorTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/unit/KeycloakDistConfiguratorTest.java
+index e6125ce..5cc60ab 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/unit/KeycloakDistConfiguratorTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/unit/KeycloakDistConfiguratorTest.java
+@@ -22,6 +22,7 @@ import io.fabric8.kubernetes.api.model.EnvVar;
+ import io.fabric8.kubernetes.api.model.apps.StatefulSet;
+ import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
+ import io.quarkus.test.junit.QuarkusTest;
++
+ import org.junit.jupiter.api.Test;
+ import org.keycloak.common.util.CollectionUtil;
+ import org.keycloak.operator.Constants;
+@@ -208,7 +209,7 @@ public class KeycloakDistConfiguratorTest {
+ 
+     private void assertWarningStatusFirstClassFields(KeycloakDistConfigurator distConfig, boolean expectWarning, Collection<String> firstClassFields) {
+         final String message = "warning: You need to specify these fields as the first-class citizen of the CR: ";
+-        final KeycloakStatusAggregator statusBuilder = new KeycloakStatusAggregator();
++        final KeycloakStatusAggregator statusBuilder = new KeycloakStatusAggregator(1L);
+         distConfig.validateOptions(statusBuilder);
+         final KeycloakStatus status = statusBuilder.build();
+ 
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/unit/KeycloakStatusTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/unit/KeycloakStatusTest.java
+index 4e973ae..e83545e 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/unit/KeycloakStatusTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/unit/KeycloakStatusTest.java
+@@ -17,21 +17,124 @@
+ 
+ package org.keycloak.operator.testsuite.unit;
+ 
+-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+-
++import org.assertj.core.api.Condition;
+ import org.junit.jupiter.api.Test;
+ import org.keycloak.operator.crds.v2alpha1.deployment.KeycloakStatus;
+ import org.keycloak.operator.crds.v2alpha1.deployment.KeycloakStatusAggregator;
++import org.keycloak.operator.crds.v2alpha1.deployment.KeycloakStatusCondition;
++import org.keycloak.operator.testsuite.utils.CRAssert;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertNotEquals;
+ 
+ public class KeycloakStatusTest {
+-    
++
+     @Test
+     public void testEqualityWithScale() {
+-        KeycloakStatus status1 = new KeycloakStatusAggregator().apply(b -> b.withInstances(1)).build();
+-        
+-        KeycloakStatus status2 = new KeycloakStatusAggregator().apply(b -> b.withInstances(2)).build();
+-        
++        KeycloakStatus status1 = new KeycloakStatusAggregator(0L).apply(b -> b.withInstances(1)).build();
++
++        KeycloakStatus status2 = new KeycloakStatusAggregator(0L).apply(b -> b.withInstances(2)).build();
++
+         assertNotEquals(status1, status2);
+     }
+ 
++    @Test
++    public void testDefaults() {
++        KeycloakStatus status = new KeycloakStatusAggregator(1L).build();
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.READY, true, "", 1L);
++
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.ROLLING_UPDATE, false, "", 1L);
++
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.HAS_ERRORS, false, "", 1L);
++    }
++
++    @Test
++    public void testReadyWithWarning() {
++        KeycloakStatus status = new KeycloakStatusAggregator(1L).addWarningMessage("something's not right").build();
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.READY, true, "", 1L);
++
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.HAS_ERRORS, false, "warning: something's not right", 1L); // could also be unknown
++    }
++
++    @Test
++    public void testNotReady() {
++        KeycloakStatus status = new KeycloakStatusAggregator(1L).addNotReadyMessage("waiting").build();
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.READY, false, "waiting", 1L);
++
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.HAS_ERRORS, false, "", 1L);
++    }
++
++    @Test
++    public void testReadyRolling() {
++        KeycloakStatus status = new KeycloakStatusAggregator(1L).addRollingUpdateMessage("rolling").build();
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.READY, true, "", 1L);
++
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.ROLLING_UPDATE, true, "rolling", 1L);
++    }
++
++    @Test
++    public void testError() {
++        // without prior status, ready and rolling are unknown
++        KeycloakStatus status = new KeycloakStatusAggregator(1L).addErrorMessage("this is bad").build();
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.READY, null, null, null);
++
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.HAS_ERRORS, true, "this is bad", 1L);
++
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.ROLLING_UPDATE, null, null, null);
++    }
++
++    @Test
++    public void testErrorWithPriorStatus() {
++        // with prior status, ready and rolling are preserved
++        KeycloakStatus prior = new KeycloakStatusAggregator(1L).build();
++        prior.getConditions().stream().forEach(c -> c.setLastTransitionTime("prior"));
++
++        KeycloakStatus status = new KeycloakStatusAggregator(prior, 2L).addErrorMessage("this is bad").build();
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.READY, true, "", 1L)
++            .extracting(KeycloakStatusCondition::getLastTransitionTime).isEqualTo("prior");
++
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.HAS_ERRORS, true, "this is bad", 2L)
++            .extracting(KeycloakStatusCondition::getLastTransitionTime).isNotEqualTo("prior");
++
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.ROLLING_UPDATE, false, "", 1L);
++    }
++
++    @Test
++    public void testReadyWithPriorStatus() {
++        // without prior status, ready and rolling are known and keep the transition time
++        KeycloakStatus prior = new KeycloakStatusAggregator(1L).build();
++        prior.getConditions().stream().forEach(c -> c.setLastTransitionTime("prior"));
++
++        KeycloakStatus status = new KeycloakStatusAggregator(prior, 2L).build();
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.READY, true, "", 2L)
++            .extracting(KeycloakStatusCondition::getLastTransitionTime).isEqualTo("prior");
++
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.HAS_ERRORS, false, "", 2L);
++
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.ROLLING_UPDATE, false, "", 2L);
++    }
++
++    @Test
++    public void testMessagesChangesLastTransitionTime() {
++        KeycloakStatus prior = new KeycloakStatusAggregator(1L).build();
++        prior.getConditions().stream().forEach(c -> {
++            c.setLastTransitionTime("prior");
++            c.setMessage("old");
++        });
++
++        KeycloakStatus status = new KeycloakStatusAggregator(prior, 2L).build();
++        CRAssert.assertKeycloakStatusCondition(status, KeycloakStatusCondition.READY, true, "", 2L).has(new Condition<>(
++                c -> !c.getLastTransitionTime().equals("prior") && !c.getMessage().equals("old"), "transitioned"));
++    }
++
++    @Test
++    public void testPreservesScale() {
++        KeycloakStatus prior = new KeycloakStatusAggregator(1L).apply(b -> b.withObservedGeneration(1L).withInstances(3)).build();
++        prior.getConditions().stream().forEach(c -> c.setLastTransitionTime("prior"));
++
++        KeycloakStatus status = new KeycloakStatusAggregator(prior, 2L).apply(b -> b.withObservedGeneration(2L)).build();
++        assertEquals(2, status.getObservedGeneration());
++        assertEquals(3, status.getInstances());
++    }
++
+ }
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/utils/CRAssert.java b/operator/src/test/java/org/keycloak/operator/testsuite/utils/CRAssert.java
+index 1c7e6b8..0c9eb34 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/utils/CRAssert.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/utils/CRAssert.java
+@@ -19,8 +19,11 @@ package org.keycloak.operator.testsuite.utils;
+ 
+ import io.fabric8.kubernetes.client.utils.Serialization;
+ import io.quarkus.logging.Log;
++
++import org.assertj.core.api.ObjectAssert;
+ import org.keycloak.operator.crds.v2alpha1.deployment.Keycloak;
+ import org.keycloak.operator.crds.v2alpha1.deployment.KeycloakStatus;
++import org.keycloak.operator.crds.v2alpha1.deployment.KeycloakStatusCondition;
+ import org.keycloak.operator.crds.v2alpha1.realmimport.KeycloakRealmImport;
+ 
+ import static org.assertj.core.api.Assertions.assertThat;
+@@ -36,23 +39,30 @@ public final class CRAssert {
+     public static void assertKeycloakStatusCondition(Keycloak kc, String condition, boolean status, String containedMessage) {
+         Log.debugf("Asserting CR: %s, condition: %s, status: %s, message: %s", kc.getMetadata().getName(), condition, status, containedMessage);
+         try {
+-            assertKeycloakStatusCondition(kc.getStatus(), condition, status, containedMessage);
++            assertKeycloakStatusCondition(kc.getStatus(), condition, status, containedMessage, null);
+         } catch (Exception e) {
+             Log.infof("Asserting CR: %s with status:\n%s", kc.getMetadata().getName(), Serialization.asYaml(kc.getStatus()));
+             throw e;
+         }
+     }
+ 
+-    public static void assertKeycloakStatusCondition(KeycloakStatus kcStatus, String condition, boolean status) {
+-        assertKeycloakStatusCondition(kcStatus, condition, status, null);
++    public static void assertKeycloakStatusCondition(KeycloakStatus kcStatus, String condition, Boolean status, String containedMessage) {
++        assertKeycloakStatusCondition(kcStatus, condition, status, containedMessage, null);
+     }
+-    public static void assertKeycloakStatusCondition(KeycloakStatus kcStatus, String condition, boolean status, String containedMessage) {
+-        assertThat(kcStatus.getConditions())
+-                .anyMatch(c ->
+-                        c.getType().equals(condition) &&
+-                        c.getStatus() == status &&
+-                        (containedMessage == null || c.getMessage().contains(containedMessage))
+-                );
++
++    public static ObjectAssert<KeycloakStatusCondition> assertKeycloakStatusCondition(KeycloakStatus kcStatus, String condition, Boolean status, String containedMessage, Long observedGeneration) {
++        KeycloakStatusCondition statusCondition = kcStatus.findCondition(condition).orElseThrow();
++        assertThat(statusCondition.getStatus()).isEqualTo(status);
++        if (containedMessage != null) {
++            assertThat(statusCondition.getMessage()).contains(containedMessage);
++        }
++        if (observedGeneration != null) {
++            assertThat(statusCondition.getObservedGeneration()).isEqualTo(observedGeneration);
++        }
++        if (status != null) {
++            assertThat(statusCondition.getLastTransitionTime()).isNotNull();
++        }
++        return assertThat(statusCondition);
+     }
+ 
+     public static void assertKeycloakStatusDoesNotContainMessage(KeycloakStatus kcStatus, String message) {

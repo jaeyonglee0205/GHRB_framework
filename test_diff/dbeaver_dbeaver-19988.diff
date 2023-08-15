@@ -1,0 +1,20 @@
+diff --git a/test/org.jkiss.dbeaver.model.lsm.test/src/org/jkiss/dbeaver/model/lsm/test/ParseSelectStmtTest.java b/test/org.jkiss.dbeaver.model.lsm.test/src/org/jkiss/dbeaver/model/lsm/test/ParseSelectStmtTest.java
+index 493a518..9d4e04f 100644
+--- a/test/org.jkiss.dbeaver.model.lsm.test/src/org/jkiss/dbeaver/model/lsm/test/ParseSelectStmtTest.java
++++ b/test/org.jkiss.dbeaver.model.lsm.test/src/org/jkiss/dbeaver/model/lsm/test/ParseSelectStmtTest.java
+@@ -75,7 +75,7 @@ public class ParseSelectStmtTest {
+             var pp = new Sql92Parser(tokens);
+             pp.setBuildParseTree(true);
+             
+-            var tree = pp.queryExpression();
++            var tree = pp.sqlQuery();
+             var noErrors = pp.getNumberOfSyntaxErrors() == 0;
+             if (!noErrors) {
+                 System.err.println();
+@@ -105,4 +105,4 @@ public class ParseSelectStmtTest {
+             Assert.assertTrue(result.isNoErrors());
+         }
+     }
+-}
+\ No newline at end of file
++}

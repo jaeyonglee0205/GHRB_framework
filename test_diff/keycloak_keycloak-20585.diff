@@ -1,0 +1,207 @@
+diff --git a/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/QuarkusPropertiesAutoBuildDistTest.java b/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/QuarkusPropertiesAutoBuildDistTest.java
+index fd3fe3f..6e83bfb 100644
+--- a/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/QuarkusPropertiesAutoBuildDistTest.java
++++ b/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/QuarkusPropertiesAutoBuildDistTest.java
+@@ -35,13 +35,13 @@ import org.keycloak.it.utils.KeycloakDistribution;
+ import io.quarkus.test.junit.main.Launch;
+ import io.quarkus.test.junit.main.LaunchResult;
+ 
+-@DistributionTest
++@DistributionTest(defaultOptions = {"--http-enabled=true", "--hostname-strict=false"})
+ @RawDistOnly(reason = "Containers are immutable")
+ @TestMethodOrder(OrderAnnotation.class)
+ public class QuarkusPropertiesAutoBuildDistTest {
+ 
+     @Test
+-    @Launch({ "start", "--http-enabled=true", "--hostname-strict=false" })
++    @Launch({ "start" })
+     @Order(1)
+     void reAugOnFirstRun(LaunchResult result) {
+         CLIResult cliResult = (CLIResult) result;
+@@ -50,7 +50,7 @@ public class QuarkusPropertiesAutoBuildDistTest {
+ 
+     @Test
+     @BeforeStartDistribution(QuarkusPropertiesAutoBuildDistTest.UpdateConsoleLogLevelToWarn.class)
+-    @Launch({ "start", "--http-enabled=true", "--hostname-strict=false" })
++    @Launch({ "start" })
+     @Order(2)
+     void testQuarkusRuntimePropDoesNotTriggerReAug(LaunchResult result) {
+         CLIResult cliResult = (CLIResult) result;
+@@ -60,7 +60,7 @@ public class QuarkusPropertiesAutoBuildDistTest {
+ 
+     @Test
+     @BeforeStartDistribution(UpdateConsoleLogLevelToInfo.class)
+-    @Launch({ "start", "--http-enabled=true", "--hostname-strict=false" })
++    @Launch({ "start" })
+     @Order(3)
+     void testNoReAugAfterChangingRuntimeProperty(LaunchResult result) {
+         CLIResult cliResult = (CLIResult) result;
+@@ -70,7 +70,7 @@ public class QuarkusPropertiesAutoBuildDistTest {
+ 
+     @Test
+     @BeforeStartDistribution(AddAdditionalDatasource.class)
+-    @Launch({ "start", "--http-enabled=true", "--hostname-strict=false" })
++    @Launch({ "start" })
+     @Order(4)
+     void testReAugForAdditionalDatasource(LaunchResult result) {
+         CLIResult cliResult = (CLIResult) result;
+@@ -79,7 +79,7 @@ public class QuarkusPropertiesAutoBuildDistTest {
+ 
+     @Test
+     @BeforeStartDistribution(ChangeAdditionalDatasourceUsername.class)
+-    @Launch({ "start", "--http-enabled=true", "--hostname-strict=false" })
++    @Launch({ "start" })
+     @Order(5)
+     void testNoReAugForAdditionalDatasourceRuntimeProperty(LaunchResult result) {
+         CLIResult cliResult = (CLIResult) result;
+@@ -88,7 +88,7 @@ public class QuarkusPropertiesAutoBuildDistTest {
+ 
+     @Test
+     @BeforeStartDistribution(ChangeAdditionalDatasourceDbKind.class)
+-    @Launch({ "start", "--http-enabled=true", "--hostname-strict=false" })
++    @Launch({ "start" })
+     @Order(6)
+     void testNoReAugWhenBuildTimePropertiesAreTheSame(LaunchResult result) {
+         CLIResult cliResult = (CLIResult) result;
+@@ -97,7 +97,7 @@ public class QuarkusPropertiesAutoBuildDistTest {
+ 
+     @Test
+     @BeforeStartDistribution(AddAdditionalDatasource2.class)
+-    @Launch({ "start", "--http-enabled=true", "--hostname-strict=false" })
++    @Launch({ "start" })
+     @Order(7)
+     void testReAugWhenAnotherDatasourceAdded(LaunchResult result) {
+         CLIResult cliResult = (CLIResult) result;
+@@ -105,14 +105,13 @@ public class QuarkusPropertiesAutoBuildDistTest {
+     }
+ 
+     @Test
+-    @BeforeStartDistribution(EnableQuarkusMetrics.class)
+-    @Launch({ "start", "--http-enabled=true", "--hostname-strict=false" })
++    @BeforeStartDistribution(SetDatabaseKind.class)
++    @Launch({ "start" })
+     @Order(8)
+     void testWrappedBuildPropertyTriggersBuildButGetsIgnoredWhenSetByQuarkus(LaunchResult result) {
+         CLIResult cliResult = (CLIResult) result;
+         cliResult.assertBuild();
+-        when().get("/metrics").then()
+-                .statusCode(404);
++        cliResult.assertStarted();
+     }
+ 
+     public static class UpdateConsoleLogLevelToWarn implements Consumer<KeycloakDistribution> {
+@@ -163,11 +162,11 @@ public class QuarkusPropertiesAutoBuildDistTest {
+         }
+     }
+ 
+-    public static class EnableQuarkusMetrics implements Consumer<KeycloakDistribution> {
++    public static class SetDatabaseKind implements Consumer<KeycloakDistribution> {
+         @Override
+         public void accept(KeycloakDistribution distribution) {
+             distribution.setManualStop(true);
+-            distribution.setQuarkusProperty("quarkus.micrometer.enabled","true");
++            distribution.setQuarkusProperty("quarkus.datasource.db-kind", "postgres");
+         }
+     }
+ }
+\ No newline at end of file
+diff --git a/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/QuarkusPropertiesDistTest.java b/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/QuarkusPropertiesDistTest.java
+index c8286e9..3270d94 100644
+--- a/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/QuarkusPropertiesDistTest.java
++++ b/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/QuarkusPropertiesDistTest.java
+@@ -104,16 +104,6 @@ public class QuarkusPropertiesDistTest {
+ 
+     @Test
+     @BeforeStartDistribution(UpdateHibernateMetricsFromQuarkusProps.class)
+-    @Launch({ "start", "--http-enabled=true", "--hostname-strict=false" })
+-    @Order(7)
+-    void testBuildRunTimeMismatchOnQuarkusBuildPropWarning(LaunchResult result) {
+-        CLIResult cliResult = (CLIResult) result;
+-        cliResult.assertNoBuild();
+-        cliResult.assertBuildRuntimeMismatchWarning(QUARKUS_BUILDTIME_HIBERNATE_METRICS_KEY);
+-    }
+-
+-    @Test
+-    @BeforeStartDistribution(UpdateHibernateMetricsFromQuarkusProps.class)
+     @Launch({ "build", "--metrics-enabled=true" })
+     @Order(8)
+     void buildFirstWithUnknownQuarkusBuildProperty(LaunchResult result) {
+diff --git a/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/ShowConfigCommandDistTest.java b/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/ShowConfigCommandDistTest.java
+index c1fd160..7d2694f 100644
+--- a/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/ShowConfigCommandDistTest.java
++++ b/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/ShowConfigCommandDistTest.java
+@@ -14,18 +14,18 @@ public class ShowConfigCommandDistTest {
+     void testShowConfigPicksUpRightConfigDependingOnCurrentMode(KeycloakDistribution distribution) {
+         CLIResult initialResult = distribution.run("show-config");
+         initialResult.assertMessage("Current Mode: production");
+-        initialResult.assertMessage("kc.http-enabled =  false");
++        initialResult.assertMessage("kc.db =  dev-file");
+ 
+         distribution.run("start-dev");
+ 
+         CLIResult devModeResult = distribution.run("show-config");
+         devModeResult.assertMessage("Current Mode: development");
+-        devModeResult.assertMessage("kc.http-enabled =  true");
++        devModeResult.assertMessage("kc.db =  dev-file");
+ 
+         distribution.run("build");
+ 
+         CLIResult resetResult = distribution.run("show-config");
+         resetResult.assertMessage("Current Mode: production");
+-        resetResult.assertMessage("kc.http-enabled =  false");
++        resetResult.assertMessage("kc.db =  dev-file");
+     }
+ }
+diff --git a/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/StartCommandDistTest.java b/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/StartCommandDistTest.java
+index 6a4019d..498b3d8 100644
+--- a/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/StartCommandDistTest.java
++++ b/quarkus/tests/integration/src/test/java/org/keycloak/it/cli/dist/StartCommandDistTest.java
+@@ -30,6 +30,7 @@ import org.keycloak.it.junit5.extension.DistributionTest;
+ 
+ import io.quarkus.test.junit.main.Launch;
+ import io.quarkus.test.junit.main.LaunchResult;
++import org.keycloak.it.junit5.extension.RawDistOnly;
+ import org.keycloak.it.utils.KeycloakDistribution;
+ 
+ @DistributionTest
+@@ -99,4 +100,40 @@ public class StartCommandDistTest {
+         cliResult.assertError("Unknown option: '--cache'");
+     }
+ 
++    @Test
++    @RawDistOnly(reason = "Containers are immutable")
++    void testWarningWhenOverridingBuildOptionsDuringStart(KeycloakDistribution dist) {
++        CLIResult cliResult = dist.run("build", "--db=postgres", "--cache=local", "--features=preview");
++        cliResult.assertBuild();
++        cliResult = dist.run("start", "--hostname=localhost", "--http-enabled=true");
++        cliResult.assertMessage("The previous optimized build will be overridden with the following build options:");
++        cliResult.assertMessage("- cache=local > cache=ispn"); // back to the default value
++        cliResult.assertMessage("- db=postgres > db=dev-file"); // back to the default value
++        cliResult.assertMessage("- features=preview > features=<unset>"); // no default value, the <unset> is shown
++        cliResult.assertMessage("To avoid that, run the 'build' command again and then start the optimized server instance using the '--optimized' flag.");
++        cliResult.assertStarted();
++        // should not show warning if the re-augmentation did not happen through the build command
++        // an optimized server image should ideally be created by running a build
++        cliResult = dist.run("start", "--db=dev-mem", "--hostname=localhost", "--http-enabled=true");
++        cliResult.assertNoMessage("The previous optimized build will be overridden with the following build options:");
++        cliResult.assertStarted();
++        dist.run("build", "--db=postgres");
++        cliResult = dist.run("start", "--hostname=localhost", "--http-enabled=true");
++        cliResult.assertMessage("- db=postgres > db=dev-file");
++        cliResult.assertNoMessage("- cache=local > cache=ispn");
++        cliResult.assertNoMessage("- features=preview > features=<unset>");
++        cliResult.assertStarted();
++        dist.run("build", "--db=postgres");
++        cliResult = dist.run("start", "--db=dev-mem", "--hostname=localhost", "--http-enabled=true");
++        cliResult.assertMessage("- db=postgres > db=dev-mem"); // option overridden during the start
++        cliResult.assertStarted();
++        dist.run("build", "--db=dev-mem", "--cache=local");
++        cliResult = dist.run("start", "--db=dev-mem", "--hostname=localhost", "--http-enabled=true");
++        cliResult.assertNoMessage("- db=postgres > db=postgres"); // option did not change not need to show
++        cliResult.assertMessage("- cache=local > cache=ispn");
++        cliResult.assertStarted();
++        dist.run("build", "--db=dev-mem", "--cache=local");
++        cliResult = dist.run("start", "--db=dev-mem", "--cache=local", "--hostname=localhost", "--http-enabled=true");
++        cliResult.assertNoMessage("The previous optimized build will be overridden with the following build options:"); // no message, same values provided during auto-build
++    }
+ }

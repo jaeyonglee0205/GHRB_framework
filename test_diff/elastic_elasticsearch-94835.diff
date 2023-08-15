@@ -1,0 +1,287 @@
+diff --git a/x-pack/plugin/core/src/test/java/org/elasticsearch/xpack/core/ilm/DownsampleActionTests.java b/x-pack/plugin/core/src/test/java/org/elasticsearch/xpack/core/ilm/DownsampleActionTests.java
+index f8c5161..2d37c9a 100644
+--- a/x-pack/plugin/core/src/test/java/org/elasticsearch/xpack/core/ilm/DownsampleActionTests.java
++++ b/x-pack/plugin/core/src/test/java/org/elasticsearch/xpack/core/ilm/DownsampleActionTests.java
+@@ -16,6 +16,7 @@ import org.elasticsearch.xpack.core.rollup.ConfigTestHelpers;
+ import java.util.List;
+ 
+ import static org.elasticsearch.xpack.core.ilm.DownsampleAction.CONDITIONAL_DATASTREAM_CHECK_KEY;
++import static org.elasticsearch.xpack.core.ilm.DownsampleAction.CONDITIONAL_TIME_SERIES_CHECK_KEY;
+ import static org.elasticsearch.xpack.core.ilm.DownsampleAction.GENERATE_DOWNSAMPLE_STEP_NAME;
+ import static org.hamcrest.Matchers.equalTo;
+ 
+@@ -61,57 +62,63 @@ public class DownsampleActionTests extends AbstractActionTestCase<DownsampleActi
+         );
+         List<Step> steps = action.toSteps(null, phase, nextStepKey);
+         assertNotNull(steps);
+-        assertEquals(12, steps.size());
+-
+-        assertTrue(steps.get(0) instanceof CheckNotDataStreamWriteIndexStep);
+-        assertThat(steps.get(0).getKey().name(), equalTo(CheckNotDataStreamWriteIndexStep.NAME));
+-        assertThat(steps.get(0).getNextStepKey().name(), equalTo(WaitForNoFollowersStep.NAME));
+-
+-        assertTrue(steps.get(1) instanceof WaitForNoFollowersStep);
+-        assertThat(steps.get(1).getKey().name(), equalTo(WaitForNoFollowersStep.NAME));
+-        assertThat(steps.get(1).getNextStepKey().name(), equalTo(CleanupTargetIndexStep.NAME));
+-
+-        assertTrue(steps.get(2) instanceof CleanupTargetIndexStep);
+-        assertThat(steps.get(2).getKey().name(), equalTo(CleanupTargetIndexStep.NAME));
+-        assertThat(steps.get(2).getNextStepKey().name(), equalTo(ReadOnlyStep.NAME));
+-
+-        assertTrue(steps.get(3) instanceof ReadOnlyStep);
+-        assertThat(steps.get(3).getKey().name(), equalTo(ReadOnlyStep.NAME));
+-        assertThat(steps.get(3).getNextStepKey().name(), equalTo(GENERATE_DOWNSAMPLE_STEP_NAME));
+-
+-        assertTrue(steps.get(4) instanceof GenerateUniqueIndexNameStep);
+-        assertThat(steps.get(4).getKey().name(), equalTo(GENERATE_DOWNSAMPLE_STEP_NAME));
+-        assertThat(steps.get(4).getNextStepKey().name(), equalTo(DownsampleStep.NAME));
+-
+-        assertTrue(steps.get(5) instanceof DownsampleStep);
+-        assertThat(steps.get(5).getKey().name(), equalTo(DownsampleStep.NAME));
+-        assertThat(steps.get(5).getNextStepKey().name(), equalTo(WaitForIndexColorStep.NAME));
+-
+-        assertTrue(steps.get(6) instanceof ClusterStateWaitUntilThresholdStep);
+-        assertThat(steps.get(6).getKey().name(), equalTo(WaitForIndexColorStep.NAME));
+-        assertThat(steps.get(6).getNextStepKey().name(), equalTo(CopyExecutionStateStep.NAME));
+-
+-        assertTrue(steps.get(7) instanceof CopyExecutionStateStep);
+-        assertThat(steps.get(7).getKey().name(), equalTo(CopyExecutionStateStep.NAME));
+-        assertThat(steps.get(7).getNextStepKey().name(), equalTo(CONDITIONAL_DATASTREAM_CHECK_KEY));
+-
+-        assertTrue(steps.get(8) instanceof BranchingStep);
+-        assertThat(steps.get(8).getKey().name(), equalTo(CONDITIONAL_DATASTREAM_CHECK_KEY));
+-        expectThrows(IllegalStateException.class, () -> steps.get(8).getNextStepKey());
+-        assertThat(((BranchingStep) steps.get(8)).getNextStepKeyOnFalse().name(), equalTo(SwapAliasesAndDeleteSourceIndexStep.NAME));
+-        assertThat(((BranchingStep) steps.get(8)).getNextStepKeyOnTrue().name(), equalTo(ReplaceDataStreamBackingIndexStep.NAME));
+-
+-        assertTrue(steps.get(9) instanceof ReplaceDataStreamBackingIndexStep);
+-        assertThat(steps.get(9).getKey().name(), equalTo(ReplaceDataStreamBackingIndexStep.NAME));
+-        assertThat(steps.get(9).getNextStepKey().name(), equalTo(DeleteStep.NAME));
+-
+-        assertTrue(steps.get(10) instanceof DeleteStep);
+-        assertThat(steps.get(10).getKey().name(), equalTo(DeleteStep.NAME));
+-        assertThat(steps.get(10).getNextStepKey(), equalTo(nextStepKey));
+-
+-        assertTrue(steps.get(11) instanceof SwapAliasesAndDeleteSourceIndexStep);
+-        assertThat(steps.get(11).getKey().name(), equalTo(SwapAliasesAndDeleteSourceIndexStep.NAME));
++        assertEquals(13, steps.size());
++
++        assertTrue(steps.get(0) instanceof BranchingStep);
++        assertThat(steps.get(0).getKey().name(), equalTo(CONDITIONAL_TIME_SERIES_CHECK_KEY));
++        expectThrows(IllegalStateException.class, () -> steps.get(0).getNextStepKey());
++        assertThat(((BranchingStep) steps.get(0)).getNextStepKeyOnFalse(), equalTo(nextStepKey));
++        assertThat(((BranchingStep) steps.get(0)).getNextStepKeyOnTrue().name(), equalTo(CheckNotDataStreamWriteIndexStep.NAME));
++
++        assertTrue(steps.get(1) instanceof CheckNotDataStreamWriteIndexStep);
++        assertThat(steps.get(1).getKey().name(), equalTo(CheckNotDataStreamWriteIndexStep.NAME));
++        assertThat(steps.get(1).getNextStepKey().name(), equalTo(WaitForNoFollowersStep.NAME));
++
++        assertTrue(steps.get(2) instanceof WaitForNoFollowersStep);
++        assertThat(steps.get(2).getKey().name(), equalTo(WaitForNoFollowersStep.NAME));
++        assertThat(steps.get(2).getNextStepKey().name(), equalTo(CleanupTargetIndexStep.NAME));
++
++        assertTrue(steps.get(3) instanceof CleanupTargetIndexStep);
++        assertThat(steps.get(3).getKey().name(), equalTo(CleanupTargetIndexStep.NAME));
++        assertThat(steps.get(3).getNextStepKey().name(), equalTo(ReadOnlyStep.NAME));
++
++        assertTrue(steps.get(4) instanceof ReadOnlyStep);
++        assertThat(steps.get(4).getKey().name(), equalTo(ReadOnlyStep.NAME));
++        assertThat(steps.get(4).getNextStepKey().name(), equalTo(GENERATE_DOWNSAMPLE_STEP_NAME));
++
++        assertTrue(steps.get(5) instanceof GenerateUniqueIndexNameStep);
++        assertThat(steps.get(5).getKey().name(), equalTo(GENERATE_DOWNSAMPLE_STEP_NAME));
++        assertThat(steps.get(5).getNextStepKey().name(), equalTo(DownsampleStep.NAME));
++
++        assertTrue(steps.get(6) instanceof DownsampleStep);
++        assertThat(steps.get(6).getKey().name(), equalTo(DownsampleStep.NAME));
++        assertThat(steps.get(6).getNextStepKey().name(), equalTo(WaitForIndexColorStep.NAME));
++
++        assertTrue(steps.get(7) instanceof ClusterStateWaitUntilThresholdStep);
++        assertThat(steps.get(7).getKey().name(), equalTo(WaitForIndexColorStep.NAME));
++        assertThat(steps.get(7).getNextStepKey().name(), equalTo(CopyExecutionStateStep.NAME));
++
++        assertTrue(steps.get(8) instanceof CopyExecutionStateStep);
++        assertThat(steps.get(8).getKey().name(), equalTo(CopyExecutionStateStep.NAME));
++        assertThat(steps.get(8).getNextStepKey().name(), equalTo(CONDITIONAL_DATASTREAM_CHECK_KEY));
++
++        assertTrue(steps.get(9) instanceof BranchingStep);
++        assertThat(steps.get(9).getKey().name(), equalTo(CONDITIONAL_DATASTREAM_CHECK_KEY));
++        expectThrows(IllegalStateException.class, () -> steps.get(9).getNextStepKey());
++        assertThat(((BranchingStep) steps.get(9)).getNextStepKeyOnFalse().name(), equalTo(SwapAliasesAndDeleteSourceIndexStep.NAME));
++        assertThat(((BranchingStep) steps.get(9)).getNextStepKeyOnTrue().name(), equalTo(ReplaceDataStreamBackingIndexStep.NAME));
++
++        assertTrue(steps.get(10) instanceof ReplaceDataStreamBackingIndexStep);
++        assertThat(steps.get(10).getKey().name(), equalTo(ReplaceDataStreamBackingIndexStep.NAME));
++        assertThat(steps.get(10).getNextStepKey().name(), equalTo(DeleteStep.NAME));
++
++        assertTrue(steps.get(11) instanceof DeleteStep);
++        assertThat(steps.get(11).getKey().name(), equalTo(DeleteStep.NAME));
+         assertThat(steps.get(11).getNextStepKey(), equalTo(nextStepKey));
++
++        assertTrue(steps.get(12) instanceof SwapAliasesAndDeleteSourceIndexStep);
++        assertThat(steps.get(12).getKey().name(), equalTo(SwapAliasesAndDeleteSourceIndexStep.NAME));
++        assertThat(steps.get(12).getNextStepKey(), equalTo(nextStepKey));
+     }
+ 
+     public void testEqualsAndHashCode() {
+diff --git a/x-pack/plugin/core/src/test/java/org/elasticsearch/xpack/core/ilm/UpdateRollupIndexPolicyStepTests.java b/x-pack/plugin/core/src/test/java/org/elasticsearch/xpack/core/ilm/UpdateRollupIndexPolicyStepTests.java
+deleted file mode 100644
+index 99255be..0000000
+--- a/x-pack/plugin/core/src/test/java/org/elasticsearch/xpack/core/ilm/UpdateRollupIndexPolicyStepTests.java
++++ /dev/null
+@@ -1,155 +0,0 @@
+-/*
+- * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+- * or more contributor license agreements. Licensed under the Elastic License
+- * 2.0; you may not use this file except in compliance with the Elastic License
+- * 2.0.
+- */
+-package org.elasticsearch.xpack.core.ilm;
+-
+-import org.elasticsearch.Version;
+-import org.elasticsearch.action.ActionListener;
+-import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
+-import org.elasticsearch.action.support.PlainActionFuture;
+-import org.elasticsearch.action.support.master.AcknowledgedResponse;
+-import org.elasticsearch.cluster.ClusterState;
+-import org.elasticsearch.cluster.metadata.IndexMetadata;
+-import org.elasticsearch.cluster.metadata.LifecycleExecutionState;
+-import org.elasticsearch.cluster.metadata.Metadata;
+-import org.elasticsearch.common.settings.Settings;
+-import org.elasticsearch.xpack.core.ilm.Step.StepKey;
+-import org.mockito.Mockito;
+-
+-import java.util.Collections;
+-import java.util.Map;
+-
+-import static org.hamcrest.Matchers.equalTo;
+-import static org.hamcrest.Matchers.instanceOf;
+-import static org.hamcrest.Matchers.is;
+-
+-public class UpdateRollupIndexPolicyStepTests extends AbstractStepTestCase<UpdateRollupIndexPolicyStep> {
+-
+-    @Override
+-    public UpdateRollupIndexPolicyStep createRandomInstance() {
+-        StepKey stepKey = randomStepKey();
+-        StepKey nextStepKey = randomStepKey();
+-        String rollupPolicy = randomAlphaOfLength(10);
+-
+-        return new UpdateRollupIndexPolicyStep(stepKey, nextStepKey, client, rollupPolicy);
+-    }
+-
+-    @Override
+-    public UpdateRollupIndexPolicyStep mutateInstance(UpdateRollupIndexPolicyStep instance) {
+-        StepKey key = instance.getKey();
+-        StepKey nextKey = instance.getNextStepKey();
+-        String rollupPolicy = instance.getRollupPolicy();
+-
+-        switch (between(0, 2)) {
+-            case 0 -> key = new StepKey(key.phase(), key.action(), key.name() + randomAlphaOfLength(5));
+-            case 1 -> nextKey = new StepKey(nextKey.phase(), nextKey.action(), nextKey.name() + randomAlphaOfLength(5));
+-            case 2 -> rollupPolicy = randomAlphaOfLength(5);
+-            default -> throw new AssertionError("Illegal randomisation branch");
+-        }
+-
+-        return new UpdateRollupIndexPolicyStep(key, nextKey, client, rollupPolicy);
+-    }
+-
+-    @Override
+-    public UpdateRollupIndexPolicyStep copyInstance(UpdateRollupIndexPolicyStep instance) {
+-        return new UpdateRollupIndexPolicyStep(
+-            instance.getKey(),
+-            instance.getNextStepKey(),
+-            instance.getClient(),
+-            instance.getRollupPolicy()
+-        );
+-    }
+-
+-    private static IndexMetadata getIndexMetadata() {
+-        Map<String, String> ilmCustom = Collections.singletonMap("rollup_index_name", "rollup-index");
+-        return IndexMetadata.builder(randomAlphaOfLength(10))
+-            .settings(settings(Version.CURRENT).put(LifecycleSettings.LIFECYCLE_NAME, "test-ilm-policy"))
+-            .numberOfShards(randomIntBetween(1, 5))
+-            .numberOfReplicas(randomIntBetween(0, 5))
+-            .putCustom(LifecycleExecutionState.ILM_CUSTOM_METADATA_KEY, ilmCustom)
+-            .build();
+-    }
+-
+-    public void testPerformAction() throws Exception {
+-        IndexMetadata indexMetadata = getIndexMetadata();
+-        UpdateRollupIndexPolicyStep step = createRandomInstance();
+-        Settings settings = Settings.builder().put(LifecycleSettings.LIFECYCLE_NAME, step.getRollupPolicy()).build();
+-
+-        Mockito.doAnswer(invocation -> {
+-            UpdateSettingsRequest request = (UpdateSettingsRequest) invocation.getArguments()[0];
+-            @SuppressWarnings("unchecked")
+-            ActionListener<AcknowledgedResponse> listener = (ActionListener<AcknowledgedResponse>) invocation.getArguments()[1];
+-            assertThat(request.settings(), equalTo(settings));
+-            assertThat(request.indices(), equalTo(new String[] { "rollup-index" }));
+-            listener.onResponse(AcknowledgedResponse.TRUE);
+-            return null;
+-        }).when(indicesClient).updateSettings(Mockito.any(), Mockito.any());
+-
+-        PlainActionFuture.<Void, Exception>get(f -> step.performAction(indexMetadata, emptyClusterState(), null, f));
+-
+-        Mockito.verify(client, Mockito.only()).admin();
+-        Mockito.verify(adminClient, Mockito.only()).indices();
+-        Mockito.verify(indicesClient, Mockito.only()).updateSettings(Mockito.any(), Mockito.any());
+-    }
+-
+-    public void testPerformActionFailure() {
+-        IndexMetadata indexMetadata = getIndexMetadata();
+-        ClusterState clusterState = ClusterState.builder(emptyClusterState())
+-            .metadata(Metadata.builder().put(indexMetadata, true).build())
+-            .build();
+-        Exception exception = new RuntimeException();
+-        UpdateRollupIndexPolicyStep step = createRandomInstance();
+-        Settings settings = Settings.builder().put(LifecycleSettings.LIFECYCLE_NAME, step.getRollupPolicy()).build();
+-
+-        Mockito.doAnswer(invocation -> {
+-            UpdateSettingsRequest request = (UpdateSettingsRequest) invocation.getArguments()[0];
+-            @SuppressWarnings("unchecked")
+-            ActionListener<AcknowledgedResponse> listener = (ActionListener<AcknowledgedResponse>) invocation.getArguments()[1];
+-            assertThat(request.settings(), equalTo(settings));
+-            assertThat(request.indices(), equalTo(new String[] { "rollup-index" }));
+-            listener.onFailure(exception);
+-            return null;
+-        }).when(indicesClient).updateSettings(Mockito.any(), Mockito.any());
+-
+-        assertSame(
+-            exception,
+-            expectThrows(
+-                Exception.class,
+-                () -> PlainActionFuture.<Void, Exception>get(f -> step.performAction(indexMetadata, clusterState, null, f))
+-            )
+-        );
+-
+-        Mockito.verify(client, Mockito.only()).admin();
+-        Mockito.verify(adminClient, Mockito.only()).indices();
+-        Mockito.verify(indicesClient, Mockito.only()).updateSettings(Mockito.any(), Mockito.any());
+-    }
+-
+-    public void testPerformActionFailureIllegalExecutionState() {
+-        IndexMetadata indexMetadata = IndexMetadata.builder(randomAlphaOfLength(10))
+-            .settings(settings(Version.CURRENT).put(LifecycleSettings.LIFECYCLE_NAME, "test-ilm-policy"))
+-            .numberOfShards(randomIntBetween(1, 5))
+-            .numberOfReplicas(randomIntBetween(0, 5))
+-            .build();
+-        String policyName = indexMetadata.getLifecyclePolicyName();
+-        String indexName = indexMetadata.getIndex().getName();
+-        UpdateRollupIndexPolicyStep step = createRandomInstance();
+-        step.performAction(indexMetadata, emptyClusterState(), null, new ActionListener<>() {
+-            @Override
+-            public void onResponse(Void unused) {
+-                fail("expecting a failure as the index doesn't have any rollup index name in its ILM execution state");
+-            }
+-
+-            @Override
+-            public void onFailure(Exception e) {
+-                assertThat(e, instanceOf(IllegalStateException.class));
+-                assertThat(
+-                    e.getMessage(),
+-                    is("rollup index name was not generated for policy [" + policyName + "] and index [" + indexName + "]")
+-                );
+-            }
+-        });
+-    }
+-}

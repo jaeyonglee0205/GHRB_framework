@@ -1,0 +1,30 @@
+diff --git a/server/src/test/java/org/elasticsearch/search/aggregations/bucket/filter/FiltersAggregatorTests.java b/server/src/test/java/org/elasticsearch/search/aggregations/bucket/filter/FiltersAggregatorTests.java
+index f957348..1f5bf83 100644
+--- a/server/src/test/java/org/elasticsearch/search/aggregations/bucket/filter/FiltersAggregatorTests.java
++++ b/server/src/test/java/org/elasticsearch/search/aggregations/bucket/filter/FiltersAggregatorTests.java
+@@ -923,8 +923,10 @@ public class FiltersAggregatorTests extends AggregatorTestCase {
+                             .entry(
+                                 "filters",
+                                 matchesList().item(
+-                                    matchesMap().entry("query", "MatchNoDocsQuery(\"User requested \"match_none\" query.\")")
+-                                        .entry("segments_counted_in_constant_time", greaterThan(0))
++                                    matchesMap().entry(
++                                        "query",
++                                        "MatchNoDocsQuery(\"The \"range\" query was rewritten to a \"match_none\" query.\")"
++                                    ).entry("segments_counted_in_constant_time", greaterThan(0))
+                                 )
+                             )
+                     )
+@@ -960,8 +962,10 @@ public class FiltersAggregatorTests extends AggregatorTestCase {
+                             .entry(
+                                 "filters",
+                                 matchesList().item(
+-                                    matchesMap().entry("query", "MatchNoDocsQuery(\"User requested \"match_none\" query.\")")
+-                                        .entry("segments_counted_in_constant_time", greaterThan(0))
++                                    matchesMap().entry(
++                                        "query",
++                                        "MatchNoDocsQuery(\"The \"range\" query was rewritten to a \"match_none\" query.\")"
++                                    ).entry("segments_counted_in_constant_time", greaterThan(0))
+                                 )
+                             )
+                     )

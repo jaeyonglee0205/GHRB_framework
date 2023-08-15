@@ -1,0 +1,47 @@
+diff --git a/features/shadow/distsql/handler/src/test/java/org/apache/shardingsphere/shadow/distsql/update/AlterShadowRuleStatementUpdaterTest.java b/features/shadow/distsql/handler/src/test/java/org/apache/shardingsphere/shadow/distsql/update/AlterShadowRuleStatementUpdaterTest.java
+index 0e7b101..64973e4 100644
+--- a/features/shadow/distsql/handler/src/test/java/org/apache/shardingsphere/shadow/distsql/update/AlterShadowRuleStatementUpdaterTest.java
++++ b/features/shadow/distsql/handler/src/test/java/org/apache/shardingsphere/shadow/distsql/update/AlterShadowRuleStatementUpdaterTest.java
+@@ -130,4 +130,14 @@ class AlterShadowRuleStatementUpdaterTest {
+                 new ShadowRuleSegment("initRuleName2", "ds1", null, Collections.singletonMap("t_order_1", Collections.singletonList(segment2)))));
+         updater.checkSQLStatement(database, sqlStatement, currentConfig);
+     }
++    
++    @Test
++    void assertExecuteSuccessWithoutProps() {
++        ShadowAlgorithmSegment segment1 = new ShadowAlgorithmSegment("algorithmName1", new AlgorithmSegment("SQL_HINT", null));
++        ShadowAlgorithmSegment segment2 = new ShadowAlgorithmSegment("algorithmName2", new AlgorithmSegment("SQL_HINT", null));
++        AlterShadowRuleStatement sqlStatement = new AlterShadowRuleStatement(Arrays.asList(
++                new ShadowRuleSegment("initRuleName1", "ds", null, Collections.singletonMap("t_order", Collections.singleton(segment1))),
++                new ShadowRuleSegment("initRuleName2", "ds1", null, Collections.singletonMap("t_order_1", Collections.singletonList(segment2)))));
++        updater.checkSQLStatement(database, sqlStatement, currentConfig);
++    }
+ }
+diff --git a/features/shadow/distsql/handler/src/test/java/org/apache/shardingsphere/shadow/distsql/update/CreateShadowRuleStatementUpdaterTest.java b/features/shadow/distsql/handler/src/test/java/org/apache/shardingsphere/shadow/distsql/update/CreateShadowRuleStatementUpdaterTest.java
+index 0b47bb4..3958d00 100644
+--- a/features/shadow/distsql/handler/src/test/java/org/apache/shardingsphere/shadow/distsql/update/CreateShadowRuleStatementUpdaterTest.java
++++ b/features/shadow/distsql/handler/src/test/java/org/apache/shardingsphere/shadow/distsql/update/CreateShadowRuleStatementUpdaterTest.java
+@@ -65,7 +65,7 @@ class CreateShadowRuleStatementUpdaterTest {
+     @BeforeEach
+     void before() {
+         when(database.getResourceMetaData()).thenReturn(resourceMetaData);
+-        when(database.getName()).thenReturn("aa");
++        when(database.getName()).thenReturn("shadow_db");
+         when(currentConfig.getDataSources()).thenReturn(Collections.singleton(new ShadowDataSourceConfiguration("initRuleName", "initDs0", "initDs0Shadow")));
+     }
+     
+@@ -116,6 +116,14 @@ class CreateShadowRuleStatementUpdaterTest {
+     }
+     
+     @Test
++    void assertExecuteWithoutProps() {
++        ShadowAlgorithmSegment segment = new ShadowAlgorithmSegment("algorithmName", new AlgorithmSegment("SQL_HINT", null));
++        CreateShadowRuleStatement sqlStatement = new CreateShadowRuleStatement(false,
++                Collections.singleton(new ShadowRuleSegment("initRuleNameWithoutProps", "ds", null, Collections.singletonMap("t_order", Collections.singleton(segment)))));
++        updater.checkSQLStatement(database, sqlStatement, currentConfig);
++    }
++    
++    @Test
+     void assertExecuteWithIfNotExists() {
+         ShadowAlgorithmSegment segment = new ShadowAlgorithmSegment("algorithmName", new AlgorithmSegment("SQL_HINT", PropertiesBuilder.build(new Property("type", "value"))));
+         CreateShadowRuleStatement sqlStatement = new CreateShadowRuleStatement(true,

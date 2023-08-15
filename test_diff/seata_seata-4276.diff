@@ -1,0 +1,91 @@
+diff --git a/test/src/test/java/io/seata/core/rpc/netty/TmNettyClientTest.java b/test/src/test/java/io/seata/core/rpc/netty/TmNettyClientTest.java
+index c38ef42..a2ac66f 100644
+--- a/test/src/test/java/io/seata/core/rpc/netty/TmNettyClientTest.java
++++ b/test/src/test/java/io/seata/core/rpc/netty/TmNettyClientTest.java
+@@ -15,6 +15,11 @@
+  */
+ package io.seata.core.rpc.netty;
+ 
++import java.lang.management.ManagementFactory;
++import java.util.concurrent.LinkedBlockingQueue;
++import java.util.concurrent.ThreadPoolExecutor;
++import java.util.concurrent.TimeUnit;
++
+ import io.netty.channel.Channel;
+ import io.seata.common.XID;
+ import io.seata.common.util.NetUtil;
+@@ -24,15 +29,9 @@ import io.seata.core.protocol.transaction.BranchRegisterResponse;
+ import io.seata.saga.engine.db.AbstractServerTest;
+ import io.seata.server.UUIDGenerator;
+ import io.seata.server.coordinator.DefaultCoordinator;
++import io.seata.server.session.SessionHolder;
+ import org.junit.jupiter.api.Assertions;
+-import org.junit.jupiter.api.BeforeAll;
+ import org.junit.jupiter.api.Test;
+-import org.junit.jupiter.api.TestMethodOrder;
+-
+-import java.lang.management.ManagementFactory;
+-import java.util.concurrent.LinkedBlockingQueue;
+-import java.util.concurrent.ThreadPoolExecutor;
+-import java.util.concurrent.TimeUnit;
+ 
+ /**
+  * @author slievrly
+@@ -121,6 +120,7 @@ public class TmNettyClientTest extends AbstractServerTest {
+         ThreadPoolExecutor workingThreads = initMessageExecutor();
+         NettyRemotingServer nettyRemotingServer = new NettyRemotingServer(workingThreads);
+         new Thread(() -> {
++            SessionHolder.init(null);
+             nettyRemotingServer.setHandler(DefaultCoordinator.getInstance(nettyRemotingServer));
+             // set registry
+             XID.setIpAddress(NetUtil.getLocalIp());
+@@ -147,7 +147,7 @@ public class TmNettyClientTest extends AbstractServerTest {
+         BranchRegisterResponse branchRegisterResponse = (BranchRegisterResponse) tmNettyRemotingClient.sendSyncRequest(request);
+         Assertions.assertNotNull(branchRegisterResponse);
+         Assertions.assertEquals(ResultCode.Failed, branchRegisterResponse.getResultCode());
+-        Assertions.assertEquals("RuntimeException[SessionManager is NOT init!]",
++        Assertions.assertEquals("TransactionException[Could not found global transaction xid = 127.0.0.1:8091:1249853, may be has finished.]",
+                 branchRegisterResponse.getMsg());
+         nettyRemotingServer.destroy();
+         tmNettyRemotingClient.destroy();
+diff --git a/test/src/test/resources/file.conf b/test/src/test/resources/file.conf
+index 3c143f9..5454c4d 100644
+--- a/test/src/test/resources/file.conf
++++ b/test/src/test/resources/file.conf
+@@ -1,3 +1,36 @@
++transport {
++  # tcp, unix-domain-socket
++  type = "TCP"
++  #NIO, NATIVE
++  server = "NIO"
++  #enable heartbeat
++  heartbeat = true
++  # the tm client batch send request enable
++  enableTmClientBatchSendRequest = true
++  # the rm client batch send request enable
++  enableRmClientBatchSendRequest = true
++  #thread factory for netty
++  threadFactory {
++    bossThreadPrefix = "NettyBoss"
++    workerThreadPrefix = "NettyServerNIOWorker"
++    serverExecutorThread-prefix = "NettyServerBizHandler"
++    shareBossWorker = false
++    clientSelectorThreadPrefix = "NettyClientSelector"
++    clientSelectorThreadSize = 1
++    clientWorkerThreadPrefix = "NettyClientWorkerThread"
++    # netty boss thread size
++    bossThreadSize = 1
++    #auto default pin or 8
++    workerThreadSize = "default"
++  }
++  shutdown {
++    # when destroy server, wait seconds
++    wait = 3
++  }
++  serialization = "seata"
++  compressor = "none"
++}
++
+ service {
+   #transaction service group mapping
+   vgroupMapping.default_tx_group = "default"

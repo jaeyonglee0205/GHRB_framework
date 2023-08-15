@@ -1,0 +1,12 @@
+diff --git a/test/src/test/java/org/apache/rocketmq/test/autoswitchrole/AutoSwitchRoleBase.java b/test/src/test/java/org/apache/rocketmq/test/autoswitchrole/AutoSwitchRoleBase.java
+index 4d07ff5..e675790 100644
+--- a/test/src/test/java/org/apache/rocketmq/test/autoswitchrole/AutoSwitchRoleBase.java
++++ b/test/src/test/java/org/apache/rocketmq/test/autoswitchrole/AutoSwitchRoleBase.java
+@@ -125,7 +125,6 @@ public class AutoSwitchRoleBase {
+ 
+     protected ControllerConfig buildControllerConfig(final String id, final String peers) {
+         final ControllerConfig config = new ControllerConfig();
+-        config.setEnableControllerInNamesrv(true);
+         config.setControllerDLegerGroup("group1");
+         config.setControllerDLegerPeers(peers);
+         config.setControllerDLegerSelfId(id);

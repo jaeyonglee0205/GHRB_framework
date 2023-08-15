@@ -1,0 +1,45 @@
+diff --git a/assertj-core/src/test/java/org/assertj/core/internal/strings/Strings_assertIsEqualToNormalizingNewlines_Test.java b/assertj-core/src/test/java/org/assertj/core/internal/strings/Strings_assertIsEqualToNormalizingNewlines_Test.java
+index 93b8409..494e25a 100644
+--- a/assertj-core/src/test/java/org/assertj/core/internal/strings/Strings_assertIsEqualToNormalizingNewlines_Test.java
++++ b/assertj-core/src/test/java/org/assertj/core/internal/strings/Strings_assertIsEqualToNormalizingNewlines_Test.java
+@@ -15,6 +15,7 @@ package org.assertj.core.internal.strings;
+ import static org.assertj.core.api.Assertions.assertThat;
+ import static org.assertj.core.api.Assertions.catchThrowable;
+ import static org.assertj.core.error.ShouldBeEqualIgnoringNewLineDifferences.shouldBeEqualIgnoringNewLineDifferences;
++import static org.assertj.core.error.ShouldNotBeNull.shouldNotBeNull;
+ import static org.assertj.core.test.TestData.someInfo;
+ import static org.mockito.Mockito.verify;
+ 
+@@ -56,4 +57,32 @@ class Strings_assertIsEqualToNormalizingNewlines_Test extends StringsBaseTest {
+                              "Lord of the Rings\n\nis cool", expected);
+   }
+ 
++  @Test
++  void should_pass_if_actual_and_expected_are_both_null() {
++    String actual = null;
++    String expected = null;
++    assertThat(actual).isEqualToNormalizingNewlines(expected);
++  }
++
++  @Test
++  void should_fail_if_actual_is_null_and_expected_is_not() {
++    String actual = null;
++    String expected = "";
++
++    Throwable error = catchThrowable(() -> strings.assertIsEqualToNormalizingNewlines(someInfo(), actual, expected));
++    assertThat(error).isInstanceOf(AssertionError.class);
++
++    verify(failures).failure(someInfo(), shouldNotBeNull("actual"));
++  }
++
++  @Test
++  void should_fail_if_actual_is_not_null_but_expected_is_null() {
++    String actual = "";
++    String expected = null;
++
++    Throwable error = catchThrowable(() -> strings.assertIsEqualToNormalizingNewlines(someInfo(), actual, expected));
++    assertThat(error).isInstanceOf(AssertionError.class);
++
++    verify(failures).failure(someInfo(), shouldBeEqualIgnoringNewLineDifferences(actual, "null"));
++  }
+ }

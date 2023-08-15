@@ -1,0 +1,130 @@
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
+index bb4f0ff..5bb206f 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
+@@ -121,10 +121,11 @@ public class KeycloakDeploymentTest extends BaseOperatorTest {
+                         var c = k8sclient.apps().statefulSets().inNamespace(namespace).withName(deploymentName).get()
+                                 .getSpec().getTemplate().getSpec().getContainers().get(0);
+                         assertThat(c.getImage()).isEqualTo("quay.io/keycloak/non-existing-keycloak");
++                        // additionalOptions should not override the first-class
+                         assertThat(c.getEnv().stream()
+                                 .anyMatch(e -> e.getName().equals(KeycloakDistConfigurator.getKeycloakOptionEnvVarName(dbConf.getName()))
+                                         && dbConf.getValue().equals(e.getValue())))
+-                                .isTrue();
++                                .isFalse();
+                     });
+ 
+         } catch (Exception e) {
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/RealmImportTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/RealmImportTest.java
+index fee18cf..4299213 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/RealmImportTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/RealmImportTest.java
+@@ -18,9 +18,9 @@
+ package org.keycloak.operator.testsuite.integration;
+ 
+ import io.fabric8.kubernetes.api.model.LocalObjectReferenceBuilder;
+-import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
+ import io.quarkus.logging.Log;
+ import io.quarkus.test.junit.QuarkusTest;
++
+ import org.awaitility.Awaitility;
+ import org.junit.jupiter.api.BeforeEach;
+ import org.junit.jupiter.api.Test;
+@@ -30,8 +30,8 @@ import org.keycloak.operator.testsuite.utils.CRAssert;
+ import org.keycloak.operator.testsuite.utils.K8sUtils;
+ import org.keycloak.operator.controllers.KeycloakService;
+ import org.keycloak.operator.crds.v2alpha1.realmimport.KeycloakRealmImport;
+-import org.keycloak.operator.crds.v2alpha1.deployment.spec.UnsupportedSpec;
+ 
++import java.util.Arrays;
+ import java.util.stream.Collectors;
+ 
+ import static java.util.concurrent.TimeUnit.MINUTES;
+@@ -82,12 +82,7 @@ public class RealmImportTest extends BaseOperatorTest {
+     public void testWorkingRealmImport() {
+         // Arrange
+         var kc = getDefaultKeycloakDeployment();
+-        var podTemplate = new PodTemplateSpecBuilder()
+-                .withNewSpec()
+-                .withImagePullSecrets(new LocalObjectReferenceBuilder().withName("my-empty-secret").build())
+-                .endSpec()
+-                .build();
+-        kc.getSpec().setUnsupported(new UnsupportedSpec(podTemplate));
++        kc.getSpec().setImagePullSecrets(Arrays.asList(new LocalObjectReferenceBuilder().withName("my-empty-secret").build()));
+         deployKeycloak(k8sclient, kc, false);
+ 
+         // Act
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/unit/PodTemplateTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/unit/PodTemplateTest.java
+index 1de1f3a..bff4c00 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/unit/PodTemplateTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/unit/PodTemplateTest.java
+@@ -18,6 +18,7 @@
+ package org.keycloak.operator.testsuite.unit;
+ 
+ import io.fabric8.kubernetes.api.model.Container;
++import io.fabric8.kubernetes.api.model.EnvVar;
+ import io.fabric8.kubernetes.api.model.IntOrString;
+ import io.fabric8.kubernetes.api.model.PodTemplateSpec;
+ import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
+@@ -25,6 +26,8 @@ import io.fabric8.kubernetes.api.model.ProbeBuilder;
+ import io.fabric8.kubernetes.api.model.apps.StatefulSet;
+ import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
+ import io.quarkus.test.junit.QuarkusTest;
++
++import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.Test;
+ import org.keycloak.operator.Config;
+ import org.keycloak.operator.controllers.KeycloakDeployment;
+@@ -40,6 +43,7 @@ import java.util.Collections;
+ import java.util.Map;
+ import java.util.function.Consumer;
+ import java.util.function.Function;
++import java.util.stream.Collectors;
+ 
+ import static org.assertj.core.api.Assertions.assertThat;
+ import static org.junit.jupiter.api.Assertions.assertEquals;
+@@ -275,6 +279,44 @@ public class PodTemplateTest {
+     }
+ 
+     @Test
++    public void testEnvVarConflict() {
++        // Arrange
++        var additionalPodTemplate = new PodTemplateSpecBuilder()
++                .withNewSpec()
++                .addNewContainer()
++                .addNewEnv()
++                .withName("KC_CACHE_STACK")
++                .withValue("template_stack")
++                .endEnv()
++                .addNewEnv()
++                .withName("KC_DB_URL_HOST")
++                .withValue("template_host")
++                .endEnv()
++                .endContainer()
++                .endSpec()
++                .build();
++
++        // Act
++        var podTemplate = getDeployment(additionalPodTemplate, null,
++                s -> s.addNewAdditionalOption("cache.stack", "additional_stack")
++                        .addNewAdditionalOption("http.port", "additional_port").withNewDatabaseSpec().withHost("spec-host")
++                        .endDatabaseSpec())
++                .getSpec().getTemplate();
++
++        // Assert
++        var envVar = podTemplate.getSpec().getContainers().get(0).getEnv();
++        var envVarMap = envVar.stream().collect(Collectors.toMap(EnvVar::getName, Function.identity(), (e1, e2) -> {
++            Assertions.fail("duplicate env" + e1.getName());
++            return e1;
++        }));
++        // template spec takes the most priority for envs - only fields called out in the KeycloakDeployment warning are overriden by the rest of the spec
++        assertThat(envVarMap.get("KC_CACHE_STACK").getValue()).isEqualTo("template_stack");
++        assertThat(envVarMap.get("KC_DB_URL_HOST").getValue()).isEqualTo("template_host");
++        // the main spec takes priority over the additional options
++        assertThat(envVarMap.get("KC_HTTP_PORT").getValue()).isEqualTo("8080");
++    }
++
++    @Test
+     public void testAnnotationsAreNotMerged() {
+         // Arrange
+         var existingDeployment = new StatefulSetBuilder()

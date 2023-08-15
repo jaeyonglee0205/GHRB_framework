@@ -1,0 +1,202 @@
+diff --git a/codec-stomp/src/test/java/io/netty/handler/codec/stomp/StompSubframeDecoderTest.java b/codec-stomp/src/test/java/io/netty/handler/codec/stomp/StompSubframeDecoderTest.java
+index 06255e3..4e23294 100644
+--- a/codec-stomp/src/test/java/io/netty/handler/codec/stomp/StompSubframeDecoderTest.java
++++ b/codec-stomp/src/test/java/io/netty/handler/codec/stomp/StompSubframeDecoderTest.java
+@@ -244,4 +244,91 @@ public class StompSubframeDecoderTest {
+         assertEquals("unexpected byte in buffer 1 while expecting NULL byte",
+                      lastContentFrame.decoderResult().cause().getMessage());
+     }
++
++    @Test
++    void testUnescapeHeaders() {
++        channel = new EmbeddedChannel(new StompSubframeDecoder(true));
++
++        ByteBuf incoming = Unpooled.wrappedBuffer(StompTestConstants.ESCAPED_MESSAGE_FRAME.getBytes(UTF_8));
++        assertTrue(channel.writeInbound(incoming));
++
++        StompHeadersSubframe headersSubFrame = channel.readInbound();
++        assertNotNull(headersSubFrame);
++        assertFalse(headersSubFrame.decoderResult().isFailure());
++        assertEquals(6, headersSubFrame.headers().size());
++        assertEquals("/queue/a:", headersSubFrame.headers().get(StompHeaders.DESTINATION));
++        assertEquals("header\\\r\n:Value", headersSubFrame.headers().get("header\\\r\n:Name"));
++        assertEquals("header_\\_\r_\n_:_Value", headersSubFrame.headers().get("header_\\_\r_\n_:_Name"));
++        assertEquals(":headerValue", headersSubFrame.headers().get("headerName:"));
++
++        StompContentSubframe content = channel.readInbound();
++        assertSame(LastStompContentSubframe.EMPTY_LAST_CONTENT, content);
++        content.release();
++
++        Object obj = channel.readInbound();
++        assertNull(obj);
++    }
++
++    @Test
++    void testNotUnescapeHeadersForConnectCommand() {
++        String expectedStompFrame = "CONNECT\n"
++                + "headerName-\\\\:headerValue-\\\\\n"
++                + "\n" + '\0';
++        channel = new EmbeddedChannel(new StompSubframeDecoder(true));
++
++        ByteBuf incoming = Unpooled.wrappedBuffer(expectedStompFrame.getBytes(UTF_8));
++        assertTrue(channel.writeInbound(incoming));
++
++        StompHeadersSubframe headersSubFrame = channel.readInbound();
++        assertNotNull(headersSubFrame);
++        assertFalse(headersSubFrame.decoderResult().isFailure());
++        assertEquals(1, headersSubFrame.headers().size());
++        assertEquals("headerValue-\\\\", headersSubFrame.headers().get("headerName-\\\\"));
++
++        StompContentSubframe content = channel.readInbound();
++        assertSame(LastStompContentSubframe.EMPTY_LAST_CONTENT, content);
++        content.release();
++
++        Object obj = channel.readInbound();
++        assertNull(obj);
++    }
++
++    @Test
++    void testNotUnescapeHeadersForConnectedCommand() {
++        String expectedStompFrame = "CONNECTED\n"
++                + "headerName-\\\\:headerValue-\\\\\n"
++                + "\n" + '\0';
++        channel = new EmbeddedChannel(new StompSubframeDecoder(true));
++
++        ByteBuf incoming = Unpooled.wrappedBuffer(expectedStompFrame.getBytes(UTF_8));
++        assertTrue(channel.writeInbound(incoming));
++
++        StompHeadersSubframe headersSubFrame = channel.readInbound();
++        assertNotNull(headersSubFrame);
++        assertFalse(headersSubFrame.decoderResult().isFailure());
++        assertEquals(1, headersSubFrame.headers().size());
++        assertEquals("headerValue-\\\\", headersSubFrame.headers().get("headerName-\\\\"));
++
++        StompContentSubframe content = channel.readInbound();
++        assertSame(LastStompContentSubframe.EMPTY_LAST_CONTENT, content);
++        content.release();
++
++        Object obj = channel.readInbound();
++        assertNull(obj);
++    }
++
++    @Test
++    void testInvalidEscapeHeadersSequence() {
++        channel = new EmbeddedChannel(new StompSubframeDecoder(true));
++
++        ByteBuf incoming = Unpooled.wrappedBuffer(INVALID_ESCAPED_MESSAGE_FRAME.getBytes(UTF_8));
++        assertTrue(channel.writeInbound(incoming));
++
++        StompHeadersSubframe headersSubFrame = channel.readInbound();
++        assertNotNull(headersSubFrame);
++        assertTrue(headersSubFrame.decoderResult().isFailure());
++
++        assertEquals("received an invalid escape header sequence 'custom_invalid\\t'",
++                     headersSubFrame.decoderResult().cause().getMessage());
++    }
+ }
+diff --git a/codec-stomp/src/test/java/io/netty/handler/codec/stomp/StompSubframeEncoderTest.java b/codec-stomp/src/test/java/io/netty/handler/codec/stomp/StompSubframeEncoderTest.java
+index 0e8ff84..e20437e 100644
+--- a/codec-stomp/src/test/java/io/netty/handler/codec/stomp/StompSubframeEncoderTest.java
++++ b/codec-stomp/src/test/java/io/netty/handler/codec/stomp/StompSubframeEncoderTest.java
+@@ -24,7 +24,9 @@ import org.junit.jupiter.api.AfterEach;
+ import org.junit.jupiter.api.BeforeEach;
+ import org.junit.jupiter.api.Test;
+ 
+-import static io.netty.handler.codec.stomp.StompTestConstants.*;
++import java.nio.charset.StandardCharsets;
++
++import static io.netty.handler.codec.stomp.StompTestConstants.SEND_FRAME_UTF8;
+ import static org.junit.jupiter.api.Assertions.assertEquals;
+ import static org.junit.jupiter.api.Assertions.assertFalse;
+ import static org.junit.jupiter.api.Assertions.assertNotNull;
+@@ -99,4 +101,63 @@ public class StompSubframeEncoderTest {
+         assertEquals("CONNECTED\nversion:1.2\n\n\0", stompBuffer.toString(CharsetUtil.UTF_8));
+         assertTrue(stompBuffer.release());
+     }
++
++    @Test
++    void testEscapeStompHeaders() {
++        StompFrame messageFrame = new DefaultStompFrame(StompCommand.MESSAGE);
++        messageFrame.headers()
++                  .add(StompHeaders.MESSAGE_ID, "100")
++                  .add(StompHeaders.SUBSCRIPTION, "1")
++                  .add(StompHeaders.DESTINATION, "/queue/a:")
++                  .add("header\\\r\n:Name", "header\\\r\n:Value")
++                  .add("header_\\_\r_\n_:_Name", "header_\\_\r_\n_:_Value")
++                  .add("headerName:", ":headerValue");
++
++        assertTrue(channel.writeOutbound(messageFrame));
++
++        ByteBuf stompBuffer = channel.readOutbound();
++        assertNotNull(stompBuffer);
++        assertNull(channel.readOutbound());
++
++        assertEquals(StompTestConstants.ESCAPED_MESSAGE_FRAME, stompBuffer.toString(StandardCharsets.UTF_8));
++        assertTrue(stompBuffer.release());
++    }
++
++    @Test
++    void testNotEscapeStompHeadersForConnectCommand() {
++        String expectedStompFrame = "CONNECT\n"
++                + "colonHeaderName-::colonHeaderValue-:\n"
++                + '\n' + '\0';
++        StompFrame connectFrame = new DefaultStompFrame(StompCommand.CONNECT);
++        connectFrame.headers()
++                  .add("colonHeaderName-:", "colonHeaderValue-:");
++
++        assertTrue(channel.writeOutbound(connectFrame));
++
++        ByteBuf stompBuffer = channel.readOutbound();
++        assertNotNull(stompBuffer);
++        assertNull(channel.readOutbound());
++
++        assertEquals(expectedStompFrame, stompBuffer.toString(StandardCharsets.UTF_8));
++        assertTrue(stompBuffer.release());
++    }
++
++    @Test
++    void testNotEscapeStompHeadersForConnectedCommand() {
++        String expectedStompFrame = "CONNECTED\n"
++                                    + "colonHeaderName-::colonHeaderValue-:\n"
++                                    + '\n' + '\0';
++        StompFrame connectedFrame = new DefaultStompFrame(StompCommand.CONNECTED);
++        connectedFrame.headers()
++                    .add("colonHeaderName-:", "colonHeaderValue-:");
++
++        assertTrue(channel.writeOutbound(connectedFrame));
++
++        ByteBuf stompBuffer = channel.readOutbound();
++        assertNotNull(stompBuffer);
++        assertNull(channel.readOutbound());
++
++        assertEquals(expectedStompFrame, stompBuffer.toString(StandardCharsets.UTF_8));
++        assertTrue(stompBuffer.release());
++    }
+ }
+diff --git a/codec-stomp/src/test/java/io/netty/handler/codec/stomp/StompTestConstants.java b/codec-stomp/src/test/java/io/netty/handler/codec/stomp/StompTestConstants.java
+index 437fe8b..0e40695 100644
+--- a/codec-stomp/src/test/java/io/netty/handler/codec/stomp/StompTestConstants.java
++++ b/codec-stomp/src/test/java/io/netty/handler/codec/stomp/StompTestConstants.java
+@@ -84,5 +84,22 @@ public final class StompTestConstants {
+              '\n' +
+              "body\1";
+ 
++    public static final String ESCAPED_MESSAGE_FRAME = "MESSAGE\n" +
++             "message-id:100\n" +
++             "subscription:1\n" +
++             "destination:/queue/a\\c\n" +
++             "header\\\\\\r\\n\\cName:header\\\\\\r\\n\\cValue\n" +
++             "header_\\\\_\\r_\\n_\\c_Name:header_\\\\_\\r_\\n_\\c_Value\n" +
++             "headerName\\c:\\cheaderValue\n" +
++             '\n' + '\0';
++
++    public static final String INVALID_ESCAPED_MESSAGE_FRAME = "MESSAGE\n" +
++             "message-id:100\n" +
++             "subscription:0\n" +
++             "destination:/queue/a\n" +
++             "custom_colon\\c_header_\\ckey:custom_colon\\c_header_\\cvalue\n" +
++             "custom_invalid\\t_header_\\tkey:custom_invalid\\t_header_\\tvalue\n" +
++             '\n' + '\0';
++
+     private StompTestConstants() { }
+ }

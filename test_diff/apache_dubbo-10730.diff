@@ -1,0 +1,12 @@
+diff --git a/dubbo-common/src/test/java/org/apache/dubbo/rpc/model/ModuleModelTest.java b/dubbo-common/src/test/java/org/apache/dubbo/rpc/model/ModuleModelTest.java
+index f813dfb..c1b1c34 100644
+--- a/dubbo-common/src/test/java/org/apache/dubbo/rpc/model/ModuleModelTest.java
++++ b/dubbo-common/src/test/java/org/apache/dubbo/rpc/model/ModuleModelTest.java
+@@ -40,6 +40,7 @@ public class ModuleModelTest {
+         Assertions.assertEquals(moduleModel.getApplicationModel(), applicationModel);
+         Assertions.assertTrue(applicationModel.getPubModuleModels().contains(moduleModel));
+         Assertions.assertNotNull(moduleModel.getInternalId());
++        Assertions.assertFalse(moduleModel.isLifeCycleManagedExternally());
+ 
+         Assertions.assertNotNull(moduleModel.getExtensionDirector());
+         Assertions.assertNotNull(moduleModel.getBeanFactory());

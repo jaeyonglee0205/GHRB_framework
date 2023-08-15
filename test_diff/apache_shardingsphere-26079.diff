@@ -1,0 +1,32 @@
+diff --git a/parser/sql/statement/src/test/java/org/apache/shardingsphere/sql/parser/sql/common/util/SQLUtilsTest.java b/parser/sql/statement/src/test/java/org/apache/shardingsphere/sql/parser/sql/common/util/SQLUtilsTest.java
+index edf9e76..e42168e 100644
+--- a/parser/sql/statement/src/test/java/org/apache/shardingsphere/sql/parser/sql/common/util/SQLUtilsTest.java
++++ b/parser/sql/statement/src/test/java/org/apache/shardingsphere/sql/parser/sql/common/util/SQLUtilsTest.java
+@@ -63,6 +63,8 @@ class SQLUtilsTest {
+         assertThat(SQLUtils.getExactlyValue("[xxx]"), is("xxx"));
+         assertThat(SQLUtils.getExactlyValue("\"xxx\""), is("xxx"));
+         assertThat(SQLUtils.getExactlyValue("'xxx'"), is("xxx"));
++        assertThat(SQLUtils.getExactlyValue("`[xxx`"), is("xxx"));
++        assertThat(SQLUtils.getExactlyValue("```[xxx```"), is("`xxx`"));
+     }
+     
+     @Test
+@@ -153,4 +155,18 @@ class SQLUtilsTest {
+         assertThat(SQLUtils.trimComment("/* This is a query with a semicolon */ SHOW DATABASES;"), is("SHOW DATABASES"));
+         assertThat(SQLUtils.trimComment("/* This is a query with spaces */    SHOW DATABASES   "), is("SHOW DATABASES"));
+     }
++    
++    @Test
++    void assertTryGetRealContentInBackticks() {
++        assertThat(SQLUtils.tryGetRealContentInBackticks("`"), is("`"));
++        assertThat(SQLUtils.tryGetRealContentInBackticks("``"), is("``"));
++        assertThat(SQLUtils.tryGetRealContentInBackticks("```"), is("```"));
++        assertThat(SQLUtils.tryGetRealContentInBackticks("t_order"), is("t_order"));
++        assertThat(SQLUtils.tryGetRealContentInBackticks("````"), is("`"));
++        assertThat(SQLUtils.tryGetRealContentInBackticks("`t_order`"), is("t_order"));
++        assertThat(SQLUtils.tryGetRealContentInBackticks("```t_order`"), is("`t_order"));
++        assertThat(SQLUtils.tryGetRealContentInBackticks("```````t_order```````"), is("```t_order```"));
++        assertThat(SQLUtils.tryGetRealContentInBackticks("``t_order`"), is("``t_order`"));
++        assertThat(SQLUtils.tryGetRealContentInBackticks("`````t_o``r``d``e``r```"), is("``t_o`r`d`e`r`"));
++    }
+ }
