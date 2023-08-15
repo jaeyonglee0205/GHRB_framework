@@ -1,0 +1,74 @@
+{
+  "jackson-dataformat-xml": {
+    "owner": "FasterXML",
+    "number_of_bugs": 1,
+    "commit_db": "commit_db_2/jackson-dataformat-xml_bugs.csv",
+    "repo_path": "temporary"
+  },
+  "checkstyle": {
+    "owner": "checkstyle",
+    "number_of_bugs": 16,
+    "commit_db": "commit_db_2/checkstyle_bugs.csv",
+    "repo_path": "temporary"
+  },
+  "jackson-core": {
+    "owner": "FasterXML",
+    "number_of_bugs": 3,
+    "commit_db": "commit_db_2/jackson-core_bugs.csv",
+    "repo_path": "temporary"
+  },
+  "dubbo": {
+    "owner": "apache",
+    "number_of_bugs": 2,
+    "commit_db": "commit_db_2/dubbo_bugs.csv",
+    "repo_path": "temporary"
+  },
+  "jackson-databind": {
+    "owner": "FasterXML",
+    "number_of_bugs": 4,
+    "commit_db": "commit_db_2/jackson-databind_bugs.csv",
+    "repo_path": "temporary"
+  },
+  "seata": {
+    "owner": "seata",
+    "number_of_bugs": 2,
+    "commit_db": "commit_db_2/seata_bugs.csv",
+    "repo_path": "temporary"
+  },
+  "jsoup": {
+    "owner": "jhy",
+    "number_of_bugs": 5,
+    "commit_db": "commit_db_2/jsoup_bugs.csv",
+    "repo_path": "temporary"
+  },
+  "gson": {
+    "owner": "google",
+    "number_of_bugs": 13,
+    "commit_db": "commit_db_2/gson_bugs.csv",
+    "repo_path": "temporary"
+  },
+  "nacos": {
+    "owner": "alibaba",
+    "number_of_bugs": 5,
+    "commit_db": "commit_db_2/nacos_bugs.csv",
+    "repo_path": "temporary"
+  },
+  "fastjson": {
+    "owner": "alibaba",
+    "number_of_bugs": 2,
+    "commit_db": "commit_db_2/fastjson_bugs.csv",
+    "repo_path": "temporary"
+  },
+  "assertj": {
+    "owner": "assertj",
+    "number_of_bugs": 5,
+    "commit_db": "commit_db_2/assertj_bugs.csv",
+    "repo_path": "temporary"
+  },
+  "sslcontext-kickstart": {
+    "owner": "Hakky54",
+    "number_of_bugs": 6,
+    "commit_db": "commit_db_2/sslcontext-kickstart_bugs.csv",
+    "repo_path": "temporary"
+  }
+}
