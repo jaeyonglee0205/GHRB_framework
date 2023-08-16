@@ -24,7 +24,7 @@ def project_id_collector():
             active_bug_list = json.load(f)
         
         number_of_bugs = len(active_bug_list)
-        commit_db = f"commit_db_2/{project_id}_bugs.csv"
+        commit_db = f"commit_db/{project_id}_bugs.csv"
 
         with open("requirements.json", 'r') as f:
             requirements = json.load(f)
@@ -77,7 +77,7 @@ def commit_db_collector():
             commit_db.loc[index] = [index, value['buggy_commit'], value['merge_commit'], value["bug_id"], value['issue']['url']]
             index += 1
         
-        commit_db.to_csv(os.getcwd() + "/commit_db_2/" + project_id + "_bugs.csv", index=False)
+        commit_db.to_csv(os.getcwd() + "/commit_db/" + project_id + "_bugs.csv", index=False)
 
 def find_og_collector():
     total_list = set()
