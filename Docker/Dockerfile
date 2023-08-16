@@ -8,12 +8,6 @@ ENV JAVA_VERSION_MAJOR=8 \
     JAVA_HOME=/usr/lib/jvm/default-jvm \
     PATH=${PATH}:/usr/lib/jvm/default-jvm/bin/
 
-# RUN apt-get update && \ 
-#     apt-get upgrade -y && \
-#     apt install openjdk-17-jdk openjdk-17-jre -yq && \
-#     ln -s /usr/lib/jvm/java-17-openjdk-amd64 /usr/lib/jvm/default-jvm && \
-#     apt-get clean all
-
 RUN apt-get update && \ 
     apt-get upgrade -y && \
     apt install openjdk-11-jdk -yq && \
@@ -35,7 +29,7 @@ RUN apt-get -qq -y install software-properties-common git curl build-essential s
 RUN apt-get install maven -yq
 
 # Setup Apache Maven
-ENV MAVEN_OPTS="-Xms256m -Xmx512m"
+ENV MAVEN_OPTS="-Xms256m -Xmx2048m"
 
 # Check Maven version
 RUN mvn -version
@@ -54,25 +48,21 @@ RUN pip install javalang
 
 WORKDIR /root
 
-# Install Defects4j
-# COPY install_defects4j.sh install_defects4j.sh
-# RUN chmod +x install_defects4j.sh
-
-# ENV TZ="America/Los_Angeles"
-# ENV D4J_HOME="/root/defects4j"
-# ENV PATH="${PATH}:/root/defects4j/framework/bin"
-# RUN ./install_defects4j.sh
-
-# COPY install_ghrb.sh install_ghrb.sh
-# RUN chmod +x install_ghrb.sh
-
-# # ENV TZ="America/Los_Angeles"
 ENV GHRB_HOME="/root/GHRB"
-# #ENV PATH="${PATH}:/root/defects4j/framework/bin"
-# RUN ./install_ghrb.sh
 
 COPY vimrc .vimrc
 ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
 ENV TMP_DIR="/tmp"
 
 ENV PYTHONIOENCODING=utf-8
+
+# install maven 3.8.1
+RUN wget https://archive.apache.org/dist/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.tar.gz -P /tmp # for running projects in GHRB benchmark
+RUN tar -xzvf /tmp/apache-maven-3.8.1-bin.tar.gz -C /opt
+
+# install maven 3.8.6
+RUN wget https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz -P /tmp # for running projects in GHRB benchmark
+RUN tar -xzvf /tmp/apache-maven-3.8.6-bin.tar.gz -C /opt
+
+
+RUN git config --global --add safe.directory '*'
