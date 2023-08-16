@@ -273,11 +273,22 @@ def call_test(pid, bid, dir, test_case, test_suite):
     target_tests = verified_bugs[report_id]["execution_result"]["success_tests"]
     print(target_tests)
     new_env = find_env(pid)
+
+    def find_test (input):
+        for test in target_tests:
+            if test.find(input) != -1:
+                return test
+            else:
+                return None
+            
     if test_case is not None:
-        if test_case not in target_tests:
-            print("External test case")
+        test_case = find_test(test_case)
+
+        if test_case is None:
+            output += "Cannot find specified test case"
         else:
             print("Internal test case")
+            print(test_case)
             run = sp.run(['mvn', 'clean', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false'],
                          env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=repo_path)
             output += run.stdout.decode()
