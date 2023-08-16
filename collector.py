@@ -9,6 +9,11 @@ import subprocess as sp
 
 import pandas as pd
 
+def clone_repo (owner, name):
+    link = "https://github.com/" + owner + "/" + name
+    name = os.getcwd() + '/repos/' + name
+    
+    p = sp.Popen(['git', 'clone', link, name], stderr=sp.PIPE, stdout=sp.PIPE)
 
 def project_id_collector():
     project_map = defaultdict(dict)
@@ -28,22 +33,11 @@ def project_id_collector():
 
         repo_path = None
 
-        '''
-        Temporary code for repo_path
-        !!!Need to change!!!
-        '''
+        clone_repo(owner, project_id)
 
-        for dir in os.listdir("../repos/"):
+        for dir in os.listdir("repos/"):
             if project_id in dir:
-                repo_path = os.path.abspath(os.path.join(
-                    '../repos/', f'{dir}'
-                ))
-        if repo_path is None:
-            for dir in os.listdir("../paper_repos/"):
-                if project_id in dir:
-                    repo_path = os.path.abspath(os.path.join(
-                        '../paper_repos/', f'{dir}'
-                    ))
+                repo_path = os.path.abspath(os.path.join('/repos/', f'{dir}'))
         project_map[project_id]["owner"] = owner
         project_map[project_id]["number_of_bugs"] = number_of_bugs
         project_map[project_id]['commit_db'] = commit_db
