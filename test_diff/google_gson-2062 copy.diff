@@ -1,0 +1,319 @@
+diff --git a/gson/src/test/java/com/google/gson/internal/bind/JsonTreeReaderTest.java b/gson/src/test/java/com/google/gson/internal/bind/JsonTreeReaderTest.java
+index 4e6a218..767d63b 100644
+--- a/gson/src/test/java/com/google/gson/internal/bind/JsonTreeReaderTest.java
++++ b/gson/src/test/java/com/google/gson/internal/bind/JsonTreeReaderTest.java
+@@ -35,6 +35,7 @@ public class JsonTreeReaderTest extends TestCase {
+     JsonTreeReader in = new JsonTreeReader(new JsonObject());
+     in.skipValue();
+     assertEquals(JsonToken.END_DOCUMENT, in.peek());
++    assertEquals("$", in.getPath());
+   }
+ 
+   public void testSkipValue_filledJsonObject() throws IOException {
+@@ -53,6 +54,46 @@ public class JsonTreeReaderTest extends TestCase {
+     JsonTreeReader in = new JsonTreeReader(jsonObject);
+     in.skipValue();
+     assertEquals(JsonToken.END_DOCUMENT, in.peek());
++    assertEquals("$", in.getPath());
++  }
++
++  public void testSkipValue_name() throws IOException {
++    JsonObject jsonObject = new JsonObject();
++    jsonObject.addProperty("a", "value");
++    JsonTreeReader in = new JsonTreeReader(jsonObject);
++    in.beginObject();
++    in.skipValue();
++    assertEquals(JsonToken.STRING, in.peek());
++    assertEquals("$.<skipped>", in.getPath());
++    assertEquals("value", in.nextString());
++  }
++
++  public void testSkipValue_afterEndOfDocument() throws IOException {
++    JsonTreeReader reader = new JsonTreeReader(new JsonObject());
++    reader.beginObject();
++    reader.endObject();
++    assertEquals(JsonToken.END_DOCUMENT, reader.peek());
++
++    assertEquals("$", reader.getPath());
++    reader.skipValue();
++    assertEquals(JsonToken.END_DOCUMENT, reader.peek());
++    assertEquals("$", reader.getPath());
++  }
++
++  public void testSkipValue_atArrayEnd() throws IOException {
++    JsonTreeReader reader = new JsonTreeReader(new JsonArray());
++    reader.beginArray();
++    reader.skipValue();
++    assertEquals(JsonToken.END_DOCUMENT, reader.peek());
++    assertEquals("$", reader.getPath());
++  }
++
++  public void testSkipValue_atObjectEnd() throws IOException {
++    JsonTreeReader reader = new JsonTreeReader(new JsonObject());
++    reader.beginObject();
++    reader.skipValue();
++    assertEquals(JsonToken.END_DOCUMENT, reader.peek());
++    assertEquals("$", reader.getPath());
+   }
+ 
+   public void testHasNext_endOfDocument() throws IOException {
+diff --git a/gson/src/test/java/com/google/gson/stream/JsonReaderPathTest.java b/gson/src/test/java/com/google/gson/stream/JsonReaderPathTest.java
+index ab802be..a755bd8 100644
+--- a/gson/src/test/java/com/google/gson/stream/JsonReaderPathTest.java
++++ b/gson/src/test/java/com/google/gson/stream/JsonReaderPathTest.java
+@@ -16,6 +16,9 @@
+ 
+ package com.google.gson.stream;
+ 
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assume.assumeTrue;
++
+ import com.google.gson.JsonElement;
+ import com.google.gson.internal.Streams;
+ import com.google.gson.internal.bind.JsonTreeReader;
+@@ -27,9 +30,6 @@ import org.junit.Test;
+ import org.junit.runner.RunWith;
+ import org.junit.runners.Parameterized;
+ 
+-import static org.junit.Assert.assertEquals;
+-import static org.junit.Assume.assumeTrue;
+-
+ @SuppressWarnings("resource")
+ @RunWith(Parameterized.class)
+ public class JsonReaderPathTest {
+@@ -221,12 +221,27 @@ public class JsonReaderPathTest {
+     assertEquals("$[2]", reader.getPath());
+   }
+ 
++  @Test public void skipArrayEnd() throws IOException {
++    JsonReader reader = factory.create("[[],1]");
++    reader.beginArray();
++    reader.beginArray();
++    assertEquals("$[0][0]", reader.getPreviousPath());
++    assertEquals("$[0][0]", reader.getPath());
++    reader.skipValue(); // skip end of array
++    assertEquals("$[0]", reader.getPreviousPath());
++    assertEquals("$[1]", reader.getPath());
++  }
++
+   @Test public void skipObjectNames() throws IOException {
+-    JsonReader reader = factory.create("{\"a\":1}");
++    JsonReader reader = factory.create("{\"a\":[]}");
+     reader.beginObject();
+     reader.skipValue();
+-    assertEquals("$.null", reader.getPreviousPath());
+-    assertEquals("$.null", reader.getPath());
++    assertEquals("$.<skipped>", reader.getPreviousPath());
++    assertEquals("$.<skipped>", reader.getPath());
++
++    reader.beginArray();
++    assertEquals("$.<skipped>[0]", reader.getPreviousPath());
++    assertEquals("$.<skipped>[0]", reader.getPath());
+   }
+ 
+   @Test public void skipObjectValues() throws IOException {
+@@ -236,13 +251,25 @@ public class JsonReaderPathTest {
+     assertEquals("$.", reader.getPath());
+     reader.nextName();
+     reader.skipValue();
+-    assertEquals("$.null", reader.getPreviousPath());
+-    assertEquals("$.null", reader.getPath());
++    assertEquals("$.a", reader.getPreviousPath());
++    assertEquals("$.a", reader.getPath());
+     reader.nextName();
+     assertEquals("$.b", reader.getPreviousPath());
+     assertEquals("$.b", reader.getPath());
+   }
+ 
++  @Test public void skipObjectEnd() throws IOException {
++    JsonReader reader = factory.create("{\"a\":{},\"b\":2}");
++    reader.beginObject();
++    reader.nextName();
++    reader.beginObject();
++    assertEquals("$.a.", reader.getPreviousPath());
++    assertEquals("$.a.", reader.getPath());
++    reader.skipValue(); // skip end of object
++    assertEquals("$.a", reader.getPreviousPath());
++    assertEquals("$.a", reader.getPath());
++  }
++
+   @Test public void skipNestedStructures() throws IOException {
+     JsonReader reader = factory.create("[[1,2,3],4]");
+     reader.beginArray();
+@@ -251,6 +278,20 @@ public class JsonReaderPathTest {
+     assertEquals("$[1]", reader.getPath());
+   }
+ 
++  @Test public void skipEndOfDocument() throws IOException {
++    JsonReader reader = factory.create("[]");
++    reader.beginArray();
++    reader.endArray();
++    assertEquals("$", reader.getPreviousPath());
++    assertEquals("$", reader.getPath());
++    reader.skipValue();
++    assertEquals("$", reader.getPreviousPath());
++    assertEquals("$", reader.getPath());
++    reader.skipValue();
++    assertEquals("$", reader.getPreviousPath());
++    assertEquals("$", reader.getPath());
++  }
++
+   @Test public void arrayOfObjects() throws IOException {
+     JsonReader reader = factory.create("[{},{},{}]");
+     reader.beginArray();
+@@ -307,6 +348,52 @@ public class JsonReaderPathTest {
+     assertEquals("$", reader.getPath());
+   }
+ 
++  @Test public void objectOfObjects() throws IOException {
++    JsonReader reader = factory.create("{\"a\":{\"a1\":1,\"a2\":2},\"b\":{\"b1\":1}}");
++    reader.beginObject();
++    assertEquals("$.", reader.getPreviousPath());
++    assertEquals("$.", reader.getPath());
++    reader.nextName();
++    assertEquals("$.a", reader.getPreviousPath());
++    assertEquals("$.a", reader.getPath());
++    reader.beginObject();
++    assertEquals("$.a.", reader.getPreviousPath());
++    assertEquals("$.a.", reader.getPath());
++    reader.nextName();
++    assertEquals("$.a.a1", reader.getPreviousPath());
++    assertEquals("$.a.a1", reader.getPath());
++    reader.nextInt();
++    assertEquals("$.a.a1", reader.getPreviousPath());
++    assertEquals("$.a.a1", reader.getPath());
++    reader.nextName();
++    assertEquals("$.a.a2", reader.getPreviousPath());
++    assertEquals("$.a.a2", reader.getPath());
++    reader.nextInt();
++    assertEquals("$.a.a2", reader.getPreviousPath());
++    assertEquals("$.a.a2", reader.getPath());
++    reader.endObject();
++    assertEquals("$.a", reader.getPreviousPath());
++    assertEquals("$.a", reader.getPath());
++    reader.nextName();
++    assertEquals("$.b", reader.getPreviousPath());
++    assertEquals("$.b", reader.getPath());
++    reader.beginObject();
++    assertEquals("$.b.", reader.getPreviousPath());
++    assertEquals("$.b.", reader.getPath());
++    reader.nextName();
++    assertEquals("$.b.b1", reader.getPreviousPath());
++    assertEquals("$.b.b1", reader.getPath());
++    reader.nextInt();
++    assertEquals("$.b.b1", reader.getPreviousPath());
++    assertEquals("$.b.b1", reader.getPath());
++    reader.endObject();
++    assertEquals("$.b", reader.getPreviousPath());
++    assertEquals("$.b", reader.getPath());
++    reader.endObject();
++    assertEquals("$", reader.getPreviousPath());
++    assertEquals("$", reader.getPath());
++  }
++
+   public enum Factory {
+     STRING_READER {
+       @Override public JsonReader create(String data) {
+diff --git a/gson/src/test/java/com/google/gson/stream/JsonReaderTest.java b/gson/src/test/java/com/google/gson/stream/JsonReaderTest.java
+index 7ec5e46..faaa87a 100644
+--- a/gson/src/test/java/com/google/gson/stream/JsonReaderTest.java
++++ b/gson/src/test/java/com/google/gson/stream/JsonReaderTest.java
+@@ -16,13 +16,6 @@
+ 
+ package com.google.gson.stream;
+ 
+-import java.io.EOFException;
+-import java.io.IOException;
+-import java.io.Reader;
+-import java.io.StringReader;
+-import java.util.Arrays;
+-import junit.framework.TestCase;
+-
+ import static com.google.gson.stream.JsonToken.BEGIN_ARRAY;
+ import static com.google.gson.stream.JsonToken.BEGIN_OBJECT;
+ import static com.google.gson.stream.JsonToken.BOOLEAN;
+@@ -33,6 +26,13 @@ import static com.google.gson.stream.JsonToken.NULL;
+ import static com.google.gson.stream.JsonToken.NUMBER;
+ import static com.google.gson.stream.JsonToken.STRING;
+ 
++import java.io.EOFException;
++import java.io.IOException;
++import java.io.Reader;
++import java.io.StringReader;
++import java.util.Arrays;
++import junit.framework.TestCase;
++
+ @SuppressWarnings("resource")
+ public final class JsonReaderTest extends TestCase {
+   public void testReadArray() throws IOException {
+@@ -140,6 +140,35 @@ public final class JsonReaderTest extends TestCase {
+     assertEquals(JsonToken.END_DOCUMENT, reader.peek());
+   }
+ 
++  public void testSkipObjectName() throws IOException {
++    JsonReader reader = new JsonReader(reader("{\"a\": 1}"));
++    reader.beginObject();
++    reader.skipValue();
++    assertEquals(JsonToken.NUMBER, reader.peek());
++    assertEquals("$.<skipped>", reader.getPath());
++    assertEquals(1, reader.nextInt());
++  }
++
++  public void testSkipObjectNameSingleQuoted() throws IOException {
++    JsonReader reader = new JsonReader(reader("{'a': 1}"));
++    reader.setLenient(true);
++    reader.beginObject();
++    reader.skipValue();
++    assertEquals(JsonToken.NUMBER, reader.peek());
++    assertEquals("$.<skipped>", reader.getPath());
++    assertEquals(1, reader.nextInt());
++  }
++
++  public void testSkipObjectNameUnquoted() throws IOException {
++    JsonReader reader = new JsonReader(reader("{a: 1}"));
++    reader.setLenient(true);
++    reader.beginObject();
++    reader.skipValue();
++    assertEquals(JsonToken.NUMBER, reader.peek());
++    assertEquals("$.<skipped>", reader.getPath());
++    assertEquals(1, reader.nextInt());
++  }
++
+   public void testSkipInteger() throws IOException {
+     JsonReader reader = new JsonReader(reader(
+         "{\"a\":123456789,\"b\":-123456789}"));
+@@ -164,6 +193,34 @@ public final class JsonReaderTest extends TestCase {
+     assertEquals(JsonToken.END_DOCUMENT, reader.peek());
+   }
+ 
++  public void testSkipValueAfterEndOfDocument() throws IOException {
++    JsonReader reader = new JsonReader(reader("{}"));
++    reader.beginObject();
++    reader.endObject();
++    assertEquals(JsonToken.END_DOCUMENT, reader.peek());
++
++    assertEquals("$", reader.getPath());
++    reader.skipValue();
++    assertEquals(JsonToken.END_DOCUMENT, reader.peek());
++    assertEquals("$", reader.getPath());
++  }
++
++  public void testSkipValueAtArrayEnd() throws IOException {
++    JsonReader reader = new JsonReader(reader("[]"));
++    reader.beginArray();
++    reader.skipValue();
++    assertEquals(JsonToken.END_DOCUMENT, reader.peek());
++    assertEquals("$", reader.getPath());
++  }
++
++  public void testSkipValueAtObjectEnd() throws IOException {
++    JsonReader reader = new JsonReader(reader("{}"));
++    reader.beginObject();
++    reader.skipValue();
++    assertEquals(JsonToken.END_DOCUMENT, reader.peek());
++    assertEquals("$", reader.getPath());
++  }
++
+   public void testHelloWorld() throws IOException {
+     String json = "{\n" +
+         "   \"hello\": true,\n" +

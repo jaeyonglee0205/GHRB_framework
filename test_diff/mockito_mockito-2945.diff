@@ -1,0 +1,1459 @@
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/ConstructionMockRuleTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/ConstructionMockRuleTest.java
+new file mode 100644
+index 0000000..e53202e
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/ConstructionMockRuleTest.java
+@@ -0,0 +1,43 @@
++/*
++ * Copyright (c) 2020 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Rule;
++import org.junit.Test;
++import org.mockito.Mock;
++import org.mockito.MockedConstruction;
++import org.mockito.junit.MockitoJUnit;
++import org.mockito.junit.MockitoRule;
++
++import static junit.framework.TestCase.*;
++
++public final class ConstructionMockRuleTest {
++
++    @Rule
++    public MockitoRule mockitoRule = MockitoJUnit.rule();
++
++    @Mock
++    private MockedConstruction<Dummy> dummy;
++
++    @Test
++    public void testConstructionMockSimple() {
++        assertNull(new Dummy().foo());
++    }
++
++    @Test
++    public void testConstructionMockCollection() {
++        assertEquals(0, dummy.constructed().size());
++        Dummy mock = new Dummy();
++        assertEquals(1, dummy.constructed().size());
++        assertTrue(dummy.constructed().contains(mock));
++    }
++
++    static class Dummy {
++
++        String foo() {
++            return "foo";
++        }
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/ConstructionMockTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/ConstructionMockTest.java
+new file mode 100644
+index 0000000..adbe3fe
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/ConstructionMockTest.java
+@@ -0,0 +1,187 @@
++/*
++ * Copyright (c) 2020 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import static junit.framework.TestCase.assertEquals;
++import static junit.framework.TestCase.assertNull;
++import static junit.framework.TestCase.assertTrue;
++import static org.assertj.core.api.Assertions.assertThatThrownBy;
++import static org.mockito.Mockito.times;
++import static org.mockito.Mockito.verify;
++import static org.mockito.Mockito.when;
++import static org.mockito.Mockito.withSettings;
++
++import java.util.Collections;
++import java.util.concurrent.atomic.AtomicReference;
++
++import org.junit.Test;
++import org.mockito.MockMakers;
++import org.mockito.MockedConstruction;
++import org.mockito.Mockito;
++import org.mockito.exceptions.base.MockitoException;
++
++public final class ConstructionMockTest {
++
++    @Test
++    public void testConstructionMockSimple() {
++        assertEquals("foo", new Dummy().foo());
++        try (MockedConstruction<Dummy> ignored = Mockito.mockConstruction(Dummy.class)) {
++            assertNull(new Dummy().foo());
++        }
++        assertEquals("foo", new Dummy().foo());
++    }
++
++    @Test
++    public void testConstructionMockCollection() {
++        try (MockedConstruction<Dummy> dummy = Mockito.mockConstruction(Dummy.class)) {
++            assertEquals(0, dummy.constructed().size());
++            Dummy mock = new Dummy();
++            assertEquals(1, dummy.constructed().size());
++            assertTrue(dummy.constructed().contains(mock));
++        }
++    }
++
++    @Test
++    public void testConstructionMockDefaultAnswer() {
++        try (MockedConstruction<Dummy> ignored = Mockito.mockConstructionWithAnswer(Dummy.class, invocation -> "bar")) {
++            assertEquals("bar", new Dummy().foo());
++        }
++    }
++
++    @Test
++    public void testConstructionMockDefaultAnswerMultiple() {
++        try (MockedConstruction<Dummy> ignored = Mockito.mockConstructionWithAnswer(Dummy.class, invocation -> "bar", invocation -> "qux")) {
++            assertEquals("bar", new Dummy().foo());
++            assertEquals("qux", new Dummy().foo());
++            assertEquals("qux", new Dummy().foo());
++        }
++    }
++
++    /**
++     * Tests issue #2544
++     */
++    @Test
++    public void testConstructionMockDefaultAnswerMultipleMoreThanTwo() {
++        try (MockedConstruction<Dummy> ignored = Mockito.mockConstructionWithAnswer(Dummy.class, invocation -> "bar", invocation -> "qux", invocation -> "baz")) {
++            assertEquals("bar", new Dummy().foo());
++            assertEquals("qux", new Dummy().foo());
++            assertEquals("baz", new Dummy().foo());
++            assertEquals("baz", new Dummy().foo());
++        }
++    }
++
++    @Test
++    public void testConstructionMockPrepared() {
++        try (MockedConstruction<Dummy> ignored = Mockito.mockConstruction(Dummy.class, (mock, context) -> when(mock.foo()).thenReturn("bar"))) {
++            assertEquals("bar", new Dummy().foo());
++        }
++    }
++
++
++    @Test
++    public void testConstructionMockContext() {
++        try (MockedConstruction<Dummy> ignored = Mockito.mockConstruction(Dummy.class, (mock, context) -> {
++            assertEquals(1, context.getCount());
++            assertEquals(Collections.singletonList("foobar"), context.arguments());
++            assertEquals(mock.getClass().getDeclaredConstructor(String.class), context.constructor());
++            when(mock.foo()).thenReturn("bar");
++        })) {
++            assertEquals("bar", new Dummy("foobar").foo());
++        }
++    }
++
++    @Test
++    public void testConstructionMockDoesNotAffectDifferentThread() throws InterruptedException {
++        try (MockedConstruction<Dummy> ignored = Mockito.mockConstruction(Dummy.class)) {
++            Dummy dummy = new Dummy();
++            when(dummy.foo()).thenReturn("bar");
++            assertEquals("bar", dummy.foo());
++            verify(dummy).foo();
++            AtomicReference<String> reference = new AtomicReference<>();
++            Thread thread = new Thread(() -> reference.set(new Dummy().foo()));
++            thread.start();
++            thread.join();
++            assertEquals("foo", reference.get());
++            when(dummy.foo()).thenReturn("bar");
++            assertEquals("bar", dummy.foo());
++            verify(dummy, times(2)).foo();
++        }
++    }
++
++    @Test
++    public void testConstructionMockCanCoexistWithMockInDifferentThread() throws InterruptedException {
++        try (MockedConstruction<Dummy> ignored = Mockito.mockConstruction(Dummy.class)) {
++            Dummy dummy = new Dummy();
++            when(dummy.foo()).thenReturn("bar");
++            assertEquals("bar", dummy.foo());
++            verify(dummy).foo();
++            AtomicReference<String> reference = new AtomicReference<>();
++            Thread thread = new Thread(() -> {
++                try (MockedConstruction<Dummy> ignored2 = Mockito.mockConstruction(Dummy.class)) {
++                    Dummy other = new Dummy();
++                    when(other.foo()).thenReturn("qux");
++                    reference.set(other.foo());
++                }
++            });
++            thread.start();
++            thread.join();
++            assertEquals("qux", reference.get());
++            assertEquals("bar", dummy.foo());
++            verify(dummy, times(2)).foo();
++        }
++    }
++
++    @Test
++    public void testConstructionMockMustBeExclusiveInScopeWithinThread() {
++        assertThatThrownBy(
++                () -> {
++                    try (
++                            MockedConstruction<Dummy> dummy = Mockito.mockConstruction(Dummy.class);
++                            MockedConstruction<Dummy> duplicate = Mockito.mockConstruction(Dummy.class)) {
++                    }
++                })
++                .isInstanceOf(MockitoException.class)
++                .hasMessageContaining("static mocking is already registered in the current thread");
++    }
++
++    @Test
++    public void testConstructionMockMustNotTargetAbstractClass() {
++        assertThatThrownBy(
++                () -> {
++                    Mockito.mockConstruction(Runnable.class).close();
++                })
++                .isInstanceOf(MockitoException.class)
++                .hasMessageContaining("It is not possible to construct primitive types or abstract types");
++    }
++
++    @Test
++    public void testConstructionMocksMustNotUseCustomMockMaker() {
++        assertThatThrownBy(
++            () -> {
++                try (MockedConstruction<Dummy> ignored = Mockito.mockConstruction(
++                    Dummy.class,
++                    withSettings().mockMaker(MockMakers.INLINE))
++                ) {
++                    new Dummy();
++                }
++            })
++            .isInstanceOf(IllegalArgumentException.class)
++            .hasMessageContaining("you cannot override the MockMaker for construction mocks");
++    }
++
++    static class Dummy {
++
++
++        public Dummy() {
++        }
++
++        public Dummy(String value) {
++        }
++
++        String foo() {
++            return "foo";
++        }
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/EnumMockingTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/EnumMockingTest.java
+new file mode 100644
+index 0000000..a418aab
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/EnumMockingTest.java
+@@ -0,0 +1,33 @@
++/*
++ * Copyright (c) 2021 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Test;
++import org.mockito.Mockito;
++
++import static org.hamcrest.CoreMatchers.*;
++import static org.hamcrest.MatcherAssert.assertThat;
++
++public class EnumMockingTest {
++
++    @Test
++    public void testMockEnum() {
++        Animal a = Mockito.mock(Animal.class);
++        assertThat(a, not(equalTo(Animal.CAT)));
++        assertThat(a.sound(), nullValue(String.class));
++        assertThat(a.name(), nullValue(String.class));
++    }
++
++    enum Animal {
++        CAT {
++            @Override
++            public String sound() {
++                return "meow";
++            }
++        };
++
++        public abstract String sound();
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/FinalClassMockingTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/FinalClassMockingTest.java
+new file mode 100644
+index 0000000..80c9de8
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/FinalClassMockingTest.java
+@@ -0,0 +1,22 @@
++/*
++ * Copyright (c) 2017 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Test;
++import org.mockito.Mockito;
++
++public class FinalClassMockingTest {
++
++    @SuppressWarnings("CheckReturnValue")
++    @Test
++    public void no_exception_while_mocking_final_class() throws Exception {
++        Mockito.mock(FinalClass.class);
++    }
++
++    private static final class FinalClass {
++
++    }
++
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/HierarchyPreInitializationTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/HierarchyPreInitializationTest.java
+new file mode 100644
+index 0000000..16aed5f
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/HierarchyPreInitializationTest.java
+@@ -0,0 +1,44 @@
++/*
++ * Copyright (c) 2017 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Test;
++
++import static org.mockito.Mockito.mock;
++
++public class HierarchyPreInitializationTest {
++
++    @Test
++    @SuppressWarnings("CheckReturnValue")
++    public void testOrder() {
++        mock(MyClass.class);
++        mock(TestSubInterface.class);
++    }
++
++    public interface TestInterface {
++
++        @SuppressWarnings("unused")
++        MyClass INSTANCE = new MyClass().probe();
++    }
++
++    public interface TestSubInterface extends TestInterface {
++    }
++
++    public static class MyClass {
++
++        private final Object obj;
++
++        public MyClass() {
++            obj = new Object();
++        }
++
++        public MyClass probe() {
++            if (obj == null) {
++                throw new RuntimeException();
++            }
++            return this;
++        }
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/InOrderVerificationTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/InOrderVerificationTest.java
+new file mode 100644
+index 0000000..fb35adc
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/InOrderVerificationTest.java
+@@ -0,0 +1,213 @@
++/*
++ * Copyright (c) 2022 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.assertj.core.api.Assertions.assertThatThrownBy;
++import static org.junit.Assert.fail;
++import static org.mockito.Mockito.inOrder;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.mockStatic;
++import static org.mockito.Mockito.timeout;
++import static org.mockito.Mockito.times;
++
++import org.assertj.core.api.Assert;
++import org.junit.Test;
++import org.mockito.InOrder;
++import org.mockito.MockedStatic;
++import org.mockito.exceptions.base.MockitoException;
++import org.mockito.exceptions.misusing.NotAMockException;
++import org.mockito.exceptions.verification.VerificationInOrderFailure;
++import org.mockito.verification.VerificationMode;
++
++public class InOrderVerificationTest {
++    @Test
++    public void shouldVerifyStaticMethods() {
++        try (MockedStatic<StaticContext> mockedStatic = mockStatic(StaticContext.class)) {
++            // given
++            InOrder inOrder = inOrder(StaticContext.class);
++
++            // when
++            StaticContext.firstMethod();
++            StaticContext.secondMethod(0);
++
++            // then
++            inOrder.verify(mockedStatic, StaticContext::firstMethod);
++            inOrder.verify(mockedStatic, () -> StaticContext.secondMethod(0));
++        }
++    }
++
++    @Test
++    public void shouldVerifyStaticAndInstanceMethods() {
++        try (MockedStatic<StaticContext> mockedStatic = mockStatic(StaticContext.class)) {
++            // given
++            StaticContext mocked = mock(StaticContext.class);
++            InOrder inOrder = inOrder(mocked, StaticContext.class);
++
++            // when
++            StaticContext.firstMethod();
++            mocked.instanceMethod();
++            StaticContext.secondMethod(10);
++
++            // then
++            inOrder.verify(mockedStatic, StaticContext::firstMethod);
++            inOrder.verify(mocked).instanceMethod();
++            inOrder.verify(mockedStatic, () -> StaticContext.secondMethod(10));
++        }
++    }
++
++    @Test
++    public void shouldVerifyStaticMethodsWithSimpleAndWrapperModes() {
++        try (MockedStatic<StaticContext> mockedStatic = mockStatic(StaticContext.class)) {
++            // given
++            InOrder inOrder = inOrder(StaticContext.class);
++
++            // when
++            StaticContext.firstMethod();
++            StaticContext.firstMethod();
++            StaticContext.secondMethod(0);
++
++            // then
++            inOrder.verify(mockedStatic, StaticContext::firstMethod, times(2));
++            inOrder.verify(mockedStatic, () -> StaticContext.secondMethod(0), timeout(100).atLeastOnce());
++        }
++    }
++
++    @Test
++    public void shouldThrowExceptionWhenModeIsUnsupported() {
++        try (MockedStatic<StaticContext> mockedStatic = mockStatic(StaticContext.class)) {
++            // given
++            VerificationMode unsupportedMode = data -> { };
++            InOrder inOrder = inOrder(StaticContext.class);
++
++            // when
++            StaticContext.firstMethod();
++
++            // then
++            assertThatThrownBy(() ->
++                inOrder.verify(mockedStatic, StaticContext::firstMethod, unsupportedMode)
++            ).isInstanceOf(MockitoException.class);
++        }
++    }
++
++    @Test
++    public void shouldThrowExceptionWhenOrderIsWrong() {
++        try (MockedStatic<StaticContext> mockedStatic = mockStatic(StaticContext.class)) {
++            // given
++            InOrder inOrder = inOrder(StaticContext.class);
++
++            // when
++            StaticContext.firstMethod();
++            StaticContext.secondMethod(0);
++
++            // then
++            assertThatThrownBy(() -> {
++                inOrder.verify(mockedStatic, () -> StaticContext.secondMethod(0));
++                inOrder.verify(mockedStatic, StaticContext::firstMethod);
++            }).isInstanceOf(VerificationInOrderFailure.class);
++        }
++    }
++
++    @Test
++    public void shouldThrowExceptionWhenNoMoreInteractionsInvokedButThereAre() {
++        try (MockedStatic<StaticContext> mockedStatic = mockStatic(StaticContext.class)) {
++            // given
++            InOrder inOrder = inOrder(StaticContext.class);
++
++            // when
++            StaticContext.firstMethod();
++            StaticContext.secondMethod(0);
++
++            // then
++            inOrder.verify(mockedStatic, StaticContext::firstMethod);
++            assertThatThrownBy(inOrder::verifyNoMoreInteractions)
++                .isInstanceOf(VerificationInOrderFailure.class);
++        }
++    }
++
++    @Test
++    public void shouldThrowExceptionWhenNoMoreInteractionsInvokedWithoutVerifyingStaticMethods() {
++        try (MockedStatic<StaticContext> ignored = mockStatic(StaticContext.class)) {
++            // given
++            StaticContext mocked = mock(StaticContext.class);
++            InOrder inOrder = inOrder(StaticContext.class, mocked);
++
++            // when
++            mocked.instanceMethod();
++            StaticContext.firstMethod();
++
++            // then
++            inOrder.verify(mocked).instanceMethod();
++            assertThatThrownBy(inOrder::verifyNoMoreInteractions)
++                .isInstanceOf(VerificationInOrderFailure.class);
++        }
++    }
++
++    @Test
++    public void shouldThrowExceptionWhenClassIsNotMocked() {
++        assertThatThrownBy(
++            () -> inOrder(StaticContext.class)
++        ).isInstanceOf(NotAMockException.class);
++    }
++
++    @Test
++    public void shouldVerifyStaticMethodsWithoutInterferingWithMocking() {
++        try (MockedStatic<StaticContext> mockedStatic = mockStatic(StaticContext.class)) {
++            // given
++            InOrder inOrder = inOrder(StaticContext.class);
++            Exception expected = new RuntimeException();
++            mockedStatic.when(StaticContext::firstMethod).thenThrow(expected);
++
++            // when
++            Assert<?, ?> actual = assertThatThrownBy(StaticContext::firstMethod);
++
++            // then
++            actual.isSameAs(expected);
++            inOrder.verify(mockedStatic, StaticContext::firstMethod);
++            inOrder.verifyNoMoreInteractions();
++        }
++    }
++
++    @Test
++    public void shouldThrowExceptionWhenVerifyUsingInOrderWithoutValidClass() {
++        try (MockedStatic<StaticContext> mockedStaticContext = mockStatic(StaticContext.class)) {
++            try (MockedStatic<AnotherStaticContext> mockedAnotherStaticContext = mockStatic(AnotherStaticContext.class)) {
++                // given
++                InOrder inOrder = inOrder(AnotherStaticContext.class);
++
++                // when
++                mockedAnotherStaticContext.when(AnotherStaticContext::otherMethod).thenReturn("mocked value");
++                StaticContext.firstMethod();
++
++                // then
++                assertThat(AnotherStaticContext.otherMethod())
++                    .isEqualTo("mocked value");
++                inOrder.verify(mockedAnotherStaticContext, AnotherStaticContext::otherMethod);
++                assertThatThrownBy(() -> inOrder.verify(mockedStaticContext, StaticContext::firstMethod))
++                    .isInstanceOf(VerificationInOrderFailure.class);
++            }
++        }
++    }
++
++    private static class AnotherStaticContext {
++        static String otherMethod() {
++            throw new AssertionError("otherMethod should be mocked");
++        }
++    }
++
++    private static class StaticContext {
++        static void firstMethod() {
++            fail("firstMethod should be mocked");
++        }
++
++        static void secondMethod(int n) {
++            fail("secondMethod should be mocked but was invoked with argument " + n);
++        }
++
++        void instanceMethod() {
++            fail("instanceMethod should be mocked");
++        }
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/InitializationTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/InitializationTest.java
+new file mode 100644
+index 0000000..c4f62f4
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/InitializationTest.java
+@@ -0,0 +1,25 @@
++/*
++ * Copyright (c) 2020 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Test;
++import org.mockito.Mockito;
++
++import static junit.framework.TestCase.assertEquals;
++
++public class InitializationTest {
++
++    @Test
++    public void assure_initialization_prior_to_instrumentation() {
++        @SuppressWarnings("unused")
++        SampleEnum mock = Mockito.mock(SampleEnum.class);
++        SampleEnum[] values = SampleEnum.values();
++        assertEquals("VALUE", values[0].name());
++    }
++
++    public enum SampleEnum {
++        VALUE
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/OneLinerStubStressTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/OneLinerStubStressTest.java
+new file mode 100644
+index 0000000..44ff959
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/OneLinerStubStressTest.java
+@@ -0,0 +1,41 @@
++/*
++ * Copyright (c) 2018 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Test;
++
++import static org.junit.Assert.assertEquals;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++public class OneLinerStubStressTest {
++
++    public class OneLinerStubTestClass {
++        public String getStuff() {
++            return "A";
++        }
++    }
++
++    private static String generateLargeString() {
++        final int length = 2000000;
++        final StringBuilder stringBuilder = new StringBuilder(length);
++        for (int i = 0; i <= length; i++) {
++            stringBuilder.append("B");
++        }
++        return stringBuilder.toString();
++    }
++
++    @Test
++    public void call_a_lot_of_mocks_using_one_line_stubbing() {
++        //This requires smaller heap set for the test process, see "inline.gradle"
++        final String returnValue = generateLargeString();
++        for (int i = 0; i < 50000; i++) {
++            // make sure that mock object does not get cleaned up prematurely
++            final OneLinerStubTestClass mock =
++                when(mock(OneLinerStubTestClass.class).getStuff()).thenReturn(returnValue).getMock();
++            assertEquals(returnValue, mock.getStuff());
++        }
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/PluginTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/PluginTest.java
+new file mode 100644
+index 0000000..16e2da2
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/PluginTest.java
+@@ -0,0 +1,26 @@
++/*
++ * Copyright (c) 2017 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Test;
++import org.mockito.internal.configuration.plugins.Plugins;
++import org.mockito.internal.creation.bytebuddy.InlineByteBuddyMockMaker;
++import org.mockito.internal.util.reflection.ModuleMemberAccessor;
++
++import static org.junit.Assert.*;
++
++public class PluginTest {
++
++    @Test
++    public void mock_maker_should_be_inline() throws Exception {
++        assertTrue(Plugins.getMockMaker() instanceof InlineByteBuddyMockMaker);
++    }
++
++    @Test
++    public void member_accessor_should_be_module() throws Exception {
++        assertTrue(Plugins.getMemberAccessor() instanceof ModuleMemberAccessor);
++    }
++
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/RecursionTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/RecursionTest.java
+new file mode 100644
+index 0000000..2a4494e
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/RecursionTest.java
+@@ -0,0 +1,21 @@
++/*
++ * Copyright (c) 2017 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Test;
++
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.concurrent.ConcurrentMap;
++
++import static org.mockito.Mockito.spy;
++
++public class RecursionTest {
++
++    @Test
++    public void testMockConcurrentHashMap() {
++        ConcurrentMap<String, String> map = spy(new ConcurrentHashMap<String, String>());
++        map.putIfAbsent("a", "b");
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/SpyWithConstructorTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/SpyWithConstructorTest.java
+new file mode 100644
+index 0000000..fcaa581
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/SpyWithConstructorTest.java
+@@ -0,0 +1,41 @@
++/*
++ * Copyright (c) 2020 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Before;
++import org.junit.Test;
++
++import static junit.framework.TestCase.assertEquals;
++import static org.mockito.Mockito.*;
++
++public class SpyWithConstructorTest {
++
++    private SomethingAbstract somethingAbstract;
++
++    @Before
++    public void setUp() {
++        somethingAbstract = mock(SomethingAbstract.class, withSettings()
++            .useConstructor("foo")
++            .defaultAnswer(CALLS_REAL_METHODS));
++    }
++
++    @Test
++    public void shouldUseConstructor() {
++        assertEquals("foo", somethingAbstract.getValue());
++    }
++
++    static abstract class SomethingAbstract {
++
++        private final String value;
++
++        SomethingAbstract(String value) {
++            this.value = value;
++        }
++
++        public String getValue() {
++            return value;
++        }
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/StaticMockRuleTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/StaticMockRuleTest.java
+new file mode 100644
+index 0000000..c54d6a6
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/StaticMockRuleTest.java
+@@ -0,0 +1,42 @@
++/*
++ * Copyright (c) 2020 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Rule;
++import org.junit.Test;
++import org.mockito.Mock;
++import org.mockito.MockedStatic;
++import org.mockito.junit.MockitoJUnit;
++import org.mockito.junit.MockitoRule;
++
++import static junit.framework.TestCase.*;
++
++public final class StaticMockRuleTest {
++
++    @Rule
++    public MockitoRule mockitoRule = MockitoJUnit.rule();
++
++    @Mock
++    private MockedStatic<Dummy> dummy;
++
++    @Test
++    public void testStaticMockSimple() {
++        assertNull(Dummy.foo());
++    }
++
++    @Test
++    public void testStaticMockWithVerification() {
++        dummy.when(Dummy::foo).thenReturn("bar");
++        assertEquals("bar", Dummy.foo());
++        dummy.verify(Dummy::foo);
++    }
++
++    static class Dummy {
++
++        static String foo() {
++            return "foo";
++        }
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/StaticMockTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/StaticMockTest.java
+new file mode 100644
+index 0000000..c9f7a58
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/StaticMockTest.java
+@@ -0,0 +1,248 @@
++/*
++ * Copyright (c) 2020 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import static junit.framework.TestCase.assertEquals;
++import static junit.framework.TestCase.assertNull;
++import static org.assertj.core.api.Assertions.assertThatThrownBy;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.Mockito.times;
++
++import java.util.concurrent.atomic.AtomicReference;
++
++import org.junit.Test;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++import org.mockito.exceptions.base.MockitoException;
++import org.mockito.exceptions.verification.NoInteractionsWanted;
++import org.mockito.exceptions.verification.WantedButNotInvoked;
++
++public final class StaticMockTest {
++
++    @Test
++    public void testStaticMockSimple() {
++        assertEquals("foo", Dummy.foo());
++        try (MockedStatic<Dummy> ignored = Mockito.mockStatic(Dummy.class)) {
++            assertNull(Dummy.foo());
++        }
++        assertEquals("foo", Dummy.foo());
++    }
++
++    @Test
++    public void testStaticMockWithVerification() {
++        try (MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class)) {
++            dummy.when(Dummy::foo).thenReturn("bar");
++            assertEquals("bar", Dummy.foo());
++            dummy.verify(Dummy::foo);
++        }
++    }
++
++    @Test
++    public void testStaticMockWithVerificationFailed() {
++        try (MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class)) {
++            assertThatThrownBy(
++                    () -> {
++                        dummy.verify(Dummy::foo);
++                    })
++                    .isInstanceOf(WantedButNotInvoked.class)
++                    .hasMessageContaining("there were zero interactions with this mock");
++        }
++    }
++
++    @Test
++    public void testStaticMockWithNoInteractions() {
++        try (MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class)) {
++            dummy.when(Dummy::foo).thenReturn("bar");
++            dummy.verifyNoInteractions();
++        }
++    }
++
++    @Test
++    public void testStaticMockWithNoInteractionsFailed() {
++        try (MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class)) {
++            dummy.when(Dummy::foo).thenReturn("bar");
++            assertEquals("bar", Dummy.foo());
++            assertThatThrownBy(
++                    () -> {
++                        dummy.verifyNoInteractions();
++                    })
++                    .isInstanceOf(NoInteractionsWanted.class)
++                    .hasMessageContaining("No interactions wanted here")
++                    .hasMessageContaining("above is the only interaction with this mock.");
++        }
++    }
++
++    @Test
++    public void testStaticMockWithNoMoreInteractions() {
++        try (MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class)) {
++            dummy.when(Dummy::foo).thenReturn("bar");
++            assertEquals("bar", Dummy.foo());
++            dummy.verify(Dummy::foo);
++            dummy.verifyNoMoreInteractions();
++        }
++    }
++
++    @Test
++    public void testStaticMockWithNoMoreInteractionsFailed() {
++        try (MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class)) {
++            dummy.when(Dummy::foo).thenReturn("bar");
++            assertEquals("bar", Dummy.foo());
++            assertThatThrownBy(
++                    () -> {
++                        dummy.verifyNoInteractions();
++                    })
++                    .isInstanceOf(NoInteractionsWanted.class)
++                    .hasMessageContaining("No interactions wanted here")
++                    .hasMessageContaining("above is the only interaction with this mock.");
++        }
++    }
++
++    @Test
++    public void testStaticMockWithDefaultAnswer() {
++        try (MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class, invocation -> "bar")) {
++            assertEquals("bar", Dummy.foo());
++            dummy.verify(Dummy::foo);
++        }
++    }
++
++    @Test
++    public void testStaticMockWithRealMethodCall() {
++        try (MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class)) {
++            dummy.when(Dummy::foo).thenCallRealMethod();
++            assertEquals("foo", Dummy.foo());
++            dummy.verify(Dummy::foo);
++        }
++    }
++
++    @Test
++    public void testStaticMockReset() {
++        try (MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class)) {
++            dummy.when(Dummy::foo).thenReturn("bar");
++            dummy.reset();
++            assertNull(Dummy.foo());
++        }
++    }
++
++    @Test
++    public void testStaticMockClear() {
++        try (MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class)) {
++            dummy.when(Dummy::foo).thenReturn("bar");
++            assertEquals("bar", Dummy.foo());
++            dummy.clearInvocations();
++            dummy.verifyNoInteractions();
++        }
++    }
++
++    @Test
++    public void testStaticMockDoesNotAffectDifferentThread() throws InterruptedException {
++        try (MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class)) {
++            dummy.when(Dummy::foo).thenReturn("bar");
++            assertEquals("bar", Dummy.foo());
++            dummy.verify(Dummy::foo);
++            AtomicReference<String> reference = new AtomicReference<>();
++            Thread thread = new Thread(() -> reference.set(Dummy.foo()));
++            thread.start();
++            thread.join();
++            assertEquals("foo", reference.get());
++            dummy.when(Dummy::foo).thenReturn("bar");
++            assertEquals("bar", Dummy.foo());
++            dummy.verify(Dummy::foo, times(2));
++        }
++    }
++
++    @Test
++    public void testStaticMockCanCoexistWithMockInDifferentThread() throws InterruptedException {
++        try (MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class)) {
++            dummy.when(Dummy::foo).thenReturn("bar");
++            assertEquals("bar", Dummy.foo());
++            dummy.verify(Dummy::foo);
++            AtomicReference<String> reference = new AtomicReference<>();
++            Thread thread = new Thread(() -> {
++                try (MockedStatic<Dummy> dummy2 = Mockito.mockStatic(Dummy.class)) {
++                    dummy2.when(Dummy::foo).thenReturn("qux");
++                    reference.set(Dummy.foo());
++                }
++            });
++            thread.start();
++            thread.join();
++            assertEquals("qux", reference.get());
++            dummy.when(Dummy::foo).thenReturn("bar");
++            assertEquals("bar", Dummy.foo());
++            dummy.verify(Dummy::foo, times(2));
++        }
++    }
++
++    @Test
++    public void testStaticMockMustBeExclusiveInScopeWithinThread() {
++        assertThatThrownBy(
++                () -> {
++                    try (
++                            MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class);
++                            MockedStatic<Dummy> duplicate = Mockito.mockStatic(Dummy.class)
++                    ) {
++                    }
++                })
++                .isInstanceOf(MockitoException.class)
++                .hasMessageContaining("static mocking is already registered in the current thread");
++    }
++
++    @Test
++    public void testStaticMockVoid() {
++        try (MockedStatic<Dummy> dummy = Mockito.mockStatic(Dummy.class)) {
++            Dummy.fooVoid("bar");
++            assertNull(Dummy.var1);
++            dummy.verify(() -> Dummy.fooVoid("bar"));
++        }
++        Dummy.fooVoid("bar");
++        assertEquals("bar", Dummy.var1);
++    }
++
++    @Test
++    public void testStaticMockMustUseValidMatchers() {
++        try (MockedStatic<Dummy> mockedClass = Mockito.mockStatic(Dummy.class)) {
++            assertThatThrownBy(
++                    () -> {
++                        mockedClass.when(() -> Dummy.fooVoid("foo", any())).thenReturn(null);
++                    })
++                .hasMessageContaining("Invalid use of argument matchers!");
++
++            Dummy.fooVoid("foo", "bar");
++        }
++    }
++
++    @Test
++    public void testStaticMockVarargs() {
++        assertEquals("foobar", Dummy.fooVarargs("foo", "bar"));
++        try (MockedStatic<Dummy> ignored = Mockito.mockStatic(Dummy.class)) {
++            assertNull(Dummy.fooVarargs("foo", "bar"));
++        }
++        assertEquals("foobar", Dummy.fooVarargs("foo", "bar"));
++    }
++
++    static class Dummy {
++
++        static String var1 = null;
++
++        static String foo() {
++            return "foo";
++        }
++
++        static void fooVoid(String var2) {
++            var1 = var2;
++        }
++
++        static void fooVoid(String var2, String var3) {
++            var1 = var2;
++        }
++
++        static String fooVarargs(String... args) {
++            StringBuilder sb = new StringBuilder();
++            for (String arg : args) {
++                sb.append(arg);
++            }
++            return sb.toString();
++        }
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/StaticRuleTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/StaticRuleTest.java
+new file mode 100644
+index 0000000..68b9c6a
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/StaticRuleTest.java
+@@ -0,0 +1,31 @@
++/*
++ * Copyright (c) 2018 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Rule;
++import org.junit.Test;
++import org.mockito.Mock;
++import org.mockito.MockedStatic;
++import org.mockito.junit.MockitoJUnit;
++import org.mockito.junit.MockitoRule;
++
++import java.util.UUID;
++
++import static junit.framework.TestCase.assertEquals;
++
++public final class StaticRuleTest {
++
++    @Rule
++    public MockitoRule mockitoRule = MockitoJUnit.rule();
++
++    @Mock
++    private MockedStatic<UUID> mock;
++
++    @Test
++    public void runs() {
++        mock.when(UUID::randomUUID).thenReturn(new UUID(123, 456));
++        assertEquals(UUID.randomUUID(), new UUID(123, 456));
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/StaticRunnerTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/StaticRunnerTest.java
+new file mode 100644
+index 0000000..e015959
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/StaticRunnerTest.java
+@@ -0,0 +1,28 @@
++/*
++ * Copyright (c) 2018 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Test;
++import org.junit.runner.RunWith;
++import org.mockito.Mock;
++import org.mockito.MockedStatic;
++import org.mockito.junit.MockitoJUnitRunner;
++
++import java.util.UUID;
++
++import static junit.framework.TestCase.assertEquals;
++
++@RunWith(MockitoJUnitRunner.class)
++public final class StaticRunnerTest {
++
++    @Mock
++    private MockedStatic<UUID> mock;
++
++    @Test
++    public void runs() {
++        mock.when(UUID::randomUUID).thenReturn(new UUID(123, 456));
++        assertEquals(UUID.randomUUID(), new UUID(123, 456));
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/StressTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/StressTest.java
+new file mode 100644
+index 0000000..c6a5506
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/StressTest.java
+@@ -0,0 +1,38 @@
++/*
++ * Copyright (c) 2018 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Test;
++
++import static org.junit.Assert.assertEquals;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++import static org.mockito.Mockito.withSettings;
++
++public class StressTest {
++    public class TestClass {
++        public String getStuff() {
++            return "A";
++        }
++    }
++
++    @Test
++    public void call_a_lot_of_mocks() {
++        //This requires smaller heap set for the test process, see "inline.gradle"
++        for (int i = 0; i < 40000; i++) {
++            TestClass mock = mock(TestClass.class);
++            when(mock.getStuff()).thenReturn("B");
++            assertEquals("B", mock.getStuff());
++
++            TestClass serializableMock = mock(TestClass.class, withSettings().serializable());
++            when(serializableMock.getStuff()).thenReturn("C");
++            assertEquals("C", serializableMock.getStuff());
++
++            if (i % 1024 == 0) {
++                System.out.println(i + "/40000 mocks called");
++            }
++        }
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/StubbingLocationTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/StubbingLocationTest.java
+new file mode 100644
+index 0000000..8476006
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/StubbingLocationTest.java
+@@ -0,0 +1,38 @@
++/*
++ * Copyright (c) 2017 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import java.util.Collections;
++import java.util.Set;
++import org.junit.Test;
++import org.mockito.internal.invocation.finder.AllInvocationsFinder;
++import org.mockito.stubbing.Stubbing;
++
++import static org.junit.Assert.assertEquals;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++public class StubbingLocationTest {
++
++    @Test
++    public void stubbing_location_should_be_the_correct_point() {
++        ConcreteClass mock = mock(ConcreteClass.class);
++        String frame;
++        // Initializing 'frame' at the method parameter point is to gain the exact line number of the stubbing point.
++        when(mock.concreteMethod(frame = Thread.currentThread().getStackTrace()[1].toString())).thenReturn("");
++        mock.concreteMethod(frame);
++        Set<Stubbing> stubbings = AllInvocationsFinder.findStubbings(Collections.singleton(mock));
++        assertEquals(1, stubbings.size());
++        String location = stubbings.iterator().next().getInvocation().getLocation().toString();
++        assertEquals("-> at " + frame, location);
++    }
++
++    static final class ConcreteClass {
++        String concreteMethod(String s) {
++            throw new RuntimeException(s);
++        }
++    }
++
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/SubconstructorMockTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/SubconstructorMockTest.java
+new file mode 100644
+index 0000000..0dd65cb
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/SubconstructorMockTest.java
+@@ -0,0 +1,47 @@
++/*
++ * Copyright (c) 2017 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Test;
++import org.mockito.MockedConstruction;
++import org.mockito.Mockito;
++
++import static org.junit.Assert.assertFalse;
++import static org.junit.Assert.assertTrue;
++
++public class SubconstructorMockTest {
++
++    @Test
++    public void does_not_mock_subclass_constructor_for_superclass_mock() {
++        try (MockedConstruction<SubClass> mocked = Mockito.mockConstruction(SubClass.class)) { }
++        try (MockedConstruction<SuperClass> mocked = Mockito.mockConstruction(SuperClass.class)) {
++            SubClass value = new SubClass();
++            assertTrue(value.sup());
++            assertTrue(value.sub());
++        }
++    }
++
++    @Test
++    public void does_mock_superclass_constructor_for_subclass_mock() {
++        try (MockedConstruction<SuperClass> mocked = Mockito.mockConstruction(SuperClass.class)) { }
++        try (MockedConstruction<SubClass> mocked = Mockito.mockConstruction(SubClass.class)) {
++            SubClass value = new SubClass();
++            assertFalse(value.sup());
++            assertFalse(value.sub());
++        }
++    }
++
++    public static class SuperClass {
++        public boolean sup() {
++            return true;
++        }
++    }
++
++    public static class SubClass extends SuperClass {
++        public boolean sub() {
++            return true;
++        }
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/SuperCallTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/SuperCallTest.java
+new file mode 100644
+index 0000000..1fe8196
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/SuperCallTest.java
+@@ -0,0 +1,33 @@
++/*
++ * Copyright (c) 2017 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline;
++
++import org.junit.Test;
++
++import static org.mockito.ArgumentMatchers.eq;
++import static org.mockito.Mockito.spy;
++import static org.mockito.Mockito.verify;
++
++public final class SuperCallTest {
++
++    @Test
++    public void testSuperMethodCall() {
++        Dummy d = spy(new Dummy());
++        d.foo();
++        verify(d).bar(eq("baz"));
++    }
++
++    static class Dummy {
++
++        public void foo() {
++            bar("baz");
++        }
++
++        // Also fails if public.
++        void bar(String s) {
++            return;
++        }
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/bugs/CyclicMockMethodArgumentMemoryLeakTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/bugs/CyclicMockMethodArgumentMemoryLeakTest.java
+new file mode 100644
+index 0000000..20efc9d
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/bugs/CyclicMockMethodArgumentMemoryLeakTest.java
+@@ -0,0 +1,38 @@
++/*
++ * Copyright (c) 2019 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline.bugs;
++
++import org.junit.Test;
++
++import static org.mockito.Mockito.framework;
++import static org.mockito.Mockito.mock;
++
++public class CyclicMockMethodArgumentMemoryLeakTest {
++    private static final int ARRAY_LENGTH = 1 << 20;  // 4 MB
++
++    @Test
++    public void no_memory_leak_when_cyclically_calling_method_with_mocks() {
++        for (int i = 0; i < 100; ++i) {
++            final A a = mock(A.class);
++            a.largeArray = new int[ARRAY_LENGTH];
++            final B b = mock(B.class);
++
++            a.accept(b);
++            b.accept(a);
++
++            framework().clearInlineMocks();
++        }
++    }
++
++    private static class A {
++        private int[] largeArray;
++
++        void accept(B b) {}
++    }
++
++    private static class B {
++        void accept(A a) {}
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/bugs/OngoingStubShiftTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/bugs/OngoingStubShiftTest.java
+new file mode 100644
+index 0000000..47062fe
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/bugs/OngoingStubShiftTest.java
+@@ -0,0 +1,54 @@
++/*
++ * Copyright (c) 2007 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline.bugs;
++
++import static org.junit.Assert.assertEquals;
++import org.junit.Test;
++import org.mockito.MockedStatic;
++import static org.mockito.Mockito.CALLS_REAL_METHODS;
++import static org.mockito.Mockito.mockStatic;
++
++public class OngoingStubShiftTest {
++
++    private static class StaticInt {
++        static int getInt() {
++            return 1;
++        }
++    }
++
++    private static class StaticStr {
++        static String getStr() {
++            return Integer.toString(StaticInt.getInt());
++        }
++    }
++
++    @Test
++    public void keep_ongoing_stub_when_spy() {
++        try (MockedStatic<StaticInt> mockInt = mockStatic(StaticInt.class);
++             MockedStatic<StaticStr> mockStr = mockStatic(StaticStr.class, CALLS_REAL_METHODS)) {
++
++            mockStr.when(StaticStr::getStr).thenReturn("1");
++            assertEquals("1", StaticStr.getStr());
++        }
++    }
++
++    private static class StaticWithException {
++        static String getString() {
++            return Integer.toString(getInt());
++        }
++
++        static int getInt() {
++            throw new NullPointerException();
++        }
++    }
++
++    @Test
++    public void keep_ongoing_stub_when_exception() {
++        try (MockedStatic<StaticWithException> mock = mockStatic(StaticWithException.class, CALLS_REAL_METHODS)) {
++            mock.when(StaticWithException::getString).thenReturn("1");
++            assertEquals("1", StaticWithException.getString());
++        }
++    }
++}
+diff --git a/subprojects/inlineTest/src/test/java/org/mockitoinline/bugs/SelfSpyReferenceMemoryLeakTest.java b/subprojects/inlineTest/src/test/java/org/mockitoinline/bugs/SelfSpyReferenceMemoryLeakTest.java
+new file mode 100644
+index 0000000..678e43c
+--- /dev/null
++++ b/subprojects/inlineTest/src/test/java/org/mockitoinline/bugs/SelfSpyReferenceMemoryLeakTest.java
+@@ -0,0 +1,34 @@
++/*
++ * Copyright (c) 2019 Mockito contributors
++ * This program is made available under the terms of the MIT License.
++ */
++package org.mockitoinline.bugs;
++
++import org.junit.Test;
++
++import static org.mockito.Mockito.framework;
++import static org.mockito.Mockito.spy;
++
++public class SelfSpyReferenceMemoryLeakTest {
++    private static final int ARRAY_LENGTH = 1 << 20;  // 4 MB
++
++    @Test
++    public void no_memory_leak_when_spy_holds_reference_to_self() {
++        for (int i = 0; i < 100; ++i) {
++            final DeepRefSelfClass instance = spy(new DeepRefSelfClass());
++            instance.refInstance(instance);
++
++            framework().clearInlineMocks();
++        }
++    }
++
++    private static class DeepRefSelfClass {
++        private final DeepRefSelfClass[] array = new DeepRefSelfClass[1];
++
++        private final int[] largeArray = new int[ARRAY_LENGTH];
++
++        private void refInstance(DeepRefSelfClass instance) {
++            array[0] = instance;
++        }
++    }
++}

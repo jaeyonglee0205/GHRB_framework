@@ -1,0 +1,13 @@
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakServicesTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakServicesTest.java
+index 02de03e..120a919 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakServicesTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakServicesTest.java
+@@ -100,6 +100,8 @@ public class KeycloakServicesTest extends BaseOperatorTest {
+         Log.info("Trying to modify the service");
+ 
+         var currentDiscoveryService = discoveryServiceSelector.get();
++        // check publishNotReadyAddresses is set
++        assertThat(currentDiscoveryService.getSpec().getPublishNotReadyAddresses()).isTrue();
+         var labels = Map.of("address", "EvergreenTerrace742");
+         // ignoring current IP/s
+         currentDiscoveryService.getSpec().setClusterIP(null);

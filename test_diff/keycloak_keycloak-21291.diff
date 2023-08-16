@@ -1,0 +1,44 @@
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
+index 0b5338f..bb4f0ff 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
+@@ -23,6 +23,8 @@ import io.fabric8.kubernetes.api.model.LocalObjectReferenceBuilder;
+ import io.fabric8.kubernetes.api.model.Secret;
+ import io.fabric8.kubernetes.api.model.SecretBuilder;
+ import io.fabric8.kubernetes.api.model.SecretKeySelectorBuilder;
++import io.fabric8.kubernetes.api.model.Service;
++import io.fabric8.kubernetes.api.model.ServicePort;
+ import io.fabric8.kubernetes.api.model.apps.StatefulSet;
+ import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
+ import io.fabric8.kubernetes.api.model.apps.StatefulSetSpecBuilder;
+@@ -716,12 +718,16 @@ public class KeycloakDeploymentTest extends BaseOperatorTest {
+     }
+ 
+     private void assertKeycloakAccessibleViaService(Keycloak kc, boolean https, int port) {
+-        var service = new KeycloakService(k8sclient, kc);
+         Awaitility.await()
+                 .ignoreExceptions()
+                 .untilAsserted(() -> {
+                     String protocol = https ? "https" : "http";
+-                    String url = protocol + "://" + service.getName() + "." + namespace + ":" + port;
++
++                    String serviceName = KeycloakService.getServiceName(kc);
++                    assertThat(k8sclient.resources(Service.class).withName(serviceName).require().getSpec().getPorts()
++                            .stream().map(ServicePort::getName).anyMatch(protocol::equals));
++
++                    String url = protocol + "://" + serviceName + "." + namespace + ":" + port;
+                     Log.info("Checking url: " + url);
+ 
+                     var curlOutput = K8sUtils.inClusterCurl(k8sclient, namespace, url);
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakServicesTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakServicesTest.java
+index 16f3783..02de03e 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakServicesTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakServicesTest.java
+@@ -62,6 +62,7 @@ public class KeycloakServicesTest extends BaseOperatorTest {
+ 
+         // a managed change
+         currentService.getSpec().getPorts().get(0).setProtocol("UDP");
++        currentService.getSpec().getPorts().get(0).setName(null);
+ 
+         currentService.getMetadata().getLabels().putAll(labels);
+ 

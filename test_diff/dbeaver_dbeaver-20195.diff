@@ -1,0 +1,117 @@
+diff --git a/test/org.jkiss.dbeaver.ext.snowflake.test/META-INF/MANIFEST.MF b/test/org.jkiss.dbeaver.ext.snowflake.test/META-INF/MANIFEST.MF
+new file mode 100644
+index 0000000..635deb5
+--- /dev/null
++++ b/test/org.jkiss.dbeaver.ext.snowflake.test/META-INF/MANIFEST.MF
+@@ -0,0 +1,13 @@
++Manifest-Version: 1.0
++Bundle-ManifestVersion: 2
++Bundle-Name: DBeaver Snowflake Tests
++Bundle-SymbolicName: org.jkiss.dbeaver.ext.snowflake.test
++Bundle-Version: 1.0.0.qualifier
++Bundle-Release-Date: 20230607
++Bundle-RequiredExecutionEnvironment: JavaSE-11
++Bundle-Vendor: DBeaver Corp
++Bundle-ClassPath: .
++Fragment-Host: org.jkiss.dbeaver.ext.snowflake.core
++Bundle-ActivationPolicy: lazy
++Require-Bundle: org.junit,
++ org.mockito.mockito-core
+diff --git a/test/org.jkiss.dbeaver.ext.snowflake.test/build.properties b/test/org.jkiss.dbeaver.ext.snowflake.test/build.properties
+new file mode 100644
+index 0000000..2aee438
+--- /dev/null
++++ b/test/org.jkiss.dbeaver.ext.snowflake.test/build.properties
+@@ -0,0 +1,4 @@
++source.. = src/
++output.. = target/classes/
++bin.includes = .,\
++               META-INF/
+diff --git a/test/org.jkiss.dbeaver.ext.snowflake.test/pom.xml b/test/org.jkiss.dbeaver.ext.snowflake.test/pom.xml
+new file mode 100644
+index 0000000..c032de9
+--- /dev/null
++++ b/test/org.jkiss.dbeaver.ext.snowflake.test/pom.xml
+@@ -0,0 +1,32 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!--
++  ~ DBeaver - Universal Database Manager
++  ~ Copyright (C) 2010-2023 DBeaver Corp and others
++  ~
++  ~ Licensed under the Apache License, Version 2.0 (the "License");
++  ~ you may not use this file except in compliance with the License.
++  ~ You may obtain a copy of the License at
++  ~
++  ~     http://www.apache.org/licenses/LICENSE-2.0
++  ~
++  ~ Unless required by applicable law or agreed to in writing, software
++  ~ distributed under the License is distributed on an "AS IS" BASIS,
++  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++  ~ See the License for the specific language governing permissions and
++  ~ limitations under the License.
++  -->
++<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
++         xmlns="http://maven.apache.org/POM/4.0.0"
++         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
++    <modelVersion>4.0.0</modelVersion>
++    <parent>
++        <groupId>org.jkiss.dbeaver</groupId>
++        <artifactId>tests</artifactId>
++        <version>1.0.0-SNAPSHOT</version>
++        <relativePath>../</relativePath>
++    </parent>
++    <artifactId>org.jkiss.dbeaver.ext.snowflake.test</artifactId>
++    <version>1.0.0-SNAPSHOT</version>
++    <packaging>eclipse-test-plugin</packaging>
++
++</project>
+diff --git a/test/org.jkiss.dbeaver.ext.snowflake.test/src/org/jkiss/dbeaver/ext/snowflake/model/SnowflakeSQLDialectTest.java b/test/org.jkiss.dbeaver.ext.snowflake.test/src/org/jkiss/dbeaver/ext/snowflake/model/SnowflakeSQLDialectTest.java
+new file mode 100644
+index 0000000..bc89bf2
+--- /dev/null
++++ b/test/org.jkiss.dbeaver.ext.snowflake.test/src/org/jkiss/dbeaver/ext/snowflake/model/SnowflakeSQLDialectTest.java
+@@ -0,0 +1,44 @@
++/*
++ * DBeaver - Universal Database Manager
++ * Copyright (C) 2010-2023 DBeaver Corp and others
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.jkiss.dbeaver.ext.snowflake.model;
++
++import org.jkiss.dbeaver.model.sql.SQLDialect;
++import org.junit.Test;
++import org.junit.runner.RunWith;
++import org.mockito.junit.MockitoJUnitRunner;
++
++import static org.junit.Assert.assertFalse;
++import static org.junit.Assert.assertTrue;
++
++@RunWith(MockitoJUnitRunner.class)
++public class SnowflakeSQLDialectTest {
++    @Test
++    public void quoteStatusStringTest() {
++        SQLDialect dialect = new SnowflakeSQLDialect();
++
++        assertFalse(dialect.mustBeQuoted("_unquotedIdentifier", false));
++        assertFalse(dialect.mustBeQuoted("unquotedIdentifier", false));
++        assertFalse(dialect.mustBeQuoted("unquoted_identifier", false));
++        assertFalse(dialect.mustBeQuoted("unquoted$identifier", false));
++        assertFalse(dialect.mustBeQuoted("Unquoted_Identifier", false));
++        assertFalse(dialect.mustBeQuoted("unqu0ted1dentifier", false));
++
++        assertTrue(dialect.mustBeQuoted("Бразилски_џијуџицу", false));
++        assertTrue(dialect.mustBeQuoted("", false));
++        assertFalse(dialect.mustBeQuoted("noquotesneededforsure", true));
++    }
++}

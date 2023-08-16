@@ -1,0 +1,14 @@
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/broker/KcOidcBrokerTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/broker/KcOidcBrokerTest.java
+index 58af269..9745bc2 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/broker/KcOidcBrokerTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/broker/KcOidcBrokerTest.java
+@@ -553,6 +553,9 @@ public final class KcOidcBrokerTest extends AbstractAdvancedBrokerTest {
+         WaitUtils.waitForPageToLoad();
+ 
+         loginFetchingUserFromUserEndpoint(true);
++        Assert.assertEquals("The ID token issued by the identity provider does not match the configured essential claim. Please contact your administrator.",
++            loginPage.getInstruction());
++
+ 
+         List<UserRepresentation> users = realmsResouce().realm(bc.consumerRealmName()).users().search(bc.getUserLogin());
+         assertThat(users, Matchers.empty());

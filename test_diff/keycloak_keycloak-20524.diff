@@ -1,0 +1,15 @@
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/account/AccountRestServiceTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/account/AccountRestServiceTest.java
+index f9f68bf..f3fe056 100755
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/account/AccountRestServiceTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/account/AccountRestServiceTest.java
+@@ -386,6 +386,10 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
+             user = updateAndGet(user);
+             assertEquals("test-user@localhost", user.getUsername());
+ 
++            user.setEmail("new@localhost");
++            user = updateAndGet(user);
++            assertEquals("new@localhost", user.getUsername());
++
+             realmRep.setRegistrationEmailAsUsername(false);
+             adminClient.realm("test").update(realmRep);
+ 

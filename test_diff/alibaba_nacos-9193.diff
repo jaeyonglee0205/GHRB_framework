@@ -1,0 +1,21 @@
+diff --git a/naming/src/test/java/com/alibaba/nacos/naming/core/v2/event/publisher/NamingEventPublisherTest.java b/naming/src/test/java/com/alibaba/nacos/naming/core/v2/event/publisher/NamingEventPublisherTest.java
+index a80dd91..47ce15e 100644
+--- a/naming/src/test/java/com/alibaba/nacos/naming/core/v2/event/publisher/NamingEventPublisherTest.java
++++ b/naming/src/test/java/com/alibaba/nacos/naming/core/v2/event/publisher/NamingEventPublisherTest.java
+@@ -29,6 +29,7 @@ import org.mockito.junit.MockitoJUnitRunner;
+ 
+ import static org.hamcrest.CoreMatchers.is;
+ import static org.junit.Assert.assertThat;
++import static org.mockito.Mockito.atLeastOnce;
+ import static org.mockito.Mockito.never;
+ import static org.mockito.Mockito.verify;
+ 
+@@ -92,7 +93,7 @@ public class NamingEventPublisherTest {
+         }
+         namingEventPublisher.addSubscriber(subscriber, TestEvent.class);
+         namingEventPublisher.publish(testEvent);
+-        verify(subscriber).onEvent(testEvent);
++        verify(subscriber, atLeastOnce()).onEvent(testEvent);
+     }
+     
+     @Test

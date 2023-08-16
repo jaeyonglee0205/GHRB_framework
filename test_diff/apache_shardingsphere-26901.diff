@@ -1,0 +1,143 @@
+diff --git a/test/it/optimizer/src/test/resources/converter/select-special-function.xml b/test/it/optimizer/src/test/resources/converter/select-special-function.xml
+new file mode 100644
+index 0000000..812bb21
+--- /dev/null
++++ b/test/it/optimizer/src/test/resources/converter/select-special-function.xml
+@@ -0,0 +1,21 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!--
++  ~ Licensed to the Apache Software Foundation (ASF) under one or more
++  ~ contributor license agreements.  See the NOTICE file distributed with
++  ~ this work for additional information regarding copyright ownership.
++  ~ The ASF licenses this file to You under the Apache License, Version 2.0
++  ~ (the "License"); you may not use this file except in compliance with
++  ~ the License.  You may obtain a copy of the License at
++  ~
++  ~     http://www.apache.org/licenses/LICENSE-2.0
++  ~
++  ~ Unless required by applicable law or agreed to in writing, software
++  ~ distributed under the License is distributed on an "AS IS" BASIS,
++  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++  ~ See the License for the specific language governing permissions and
++  ~ limitations under the License.
++  -->
++
++<sql-node-converter-test-cases>
++    <test-cases sql-case-id="select_extract_function" expected-sql="SELECT EXTRACT(&quot;YEAR&quot; FROM CAST('2001-02-16 20:38:40' AS TIMESTAMP))" db-types="PostgreSQL,openGauss" />
++</sql-node-converter-test-cases>
+diff --git a/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/asserts/segment/expression/ExpressionAssert.java b/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/asserts/segment/expression/ExpressionAssert.java
+index 39027f2..6e2cf9e 100644
+--- a/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/asserts/segment/expression/ExpressionAssert.java
++++ b/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/asserts/segment/expression/ExpressionAssert.java
+@@ -28,6 +28,7 @@ import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.expr.CollateE
+ import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.expr.ExplicitTableExpression;
+ import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.expr.ExistsSubqueryExpression;
+ import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.expr.ExpressionSegment;
++import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.expr.ExtractArgExpression;
+ import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.expr.FunctionSegment;
+ import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.expr.InExpression;
+ import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.expr.ListExpression;
+@@ -59,6 +60,7 @@ import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.s
+ import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.segment.impl.expr.ExpectedExplicitTableExpression;
+ import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.segment.impl.expr.ExpectedExistsSubquery;
+ import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.segment.impl.expr.ExpectedExpression;
++import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.segment.impl.expr.ExpectedExtractArgExpression;
+ import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.segment.impl.expr.ExpectedInExpression;
+ import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.segment.impl.expr.ExpectedListExpression;
+ import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.segment.impl.expr.ExpectedNotExpression;
+@@ -409,6 +411,21 @@ public final class ExpressionAssert {
+     }
+     
+     /**
++     * Assert extract arg expression.
++     *
++     * @param assertContext assert context
++     * @param actual actual extract arg expression
++     * @param expected expected extract arg expression
++     */
++    private static void assertExtractArgExpression(final SQLCaseAssertContext assertContext, final ExtractArgExpression actual, final ExpectedExtractArgExpression expected) {
++        if (null == expected) {
++            assertNull(actual, assertContext.getText("Extract arg expression should not exist."));
++            return;
++        }
++        assertThat(assertContext.getText("Different: "), actual.getText(), is(expected.getText()));
++    }
++    
++    /**
+      * Assert expression by actual expression segment class type.
+      *
+      * @param assertContext assert context
+@@ -465,6 +482,8 @@ public final class ExpressionAssert {
+             assertValuesExpression(assertContext, (ValuesExpression) actual, expected.getValuesExpression());
+         } else if (actual instanceof ExplicitTableExpression) {
+             assertExplicitExpression(assertContext, (ExplicitTableExpression) actual, expected.getExplicitTableExpression());
++        } else if (actual instanceof ExtractArgExpression) {
++            assertExtractArgExpression(assertContext, (ExtractArgExpression) actual, expected.getExtractArgExpression());
+         } else {
+             throw new UnsupportedOperationException(String.format("Unsupported expression: %s", actual.getClass().getName()));
+         }
+diff --git a/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/cases/parser/jaxb/segment/impl/expr/ExpectedExpression.java b/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/cases/parser/jaxb/segment/impl/expr/ExpectedExpression.java
+index 75a192a..a56316a7 100644
+--- a/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/cases/parser/jaxb/segment/impl/expr/ExpectedExpression.java
++++ b/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/cases/parser/jaxb/segment/impl/expr/ExpectedExpression.java
+@@ -101,4 +101,7 @@ public final class ExpectedExpression extends AbstractExpectedSQLSegment {
+     
+     @XmlElement(name = "explicit-table")
+     private ExpectedExplicitTableExpression explicitTableExpression;
++    
++    @XmlElement(name = "extract-arg")
++    private ExpectedExtractArgExpression extractArgExpression;
+ }
+diff --git a/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/cases/parser/jaxb/segment/impl/expr/ExpectedExtractArgExpression.java b/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/cases/parser/jaxb/segment/impl/expr/ExpectedExtractArgExpression.java
+new file mode 100644
+index 0000000..95b506f
+--- /dev/null
++++ b/test/it/parser/src/main/java/org/apache/shardingsphere/test/it/sql/parser/internal/cases/parser/jaxb/segment/impl/expr/ExpectedExtractArgExpression.java
+@@ -0,0 +1,33 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.segment.impl.expr;
++
++import lombok.Getter;
++import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.segment.AbstractExpectedSQLSegment;
++
++import javax.xml.bind.annotation.XmlAttribute;
++
++/**
++ * Expected extract arg expression.
++ */
++@Getter
++public class ExpectedExtractArgExpression extends AbstractExpectedSQLSegment implements ExpectedExpressionSegment {
++    
++    @XmlAttribute
++    private String text;
++}
+diff --git a/test/it/parser/src/main/resources/case/dml/select-special-function.xml b/test/it/parser/src/main/resources/case/dml/select-special-function.xml
+index 3ee7abe..0c7c893 100644
+--- a/test/it/parser/src/main/resources/case/dml/select-special-function.xml
++++ b/test/it/parser/src/main/resources/case/dml/select-special-function.xml
+@@ -322,6 +322,9 @@
+                 <expr>
+                     <function function-name="EXTRACT" start-index="7" stop-index="56" text="EXTRACT(YEAR FROM TIMESTAMP '2001-02-16 20:38:40')">
+                         <parameter>
++                            <extract-arg start-index="15" stop-index="18" text="YEAR" />
++                        </parameter>
++                        <parameter>
+                             <type-cast-expression>
+                                 <expression>
+                                     <literal-expression value="2001-02-16 20:38:40" start-index="35" stop-index="55" />

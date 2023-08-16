@@ -1,0 +1,342 @@
+diff --git a/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/command/DefaultCommandExecutorTest.java b/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/command/DefaultCommandExecutorTest.java
+index dc98805..90e0cac 100644
+--- a/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/command/DefaultCommandExecutorTest.java
++++ b/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/command/DefaultCommandExecutorTest.java
+@@ -17,6 +17,10 @@
+ 
+ package org.apache.dubbo.qos.command;
+ 
++import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
++import org.apache.dubbo.qos.command.exception.PermissionDenyException;
++import org.apache.dubbo.qos.common.QosConfiguration;
++import org.apache.dubbo.qos.permission.PermissionLevel;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+ 
+ import org.junit.jupiter.api.Assertions;
+@@ -37,7 +41,28 @@ class DefaultCommandExecutorTest {
+     @Test
+     void testExecute2() throws Exception {
+         DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
+-        String result = executor.execute(CommandContextFactory.newInstance("greeting", new String[]{"dubbo"}, false));
++        final CommandContext commandContext = CommandContextFactory.newInstance("greeting", new String[]{"dubbo"}, false);
++        commandContext.setQosConfiguration(QosConfiguration.builder()
++            .anonymousAccessPermissionLevel(PermissionLevel.PROTECTED.name())
++            .build());
++        String result = executor.execute(commandContext);
+         assertThat(result, equalTo("greeting dubbo"));
+     }
+-}
+\ No newline at end of file
++
++    @Test
++    void shouldNotThrowPermissionDenyException_GivenPermissionConfigAndMatchDefaultPUBLICCmdPermissionLevel() throws Exception {
++        DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
++        final CommandContext commandContext = CommandContextFactory.newInstance("live", new String[]{"dubbo"}, false);
++        commandContext.setQosConfiguration(QosConfiguration.builder().build());
++        Assertions.assertDoesNotThrow(() -> executor.execute(commandContext));
++    }
++
++    @Test
++    void shouldNotThrowPermissionDenyException_GivenPermissionConfigAndNotMatchCmdPermissionLevel() throws Exception {
++        DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
++        final CommandContext commandContext = CommandContextFactory.newInstance("live", new String[]{"dubbo"}, false);
++        // 1 PROTECTED
++        commandContext.setQosConfiguration(QosConfiguration.builder().anonymousAccessPermissionLevel("1").build());
++        Assertions.assertDoesNotThrow(() -> executor.execute(commandContext));
++    }
++}
+diff --git a/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/pu/QosWireProtocolTest.java b/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/pu/QosWireProtocolTest.java
+new file mode 100644
+index 0000000..febeda1
+--- /dev/null
++++ b/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/pu/QosWireProtocolTest.java
+@@ -0,0 +1,41 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.dubbo.qos.pu;
++
++import org.apache.dubbo.common.URL;
++import org.apache.dubbo.remoting.api.pu.ChannelOperator;
++import org.apache.dubbo.rpc.model.FrameworkModel;
++
++import org.junit.jupiter.api.Test;
++
++import static org.mockito.ArgumentMatchers.anyList;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.verify;
++
++class QosWireProtocolTest {
++
++    @Test
++    void ShouldNotThrowExOnConfigServerProtocolHandler_GivenHappyPassConfig() {
++        final QosWireProtocol target = new QosWireProtocol(FrameworkModel.defaultModel());
++        final URL url = mock(URL.class);
++        final ChannelOperator channelOperator = mock(ChannelOperator.class);
++        target.configServerProtocolHandler(url, channelOperator);
++        verify(channelOperator).configChannelHandler(anyList());
++
++    }
++}
+diff --git a/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandlerTest.java b/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandlerTest.java
+index 0cebdbd..91bd5f9 100644
+--- a/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandlerTest.java
++++ b/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandlerTest.java
+@@ -22,6 +22,8 @@ import io.netty.channel.ChannelFuture;
+ import io.netty.channel.ChannelFutureListener;
+ import io.netty.channel.ChannelHandlerContext;
+ import org.apache.dubbo.common.utils.StringUtils;
++import org.apache.dubbo.qos.permission.PermissionLevel;
++import org.apache.dubbo.qos.common.QosConfiguration;
+ import org.junit.jupiter.api.Test;
+ import org.mockito.ArgumentCaptor;
+ 
+@@ -48,7 +50,13 @@ class ForeignHostPermitHandlerTest {
+         when(channel.remoteAddress()).thenReturn(address);
+         ChannelFuture future = mock(ChannelFuture.class);
+         when(context.writeAndFlush(any(ByteBuf.class))).thenReturn(future);
+-        ForeignHostPermitHandler handler = new ForeignHostPermitHandler(false, StringUtils.EMPTY_STRING);
++        ForeignHostPermitHandler handler = new ForeignHostPermitHandler(
++            QosConfiguration.builder()
++                .acceptForeignIp(false)
++                .acceptForeignIpWhitelist(StringUtils.EMPTY_STRING)
++                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
++                .build()
++        );
+         handler.handlerAdded(context);
+         ArgumentCaptor<ByteBuf> captor = ArgumentCaptor.forClass(ByteBuf.class);
+         verify(context).writeAndFlush(captor.capture());
+@@ -68,7 +76,14 @@ class ForeignHostPermitHandlerTest {
+         when(channel.remoteAddress()).thenReturn(address);
+         ChannelFuture future = mock(ChannelFuture.class);
+         when(context.writeAndFlush(any(ByteBuf.class))).thenReturn(future);
+-        ForeignHostPermitHandler handler = new ForeignHostPermitHandler(false, "175.23.44.1 ,  192.168.1.192/26");
++        ForeignHostPermitHandler handler = new ForeignHostPermitHandler(
++            QosConfiguration.builder()
++                .acceptForeignIp(false)
++                .acceptForeignIpWhitelist("175.23.44.1 ,  192.168.1.192/26")
++                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
++                .build()
++        );
++
+         handler.handlerAdded(context);
+         ArgumentCaptor<ByteBuf> captor = ArgumentCaptor.forClass(ByteBuf.class);
+         verify(context).writeAndFlush(captor.capture());
+@@ -87,7 +102,12 @@ class ForeignHostPermitHandlerTest {
+         InetSocketAddress address = new InetSocketAddress(addr, 12345);
+         when(channel.remoteAddress()).thenReturn(address);
+ 
+-        ForeignHostPermitHandler handler = new ForeignHostPermitHandler(false, "175.23.44.1, 192.168.1.192/26  ");
++        ForeignHostPermitHandler handler = new ForeignHostPermitHandler(
++            QosConfiguration.builder()
++                .acceptForeignIp(false)
++                .acceptForeignIpWhitelist("175.23.44.1, 192.168.1.192/26  ")
++                .build()
++        );
+         handler.handlerAdded(context);
+         verify(context, never()).writeAndFlush(any());
+     }
+@@ -103,8 +123,32 @@ class ForeignHostPermitHandlerTest {
+         InetSocketAddress address = new InetSocketAddress(addr, 12345);
+         when(channel.remoteAddress()).thenReturn(address);
+ 
+-        ForeignHostPermitHandler handler = new ForeignHostPermitHandler(false, "175.23.44.1, 192.168.1.192/26");
++        ForeignHostPermitHandler handler = new ForeignHostPermitHandler(
++            QosConfiguration.builder()
++                .acceptForeignIp(false)
++                .acceptForeignIpWhitelist("175.23.44.1, 192.168.1.192/26")
++                .build()
++        );
+         handler.handlerAdded(context);
+         verify(context, never()).writeAndFlush(any());
+     }
++
++    @Test
++    void shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteListAndPermissionConfig() throws Exception {
++        ChannelHandlerContext context = mock(ChannelHandlerContext.class);
++        Channel channel = mock(Channel.class);
++        when(context.channel()).thenReturn(channel);
++        ChannelFuture future = mock(ChannelFuture.class);
++        when(context.writeAndFlush(any(ByteBuf.class))).thenReturn(future);
++        ForeignHostPermitHandler handler = new ForeignHostPermitHandler(
++            QosConfiguration.builder()
++                .acceptForeignIp(false)
++                .acceptForeignIpWhitelist("175.23.44.1 ,  192.168.1.192/26")
++                .anonymousAccessPermissionLevel(PermissionLevel.PROTECTED.name())
++                .build()
++        );
++
++        handler.handlerAdded(context);
++        verify(future, never()).addListener(ChannelFutureListener.CLOSE);
++    }
+ }
+diff --git a/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/HttpProcessHandlerTest.java b/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/HttpProcessHandlerTest.java
+index 84745ca..820b09c 100644
+--- a/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/HttpProcessHandlerTest.java
++++ b/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/HttpProcessHandlerTest.java
+@@ -16,6 +16,8 @@
+  */
+ package org.apache.dubbo.qos.server.handler;
+ 
++import org.apache.dubbo.qos.common.QosConfiguration;
++import org.apache.dubbo.qos.permission.PermissionLevel;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+ 
+ import io.netty.channel.ChannelFuture;
+@@ -43,7 +45,7 @@ class HttpProcessHandlerTest {
+         when(context.writeAndFlush(any(FullHttpResponse.class))).thenReturn(future);
+         HttpRequest message = Mockito.mock(HttpRequest.class);
+         when(message.uri()).thenReturn("test");
+-        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel());
++        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel(), QosConfiguration.builder().build());
+         handler.channelRead0(context, message);
+         verify(future).addListener(ChannelFutureListener.CLOSE);
+         ArgumentCaptor<FullHttpResponse> captor = ArgumentCaptor.forClass(FullHttpResponse.class);
+@@ -60,7 +62,10 @@ class HttpProcessHandlerTest {
+         HttpRequest message = Mockito.mock(HttpRequest.class);
+         when(message.uri()).thenReturn("localhost:80/greeting");
+         when(message.method()).thenReturn(HttpMethod.GET);
+-        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel());
++        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel(),
++            QosConfiguration.builder()
++                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
++                .build());
+         handler.channelRead0(context, message);
+         verify(future).addListener(ChannelFutureListener.CLOSE);
+         ArgumentCaptor<FullHttpResponse> captor = ArgumentCaptor.forClass(FullHttpResponse.class);
+@@ -77,7 +82,10 @@ class HttpProcessHandlerTest {
+         HttpRequest message = Mockito.mock(HttpRequest.class);
+         when(message.uri()).thenReturn("localhost:80/test");
+         when(message.method()).thenReturn(HttpMethod.GET);
+-        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel());
++        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel(),
++            QosConfiguration.builder()
++                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
++                .build());
+         handler.channelRead0(context, message);
+         verify(future).addListener(ChannelFutureListener.CLOSE);
+         ArgumentCaptor<FullHttpResponse> captor = ArgumentCaptor.forClass(FullHttpResponse.class);
+@@ -85,4 +93,4 @@ class HttpProcessHandlerTest {
+         FullHttpResponse response = captor.getValue();
+         assertThat(response.status().code(), equalTo(404));
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/QosProcessHandlerTest.java b/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/QosProcessHandlerTest.java
+index 3649bcd..dbac3e6 100644
+--- a/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/QosProcessHandlerTest.java
++++ b/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/QosProcessHandlerTest.java
+@@ -17,6 +17,7 @@
+ package org.apache.dubbo.qos.server.handler;
+ 
+ import org.apache.dubbo.common.utils.StringUtils;
++import org.apache.dubbo.qos.common.QosConfiguration;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+ 
+ import io.netty.buffer.ByteBuf;
+@@ -43,7 +44,13 @@ class QosProcessHandlerTest {
+         ChannelHandlerContext context = Mockito.mock(ChannelHandlerContext.class);
+         ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
+         Mockito.when(context.pipeline()).thenReturn(pipeline);
+-        QosProcessHandler handler = new QosProcessHandler(FrameworkModel.defaultModel(), "welcome", false, StringUtils.EMPTY_STRING);
++        QosProcessHandler handler = new QosProcessHandler(FrameworkModel.defaultModel(),
++            QosConfiguration.builder()
++                .welcome("welcome")
++                .acceptForeignIp(false)
++                .acceptForeignIpWhitelist(StringUtils.EMPTY_STRING)
++                .build()
++        );
+         handler.decode(context, buf, Collections.emptyList());
+         verify(pipeline).addLast(any(HttpServerCodec.class));
+         verify(pipeline).addLast(any(HttpObjectAggregator.class));
+@@ -57,7 +64,13 @@ class QosProcessHandlerTest {
+         ChannelHandlerContext context = Mockito.mock(ChannelHandlerContext.class);
+         ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
+         Mockito.when(context.pipeline()).thenReturn(pipeline);
+-        QosProcessHandler handler = new QosProcessHandler(FrameworkModel.defaultModel(), "welcome", false, StringUtils.EMPTY_STRING);
++        QosProcessHandler handler = new QosProcessHandler(FrameworkModel.defaultModel(),
++            QosConfiguration.builder()
++                .welcome("welcome")
++                .acceptForeignIp(false)
++                .acceptForeignIpWhitelist(StringUtils.EMPTY_STRING)
++                .build()
++        );
+         handler.decode(context, buf, Collections.emptyList());
+         verify(pipeline).addLast(any(LineBasedFrameDecoder.class));
+         verify(pipeline).addLast(any(StringDecoder.class));
+diff --git a/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandlerTest.java b/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandlerTest.java
+index 3a256f8..2a52693 100644
+--- a/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandlerTest.java
++++ b/dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandlerTest.java
+@@ -16,6 +16,8 @@
+  */
+ package org.apache.dubbo.qos.server.handler;
+ 
++import org.apache.dubbo.qos.common.QosConfiguration;
++import org.apache.dubbo.qos.permission.PermissionLevel;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+ 
+ import io.netty.channel.ChannelFuture;
+@@ -36,7 +38,10 @@ class TelnetProcessHandlerTest {
+     @Test
+     void testPrompt() throws Exception {
+         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
+-        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel());
++        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel(),
++            QosConfiguration.builder()
++                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
++                .build());
+         handler.channelRead0(context, "");
+         verify(context).writeAndFlush(QosProcessHandler.PROMPT);
+     }
+@@ -44,7 +49,7 @@ class TelnetProcessHandlerTest {
+     @Test
+     void testBye() throws Exception {
+         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
+-        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel());
++        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel(), QosConfiguration.builder().build());
+         ChannelFuture future = mock(ChannelFuture.class);
+         when(context.writeAndFlush("BYE!\n")).thenReturn(future);
+         handler.channelRead0(context, "quit");
+@@ -54,7 +59,7 @@ class TelnetProcessHandlerTest {
+     @Test
+     void testUnknownCommand() throws Exception {
+         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
+-        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel());
++        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel(), QosConfiguration.builder().build());
+         handler.channelRead0(context, "unknown");
+         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+         verify(context, Mockito.atLeastOnce()).writeAndFlush(captor.capture());
+@@ -64,11 +69,14 @@ class TelnetProcessHandlerTest {
+     @Test
+     void testGreeting() throws Exception {
+         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
+-        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel());
++        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel(),
++            QosConfiguration.builder()
++                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
++                .build());
+         handler.channelRead0(context, "greeting");
+         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+         verify(context).writeAndFlush(captor.capture());
+         assertThat(captor.getValue(), containsString("greeting"));
+         assertThat(captor.getValue(), containsString("dubbo>"));
+     }
+-}
+\ No newline at end of file
++}

@@ -1,0 +1,128 @@
+diff --git a/test/org.jkiss.dbeaver.test.platform/src/org/jkiss/dbeaver/model/sql/analyzer/SQLCompletionAnalyzerTest.java b/test/org.jkiss.dbeaver.test.platform/src/org/jkiss/dbeaver/model/sql/analyzer/SQLCompletionAnalyzerTest.java
+index 095cfb9..354e277 100644
+--- a/test/org.jkiss.dbeaver.test.platform/src/org/jkiss/dbeaver/model/sql/analyzer/SQLCompletionAnalyzerTest.java
++++ b/test/org.jkiss.dbeaver.test.platform/src/org/jkiss/dbeaver/model/sql/analyzer/SQLCompletionAnalyzerTest.java
+@@ -118,7 +118,7 @@ public class SQLCompletionAnalyzerTest {
+ 
+         {
+             final List<SQLCompletionProposalBase> proposals = request
+-                    .request("SELECT * FROM \"Table 3\" t WHERE t.|");
++                .request("SELECT * FROM \"Table 3\" t WHERE t.|");
+ 
+             Assert.assertEquals(3, proposals.size());
+             Assert.assertEquals("Col7", proposals.get(0).getReplacementString());
+@@ -149,7 +149,7 @@ public class SQLCompletionAnalyzerTest {
+ 
+     @Test
+     public void testColumnWithNonExistingAliases() throws DBException {
+-        final RequestResult request = RequestBuilder.tables(s-> {
++        final RequestResult request = RequestBuilder.tables(s -> {
+             s.table("Table1", t -> {
+                 t.attribute("Col1");
+                 t.attribute("Col2");
+@@ -292,14 +292,20 @@ public class SQLCompletionAnalyzerTest {
+                         s.table("Table6", empty());
+                     });
+                 });
++                x.database("Database3", d -> {
++                    d.schema("a.schema", s -> {
++                        s.table("a.table", empty());
++                    });
++                });
+             })
+             .prepare();
+ 
+         {
+             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Da|");
+-            Assert.assertEquals(2, proposals.size());
++            Assert.assertEquals(3, proposals.size());
+             Assert.assertEquals("Database1", proposals.get(0).getReplacementString());
+             Assert.assertEquals("Database2", proposals.get(1).getReplacementString());
++            Assert.assertEquals("Database3", proposals.get(2).getReplacementString());
+         }
+ 
+         {
+@@ -315,6 +321,20 @@ public class SQLCompletionAnalyzerTest {
+             Assert.assertEquals("Table2", proposals.get(1).getReplacementString());
+             Assert.assertEquals("Table3", proposals.get(2).getReplacementString());
+         }
++
++        {
++            final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Database3.|");
++            Assert.assertEquals(1, proposals.size());
++            Assert.assertEquals("\"a.schema\"", proposals.get(0).getReplacementString());
++            Assert.assertEquals(24, proposals.get(0).getReplacementOffset());
++        }
++
++        {
++            final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Database3.\"a.schema\".|");
++            Assert.assertEquals(1, proposals.size());
++            Assert.assertEquals("\"a.table\"", proposals.get(0).getReplacementString());
++            Assert.assertEquals(35, proposals.get(0).getReplacementOffset());
++        }
+     }
+ 
+     @Test
+diff --git a/test/org.jkiss.dbeaver.test.platform/src/org/jkiss/dbeaver/model/sql/parser/SQLScriptParserGenericsTest.java b/test/org.jkiss.dbeaver.test.platform/src/org/jkiss/dbeaver/model/sql/parser/SQLScriptParserGenericsTest.java
+index 4997d59..0c7be81 100644
+--- a/test/org.jkiss.dbeaver.test.platform/src/org/jkiss/dbeaver/model/sql/parser/SQLScriptParserGenericsTest.java
++++ b/test/org.jkiss.dbeaver.test.platform/src/org/jkiss/dbeaver/model/sql/parser/SQLScriptParserGenericsTest.java
+@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+ import org.jkiss.dbeaver.model.sql.SQLDialect;
++import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
+ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+ import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
+@@ -41,9 +42,11 @@ import org.mockito.Mock;
+ import org.mockito.Mockito;
+ import org.mockito.junit.MockitoJUnitRunner;
+ 
++import java.sql.SQLException;
+ import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.List;
++import java.util.StringJoiner;
+ import java.util.stream.Collectors;
+ 
+ @RunWith(MockitoJUnitRunner.class)
+@@ -120,6 +123,23 @@ public class SQLScriptParserGenericsTest {
+         };
+         assertParse("snowflake", query);
+     }
++
++    @Test
++    public void parseNamedParameters() throws DBException {
++        List<String> inputParamNames = List.of("1", "\"SYs_B_1\"", "\"MyVar8\"", "AbC", "\"#d2\"");
++        List<String> invalidParamNames = List.of("&6^34", "%#2", "\"\"\"\"");
++        StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
++        inputParamNames.stream().forEach(p -> joiner.add(":" + p));
++        invalidParamNames.stream().forEach(p -> joiner.add(":" + p));
++        String query = joiner.toString();
++        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
++        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
++        List<String> actualParamNames = new ArrayList<String>();
++        for (SQLQueryParameter sqlQueryParameter : params) {
++            actualParamNames.add(sqlQueryParameter.getName());
++        }
++        Assert.assertEquals(List.of("1", "SYs_B_1", "MyVar8", "ABC", "#d2"), actualParamNames);
++    }
+     
+     private void assertParse(String dialectName, String[] expected) throws DBException {
+         String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());
+@@ -156,8 +176,14 @@ public class SQLScriptParserGenericsTest {
+     private SQLDialect setDialect(String name) throws DBException {
+         SQLDialectRegistry registry = SQLDialectRegistry.getInstance();
+         SQLDialect dialect = registry.getDialect(name).createInstance();
++        try {
++            Mockito.when(databaseMetaData.getIdentifierQuoteString()).thenReturn("\"");
++        } catch (SQLException e) {
++            throw new DBException("Can't initialize identifier quote string for dialect " + name, e);
++        }
+         ((JDBCSQLDialect) dialect).initDriverSettings(session, dataSource, databaseMetaData);
+         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
++
+         return dialect;
+     }
+ 

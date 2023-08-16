@@ -1,0 +1,47 @@
+diff --git a/spring-cloud-alibaba-starters/spring-cloud-alibaba-sentinel-datasource/src/test/java/com/alibaba/cloud/sentinel/datasource/NacosDataSourceFactoryBeanTests.java b/spring-cloud-alibaba-starters/spring-cloud-alibaba-sentinel-datasource/src/test/java/com/alibaba/cloud/sentinel/datasource/NacosDataSourceFactoryBeanTests.java
+index ca364f3..cb4b826 100644
+--- a/spring-cloud-alibaba-starters/spring-cloud-alibaba-sentinel-datasource/src/test/java/com/alibaba/cloud/sentinel/datasource/NacosDataSourceFactoryBeanTests.java
++++ b/spring-cloud-alibaba-starters/spring-cloud-alibaba-sentinel-datasource/src/test/java/com/alibaba/cloud/sentinel/datasource/NacosDataSourceFactoryBeanTests.java
+@@ -39,6 +39,8 @@ public class NacosDataSourceFactoryBeanTests {
+ 
+ 	private String serverAddr = "localhost:8848";
+ 
++	private String contextPath = "/my-nacos";
++
+ 	private String accessKey = "ak";
+ 
+ 	private String secretKey = "sk";
+@@ -56,6 +58,7 @@ public class NacosDataSourceFactoryBeanTests {
+ 		factoryBean.setDataId(dataId);
+ 		factoryBean.setGroupId(groupId);
+ 		factoryBean.setServerAddr(serverAddr);
++		factoryBean.setContextPath(contextPath);
+ 		factoryBean.setConverter(converter);
+ 
+ 		NacosDataSource nacosDataSource = mock(NacosDataSource.class);
+@@ -69,6 +72,7 @@ public class NacosDataSourceFactoryBeanTests {
+ 		assertThat(factoryBean.getDataId()).isEqualTo(dataId);
+ 		assertThat(factoryBean.getGroupId()).isEqualTo(groupId);
+ 		assertThat(factoryBean.getServerAddr()).isEqualTo(serverAddr);
++		assertThat(factoryBean.getContextPath()).isEqualTo(contextPath);
+ 	}
+ 
+ 	@Test
+diff --git a/spring-cloud-alibaba-starters/spring-cloud-alibaba-sentinel-datasource/src/test/java/com/alibaba/cloud/sentinel/datasource/NacosDataSourcePropertiesTests.java b/spring-cloud-alibaba-starters/spring-cloud-alibaba-sentinel-datasource/src/test/java/com/alibaba/cloud/sentinel/datasource/NacosDataSourcePropertiesTests.java
+index f897d6e..cde739d 100644
+--- a/spring-cloud-alibaba-starters/spring-cloud-alibaba-sentinel-datasource/src/test/java/com/alibaba/cloud/sentinel/datasource/NacosDataSourcePropertiesTests.java
++++ b/spring-cloud-alibaba-starters/spring-cloud-alibaba-sentinel-datasource/src/test/java/com/alibaba/cloud/sentinel/datasource/NacosDataSourcePropertiesTests.java
+@@ -31,11 +31,13 @@ public class NacosDataSourcePropertiesTests {
+ 	public void testNacosWithAddr() {
+ 		NacosDataSourceProperties nacosDataSourceProperties = new NacosDataSourceProperties();
+ 		nacosDataSourceProperties.setServerAddr("127.0.0.1:8848");
++		nacosDataSourceProperties.setContextPath("/my-nacos");
+ 		nacosDataSourceProperties.setRuleType(RuleType.FLOW);
+ 		nacosDataSourceProperties.setDataId("sentinel");
+ 		nacosDataSourceProperties.setGroupId("custom-group");
+ 		nacosDataSourceProperties.setDataType("xml");
+ 
++		assertThat(nacosDataSourceProperties.getContextPath()).isEqualTo("/my-nacos");
+ 		assertThat(nacosDataSourceProperties.getGroupId()).isEqualTo("custom-group");
+ 		assertThat(nacosDataSourceProperties.getDataId()).isEqualTo("sentinel");
+ 		assertThat(nacosDataSourceProperties.getDataType()).isEqualTo("xml");

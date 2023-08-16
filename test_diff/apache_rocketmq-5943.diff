@@ -1,0 +1,22 @@
+diff --git a/store/src/test/java/org/apache/rocketmq/store/stats/BrokerStatsManagerTest.java b/store/src/test/java/org/apache/rocketmq/store/stats/BrokerStatsManagerTest.java
+index c32db16..a602da0 100644
+--- a/store/src/test/java/org/apache/rocketmq/store/stats/BrokerStatsManagerTest.java
++++ b/store/src/test/java/org/apache/rocketmq/store/stats/BrokerStatsManagerTest.java
+@@ -199,4 +199,17 @@ public class BrokerStatsManagerTest {
+             .getValue().doubleValue()).isEqualTo(1L);
+         assertThat(brokerStatsManager.getBrokerGetNumsWithoutSystemTopic()).isEqualTo(1L);
+     }
++
++    @Test
++    public void testIncBrokerPutNumsWithoutSystemTopic() {
++        brokerStatsManager.incBrokerPutNumsWithoutSystemTopic(TOPIC, 1);
++        assertThat(brokerStatsManager.getStatsItem(BrokerStatsManager.BROKER_PUT_NUMS_WITHOUT_SYSTEM_TOPIC, CLUSTER_NAME)
++            .getValue().doubleValue()).isEqualTo(1L);
++        assertThat(brokerStatsManager.getBrokerPutNumsWithoutSystemTopic()).isEqualTo(1L);
++
++        brokerStatsManager.incBrokerPutNumsWithoutSystemTopic(TopicValidator.RMQ_SYS_TRACE_TOPIC, 1);
++        assertThat(brokerStatsManager.getStatsItem(BrokerStatsManager.BROKER_PUT_NUMS_WITHOUT_SYSTEM_TOPIC, CLUSTER_NAME)
++            .getValue().doubleValue()).isEqualTo(1L);
++        assertThat(brokerStatsManager.getBrokerPutNumsWithoutSystemTopic()).isEqualTo(1L);
++    }
+ }

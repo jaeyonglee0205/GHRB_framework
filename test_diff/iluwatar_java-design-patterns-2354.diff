@@ -1,0 +1,240 @@
+diff --git a/serverless/src/test/java/com/iluwatar/serverless/baas/api/FindPersonApiHandlerTest.java b/serverless/src/test/java/com/iluwatar/serverless/baas/api/FindPersonApiHandlerTest.java
+deleted file mode 100644
+index 97a0c7b..0000000
+--- a/serverless/src/test/java/com/iluwatar/serverless/baas/api/FindPersonApiHandlerTest.java
++++ /dev/null
+@@ -1,70 +0,0 @@
+-/*
+- * This project is licensed under the MIT license. Module model-view-viewmodel is using ZK framework licensed under LGPL (see lgpl-3.0.txt).
+- *
+- * The MIT License
+- * Copyright © 2014-2022 Ilkka Seppälä
+- *
+- * Permission is hereby granted, free of charge, to any person obtaining a copy
+- * of this software and associated documentation files (the "Software"), to deal
+- * in the Software without restriction, including without limitation the rights
+- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+- * copies of the Software, and to permit persons to whom the Software is
+- * furnished to do so, subject to the following conditions:
+- *
+- * The above copyright notice and this permission notice shall be included in
+- * all copies or substantial portions of the Software.
+- *
+- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+- * THE SOFTWARE.
+- */
+-package com.iluwatar.serverless.baas.api;
+-
+-import org.mockito.Mock;
+-import org.mockito.MockitoAnnotations;
+-
+-import static org.mockito.Mockito.mock;
+-import static org.mockito.Mockito.times;
+-import static org.mockito.Mockito.verify;
+-
+-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+-import com.amazonaws.services.lambda.runtime.Context;
+-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+-import com.iluwatar.serverless.baas.model.Person;
+-import java.util.Map;
+-import org.junit.jupiter.api.BeforeEach;
+-import org.junit.jupiter.api.Test;
+-import org.junit.jupiter.api.extension.ExtendWith;
+-
+-/**
+- * Unit tests for FindPersonApiHandler Created by dheeraj.mummar on 3/5/18.
+- */
+-class FindPersonApiHandlerTest {
+-
+-  private FindPersonApiHandler findPersonApiHandler;
+-
+-  @Mock
+-  private DynamoDBMapper dynamoDbMapper;
+-
+-  @BeforeEach
+-  void setUp() {
+-    MockitoAnnotations.openMocks(this);
+-    this.findPersonApiHandler = new FindPersonApiHandler();
+-    this.findPersonApiHandler.setDynamoDbMapper(dynamoDbMapper);
+-  }
+-
+-  @Test
+-  void handleRequest() {
+-    findPersonApiHandler.handleRequest(apiGatewayProxyRequestEvent(), mock(Context.class));
+-    verify(dynamoDbMapper, times(1)).load(Person.class, "37e7a1fe-3544-473d-b764-18128f02d72d");
+-  }
+-
+-  private APIGatewayProxyRequestEvent apiGatewayProxyRequestEvent() {
+-    var request = new APIGatewayProxyRequestEvent();
+-    return request.withPathParamters(Map.of("id", "37e7a1fe-3544-473d-b764-18128f02d72d"));
+-  }
+-}
+diff --git a/serverless/src/test/java/com/iluwatar/serverless/baas/api/SavePersonApiHandlerTest.java b/serverless/src/test/java/com/iluwatar/serverless/baas/api/SavePersonApiHandlerTest.java
+deleted file mode 100644
+index ccbeb92..0000000
+--- a/serverless/src/test/java/com/iluwatar/serverless/baas/api/SavePersonApiHandlerTest.java
++++ /dev/null
+@@ -1,103 +0,0 @@
+-/*
+- * This project is licensed under the MIT license. Module model-view-viewmodel is using ZK framework licensed under LGPL (see lgpl-3.0.txt).
+- *
+- * The MIT License
+- * Copyright © 2014-2022 Ilkka Seppälä
+- *
+- * Permission is hereby granted, free of charge, to any person obtaining a copy
+- * of this software and associated documentation files (the "Software"), to deal
+- * in the Software without restriction, including without limitation the rights
+- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+- * copies of the Software, and to permit persons to whom the Software is
+- * furnished to do so, subject to the following conditions:
+- *
+- * The above copyright notice and this permission notice shall be included in
+- * all copies or substantial portions of the Software.
+- *
+- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+- * THE SOFTWARE.
+- */
+-package com.iluwatar.serverless.baas.api;
+-
+-import static org.mockito.Mockito.mock;
+-import static org.mockito.Mockito.times;
+-import static org.mockito.Mockito.verify;
+-
+-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+-import com.amazonaws.services.lambda.runtime.Context;
+-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+-import com.fasterxml.jackson.core.JsonProcessingException;
+-import com.fasterxml.jackson.databind.ObjectMapper;
+-import com.iluwatar.serverless.baas.model.Address;
+-import com.iluwatar.serverless.baas.model.Person;
+-import org.junit.jupiter.api.BeforeEach;
+-import org.junit.jupiter.api.Test;
+-import org.mockito.Mock;
+-import org.mockito.MockitoAnnotations;
+-
+-import static org.junit.jupiter.api.Assertions.assertEquals;
+-import static org.junit.jupiter.api.Assertions.assertNotNull;
+-
+-/**
+- * Unit tests for SavePersonApiHandler Created by dheeraj.mummar on 3/4/18.
+- */
+-class SavePersonApiHandlerTest {
+-
+-  private SavePersonApiHandler savePersonApiHandler;
+-
+-  @Mock
+-  private DynamoDBMapper dynamoDbMapper;
+-
+-  private final ObjectMapper objectMapper = new ObjectMapper();
+-
+-  @BeforeEach
+-  void setUp() {
+-    MockitoAnnotations.openMocks(this);
+-    this.savePersonApiHandler = new SavePersonApiHandler();
+-    this.savePersonApiHandler.setDynamoDbMapper(dynamoDbMapper);
+-  }
+-
+-  @Test
+-  void handleRequestSavePersonSuccessful() throws JsonProcessingException {
+-    var person = newPerson();
+-    var body = objectMapper.writeValueAsString(person);
+-    var request = apiGatewayProxyRequestEvent(body);
+-    var ctx = mock(Context.class);
+-    var apiGatewayProxyResponseEvent = this.savePersonApiHandler.handleRequest(request, ctx);
+-    verify(dynamoDbMapper, times(1)).save(person);
+-    assertNotNull(apiGatewayProxyResponseEvent);
+-    assertEquals(Integer.valueOf(201), apiGatewayProxyResponseEvent.getStatusCode());
+-  }
+-
+-  @Test
+-  void handleRequestSavePersonException() {
+-    var request = apiGatewayProxyRequestEvent("invalid sample request");
+-    var ctx = mock(Context.class);
+-    var apiGatewayProxyResponseEvent = this.savePersonApiHandler.handleRequest(request, ctx);
+-    assertNotNull(apiGatewayProxyResponseEvent);
+-    assertEquals(Integer.valueOf(400), apiGatewayProxyResponseEvent.getStatusCode());
+-  }
+-
+-  private APIGatewayProxyRequestEvent apiGatewayProxyRequestEvent(String body) {
+-    var apiGatewayProxyRequestEvent = new APIGatewayProxyRequestEvent();
+-    return apiGatewayProxyRequestEvent.withBody(body);
+-  }
+-
+-  private Person newPerson() {
+-    var person = new Person();
+-    person.setFirstName("Thor");
+-    person.setLastName("Odinson");
+-    var address = new Address();
+-    address.setAddressLineOne("1 Odin ln");
+-    address.setCity("Asgard");
+-    address.setState("country of the Gods");
+-    address.setZipCode("00001");
+-    person.setAddress(address);
+-    return person;
+-  }
+-}
+diff --git a/serverless/src/test/java/com/iluwatar/serverless/faas/api/LambdaInfoApiHandlerTest.java b/serverless/src/test/java/com/iluwatar/serverless/faas/api/LambdaInfoApiHandlerTest.java
+deleted file mode 100644
+index 102a0dc..0000000
+--- a/serverless/src/test/java/com/iluwatar/serverless/faas/api/LambdaInfoApiHandlerTest.java
++++ /dev/null
+@@ -1,48 +0,0 @@
+-/*
+- * This project is licensed under the MIT license. Module model-view-viewmodel is using ZK framework licensed under LGPL (see lgpl-3.0.txt).
+- *
+- * The MIT License
+- * Copyright © 2014-2022 Ilkka Seppälä
+- *
+- * Permission is hereby granted, free of charge, to any person obtaining a copy
+- * of this software and associated documentation files (the "Software"), to deal
+- * in the Software without restriction, including without limitation the rights
+- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+- * copies of the Software, and to permit persons to whom the Software is
+- * furnished to do so, subject to the following conditions:
+- *
+- * The above copyright notice and this permission notice shall be included in
+- * all copies or substantial portions of the Software.
+- *
+- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+- * THE SOFTWARE.
+- */
+-package com.iluwatar.serverless.faas.api;
+-
+-import static org.hamcrest.MatcherAssert.assertThat;
+-import static org.hamcrest.core.IsNull.notNullValue;
+-import static org.mockito.Mockito.mock;
+-import static org.mockito.Mockito.when;
+-
+-import com.amazonaws.services.lambda.runtime.Context;
+-import org.junit.jupiter.api.Test;
+-
+-/**
+- * Unit tests for LambdaInfoApiHandler
+- */
+-class LambdaInfoApiHandlerTest {
+-
+-  @Test
+-  void handleRequestWithMockContext() {
+-    var lambdaInfoApiHandler = new LambdaInfoApiHandler();
+-    var context = mock(Context.class);
+-    when(context.getAwsRequestId()).thenReturn("mock aws request id");
+-
+-    assertThat(lambdaInfoApiHandler.handleRequest(null, context), notNullValue());
+-  }
+-}
+\ No newline at end of file

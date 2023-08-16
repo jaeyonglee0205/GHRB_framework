@@ -1,0 +1,310 @@
+diff --git a/test/src/main/java/org/apache/rocketmq/test/listener/AbstractListener.java b/test/src/main/java/org/apache/rocketmq/test/listener/AbstractListener.java
+index dd26939..c2a3891 100644
+--- a/test/src/main/java/org/apache/rocketmq/test/listener/AbstractListener.java
++++ b/test/src/main/java/org/apache/rocketmq/test/listener/AbstractListener.java
+@@ -28,7 +28,7 @@ import org.apache.rocketmq.test.clientinterface.MQCollector;
+ import org.apache.rocketmq.test.util.TestUtil;
+ 
+ public class AbstractListener extends MQCollector implements MessageListener {
+-    public static final Logger logger = Logger.getLogger(AbstractListener.class);
++    public static final Logger LOGGER = Logger.getLogger(AbstractListener.class);
+     protected boolean isDebug = true;
+     protected String listenerName = null;
+     protected Collection<Object> allSendMsgs = null;
+@@ -81,11 +81,11 @@ public class AbstractListener extends MQCollector implements MessageListener {
+                 break;
+             } else {
+                 if (System.currentTimeMillis() - curTime >= timeoutMills) {
+-                    logger.error(String.format("timeout but  [%s]  not recv all send messages!",
++                    LOGGER.error(String.format("timeout but  [%s]  not recv all send messages!",
+                         listenerName));
+                     break;
+                 } else {
+-                    logger.info(String.format("[%s] still [%s] msg not recv!", listenerName,
++                    LOGGER.info(String.format("[%s] still [%s] msg not recv!", listenerName,
+                         sendMsgs.size()));
+                     TestUtil.waitForMonment(500);
+                 }
+@@ -104,11 +104,11 @@ public class AbstractListener extends MQCollector implements MessageListener {
+                 break;
+             }
+             if (System.currentTimeMillis() - curTime >= timeoutMills) {
+-                logger.error(String.format("timeout but  [%s]  not recv all send messages!",
++                LOGGER.error(String.format("timeout but  [%s]  not recv all send messages!",
+                     listenerName));
+                 break;
+             } else {
+-                logger.info(String.format("[%s] still [%s] msg not recv!", listenerName,
++                LOGGER.info(String.format("[%s] still [%s] msg not recv!", listenerName,
+                     size - msgBodys.getDataSize()));
+                 TestUtil.waitForMonment(500);
+             }
+@@ -120,7 +120,7 @@ public class AbstractListener extends MQCollector implements MessageListener {
+     public void waitForMessageConsume(Map<Object, Object> sendMsgIndex, int timeoutMills) {
+         Collection<Object> notRecvMsgs = waitForMessageConsume(sendMsgIndex.keySet(), timeoutMills);
+         for (Object object : notRecvMsgs) {
+-            logger.info(sendMsgIndex.get(object));
++            LOGGER.info(sendMsgIndex.get(object));
+         }
+     }
+ }
+diff --git a/test/src/main/java/org/apache/rocketmq/test/listener/rmq/concurrent/RMQDelayListener.java b/test/src/main/java/org/apache/rocketmq/test/listener/rmq/concurrent/RMQDelayListener.java
+index 78cbb4e..e414d1f 100644
+--- a/test/src/main/java/org/apache/rocketmq/test/listener/rmq/concurrent/RMQDelayListener.java
++++ b/test/src/main/java/org/apache/rocketmq/test/listener/rmq/concurrent/RMQDelayListener.java
+@@ -51,7 +51,7 @@ public class RMQDelayListener extends AbstractListener implements MessageListene
+         long recvTime = System.currentTimeMillis();
+         for (MessageExt msg : msgs) {
+             if (isDebug) {
+-                logger.info(listenerName + ":" + msg);
++                LOGGER.info(listenerName + ":" + msg);
+             }
+ 
+             msgBodys.addData(new String(msg.getBody(), StandardCharsets.UTF_8));
+diff --git a/test/src/main/java/org/apache/rocketmq/test/listener/rmq/concurrent/RMQNormalListener.java b/test/src/main/java/org/apache/rocketmq/test/listener/rmq/concurrent/RMQNormalListener.java
+index e49a90a..908aed1 100644
+--- a/test/src/main/java/org/apache/rocketmq/test/listener/rmq/concurrent/RMQNormalListener.java
++++ b/test/src/main/java/org/apache/rocketmq/test/listener/rmq/concurrent/RMQNormalListener.java
+@@ -53,12 +53,12 @@ public class RMQNormalListener extends AbstractListener implements MessageListen
+             msgIndex.getAndIncrement();
+             if (isDebug) {
+                 if (listenerName != null && !listenerName.isEmpty()) {
+-                    logger.info(listenerName + ":" + msgIndex.get() + ":"
++                    LOGGER.info(listenerName + ":" + msgIndex.get() + ":"
+                         + String.format("msgid:%s broker:%s queueId:%s offset:%s",
+                         msg.getMsgId(), msg.getStoreHost(), msg.getQueueId(),
+                         msg.getQueueOffset()));
+                 } else {
+-                    logger.info(msg);
++                    LOGGER.info(msg);
+                 }
+             }
+ 
+diff --git a/test/src/main/java/org/apache/rocketmq/test/listener/rmq/order/RMQOrderListener.java b/test/src/main/java/org/apache/rocketmq/test/listener/rmq/order/RMQOrderListener.java
+index b4d5442..bddb349 100644
+--- a/test/src/main/java/org/apache/rocketmq/test/listener/rmq/order/RMQOrderListener.java
++++ b/test/src/main/java/org/apache/rocketmq/test/listener/rmq/order/RMQOrderListener.java
+@@ -71,9 +71,9 @@ public class RMQOrderListener extends AbstractListener implements MessageListene
+         for (MessageExt msg : msgs) {
+             if (isDebug) {
+                 if (listenerName != null && listenerName != "") {
+-                    logger.info(listenerName + ": " + msg);
++                    LOGGER.info(listenerName + ": " + msg);
+                 } else {
+-                    logger.info(msg);
++                    LOGGER.info(msg);
+                 }
+             }
+ 
+diff --git a/test/src/main/java/org/apache/rocketmq/test/schema/SchemaDefiner.java b/test/src/main/java/org/apache/rocketmq/test/schema/SchemaDefiner.java
+index 85d2677..4fdd646 100644
+--- a/test/src/main/java/org/apache/rocketmq/test/schema/SchemaDefiner.java
++++ b/test/src/main/java/org/apache/rocketmq/test/schema/SchemaDefiner.java
+@@ -53,74 +53,74 @@ import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
+ import org.reflections.Reflections;
+ 
+ public class SchemaDefiner {
+-    public static final Map<Class<?>, Set<String>> ignoredFields = new HashMap<>();
++    public static final Map<Class<?>, Set<String>> IGNORED_FIELDS = new HashMap<>();
+     //Use name as the key instead of X.class directly. X.class is not equal to field.getType().
+-    public static final Set<String> fieldClassNames = new HashSet<>();
+-    public static final List<Class<?>> apiClassList = new ArrayList<>();
+-    public static final List<Class<?>> protocolClassList = new ArrayList<>();
++    public static final Set<String> FIELD_CLASS_NAMES = new HashSet<>();
++    public static final List<Class<?>> API_CLASS_LIST = new ArrayList<>();
++    public static final List<Class<?>> PROTOCOL_CLASS_LIST = new ArrayList<>();
+ 
+     public static void doLoad() {
+         {
+-            ignoredFields.put(ClientConfig.class, Sets.newHashSet("namesrvAddr", "clientIP", "clientCallbackExecutorThreads"));
+-            ignoredFields.put(DefaultLitePullConsumer.class, Sets.newHashSet("consumeTimestamp"));
+-            ignoredFields.put(DefaultMQPushConsumer.class, Sets.newHashSet("consumeTimestamp"));
+-            fieldClassNames.add(String.class.getName());
+-            fieldClassNames.add(Long.class.getName());
+-            fieldClassNames.add(Integer.class.getName());
+-            fieldClassNames.add(Short.class.getName());
+-            fieldClassNames.add(Byte.class.getName());
+-            fieldClassNames.add(Double.class.getName());
+-            fieldClassNames.add(Float.class.getName());
+-            fieldClassNames.add(Boolean.class.getName());
++            IGNORED_FIELDS.put(ClientConfig.class, Sets.newHashSet("namesrvAddr", "clientIP", "clientCallbackExecutorThreads"));
++            IGNORED_FIELDS.put(DefaultLitePullConsumer.class, Sets.newHashSet("consumeTimestamp"));
++            IGNORED_FIELDS.put(DefaultMQPushConsumer.class, Sets.newHashSet("consumeTimestamp"));
++            FIELD_CLASS_NAMES.add(String.class.getName());
++            FIELD_CLASS_NAMES.add(Long.class.getName());
++            FIELD_CLASS_NAMES.add(Integer.class.getName());
++            FIELD_CLASS_NAMES.add(Short.class.getName());
++            FIELD_CLASS_NAMES.add(Byte.class.getName());
++            FIELD_CLASS_NAMES.add(Double.class.getName());
++            FIELD_CLASS_NAMES.add(Float.class.getName());
++            FIELD_CLASS_NAMES.add(Boolean.class.getName());
+         }
+         {
+             //basic
+-            apiClassList.add(DefaultMQPushConsumer.class);
+-            apiClassList.add(DefaultMQProducer.class);
+-            apiClassList.add(DefaultMQPullConsumer.class);
+-            apiClassList.add(DefaultLitePullConsumer.class);
+-            apiClassList.add(DefaultMQAdminExt.class);
++            API_CLASS_LIST.add(DefaultMQPushConsumer.class);
++            API_CLASS_LIST.add(DefaultMQProducer.class);
++            API_CLASS_LIST.add(DefaultMQPullConsumer.class);
++            API_CLASS_LIST.add(DefaultLitePullConsumer.class);
++            API_CLASS_LIST.add(DefaultMQAdminExt.class);
+ 
+             //argument
+-            apiClassList.add(Message.class);
+-            apiClassList.add(MessageQueue.class);
+-            apiClassList.add(SendCallback.class);
+-            apiClassList.add(PullCallback.class);
+-            apiClassList.add(MessageQueueSelector.class);
+-            apiClassList.add(AllocateMessageQueueStrategy.class);
++            API_CLASS_LIST.add(Message.class);
++            API_CLASS_LIST.add(MessageQueue.class);
++            API_CLASS_LIST.add(SendCallback.class);
++            API_CLASS_LIST.add(PullCallback.class);
++            API_CLASS_LIST.add(MessageQueueSelector.class);
++            API_CLASS_LIST.add(AllocateMessageQueueStrategy.class);
+             //result
+-            apiClassList.add(MessageExt.class);
+-            apiClassList.add(SendResult.class);
+-            apiClassList.add(SendStatus.class);
+-            apiClassList.add(PullResult.class);
+-            apiClassList.add(PullStatus.class);
++            API_CLASS_LIST.add(MessageExt.class);
++            API_CLASS_LIST.add(SendResult.class);
++            API_CLASS_LIST.add(SendStatus.class);
++            API_CLASS_LIST.add(PullResult.class);
++            API_CLASS_LIST.add(PullStatus.class);
+             //listener and context
+-            apiClassList.add(MessageListener.class);
+-            apiClassList.add(MessageListenerConcurrently.class);
+-            apiClassList.add(ConsumeConcurrentlyContext.class);
+-            apiClassList.add(ConsumeConcurrentlyStatus.class);
+-            apiClassList.add(MessageListenerOrderly.class);
+-            apiClassList.add(ConsumeOrderlyContext.class);
+-            apiClassList.add(ConsumeOrderlyStatus.class);
++            API_CLASS_LIST.add(MessageListener.class);
++            API_CLASS_LIST.add(MessageListenerConcurrently.class);
++            API_CLASS_LIST.add(ConsumeConcurrentlyContext.class);
++            API_CLASS_LIST.add(ConsumeConcurrentlyStatus.class);
++            API_CLASS_LIST.add(MessageListenerOrderly.class);
++            API_CLASS_LIST.add(ConsumeOrderlyContext.class);
++            API_CLASS_LIST.add(ConsumeOrderlyStatus.class);
+             //hook and context
+-            apiClassList.add(RPCHook.class);
+-            apiClassList.add(org.apache.rocketmq.client.hook.FilterMessageHook.class);
+-            apiClassList.add(org.apache.rocketmq.client.hook.SendMessageHook.class);
+-            apiClassList.add(org.apache.rocketmq.client.hook.CheckForbiddenHook.class);
+-            apiClassList.add(org.apache.rocketmq.client.hook.ConsumeMessageHook.class);
+-            apiClassList.add(org.apache.rocketmq.client.hook.EndTransactionHook.class);
+-            apiClassList.add(org.apache.rocketmq.client.hook.FilterMessageContext.class);
+-            apiClassList.add(org.apache.rocketmq.client.hook.SendMessageContext.class);
+-            apiClassList.add(org.apache.rocketmq.client.hook.ConsumeMessageContext.class);
+-            apiClassList.add(org.apache.rocketmq.client.hook.ConsumeMessageContext.class);
+-            apiClassList.add(org.apache.rocketmq.client.hook.EndTransactionContext.class);
++            API_CLASS_LIST.add(RPCHook.class);
++            API_CLASS_LIST.add(org.apache.rocketmq.client.hook.FilterMessageHook.class);
++            API_CLASS_LIST.add(org.apache.rocketmq.client.hook.SendMessageHook.class);
++            API_CLASS_LIST.add(org.apache.rocketmq.client.hook.CheckForbiddenHook.class);
++            API_CLASS_LIST.add(org.apache.rocketmq.client.hook.ConsumeMessageHook.class);
++            API_CLASS_LIST.add(org.apache.rocketmq.client.hook.EndTransactionHook.class);
++            API_CLASS_LIST.add(org.apache.rocketmq.client.hook.FilterMessageContext.class);
++            API_CLASS_LIST.add(org.apache.rocketmq.client.hook.SendMessageContext.class);
++            API_CLASS_LIST.add(org.apache.rocketmq.client.hook.ConsumeMessageContext.class);
++            API_CLASS_LIST.add(org.apache.rocketmq.client.hook.ConsumeMessageContext.class);
++            API_CLASS_LIST.add(org.apache.rocketmq.client.hook.EndTransactionContext.class);
+ 
+         }
+         {
+-            protocolClassList.add(RequestCode.class);
++            PROTOCOL_CLASS_LIST.add(RequestCode.class);
+             Reflections reflections = new Reflections("org.apache.rocketmq");
+             for (Class<?> protocolClass: reflections.getSubTypesOf(CommandCustomHeader.class)) {
+-                protocolClassList.add(protocolClass);
++                PROTOCOL_CLASS_LIST.add(protocolClass);
+             }
+         }
+ 
+diff --git a/test/src/main/java/org/apache/rocketmq/test/schema/SchemaTools.java b/test/src/main/java/org/apache/rocketmq/test/schema/SchemaTools.java
+index 06fcaf4..04a71d6 100644
+--- a/test/src/main/java/org/apache/rocketmq/test/schema/SchemaTools.java
++++ b/test/src/main/java/org/apache/rocketmq/test/schema/SchemaTools.java
+@@ -20,7 +20,6 @@ import java.io.BufferedReader;
+ import java.io.File;
+ import java.io.FileInputStream;
+ import java.io.FileOutputStream;
+-import java.io.FileWriter;
+ import java.io.InputStreamReader;
+ import java.io.OutputStreamWriter;
+ import java.io.Writer;
+@@ -38,8 +37,8 @@ import java.util.Map;
+ import java.util.TreeMap;
+ import java.util.stream.Collectors;
+ 
+-import static org.apache.rocketmq.test.schema.SchemaDefiner.fieldClassNames;
+-import static org.apache.rocketmq.test.schema.SchemaDefiner.ignoredFields;
++import static org.apache.rocketmq.test.schema.SchemaDefiner.FIELD_CLASS_NAMES;
++import static org.apache.rocketmq.test.schema.SchemaDefiner.IGNORED_FIELDS;
+ 
+ public class SchemaTools {
+     public static final String PATH_API = "api";
+@@ -119,9 +118,9 @@ public class SchemaTools {
+             }
+             String key = String.format("Field %s", field.getName());
+             boolean ignore = false;
+-            for (Class<?> tmpClass: ignoredFields.keySet()) {
++            for (Class<?> tmpClass: IGNORED_FIELDS.keySet()) {
+                 if (tmpClass.isAssignableFrom(apiClass)
+-                    && ignoredFields.get(tmpClass).contains(field.getName())) {
++                    && IGNORED_FIELDS.get(tmpClass).contains(field.getName())) {
+                     ignore = true;
+                     //System.out.printf("Ignore AAA:%s %s %s\n", apiClass.getName(), field.getName(), field.getType().getName());
+                     break;
+@@ -129,7 +128,7 @@ public class SchemaTools {
+             }
+             if (!field.getType().isEnum()
+                 && !field.getType().isPrimitive()
+-                && !fieldClassNames.contains(field.getType().getName())) {
++                && !FIELD_CLASS_NAMES.contains(field.getType().getName())) {
+                 //System.out.printf("Ignore BBB:%s %s %s\n", apiClass.getName(), field.getName(), field.getType().getName());
+                 ignore = true;
+             }
+diff --git a/test/src/main/java/org/apache/rocketmq/test/util/FileUtil.java b/test/src/main/java/org/apache/rocketmq/test/util/FileUtil.java
+index 49f986b..0385728 100644
+--- a/test/src/main/java/org/apache/rocketmq/test/util/FileUtil.java
++++ b/test/src/main/java/org/apache/rocketmq/test/util/FileUtil.java
+@@ -19,7 +19,6 @@ package org.apache.rocketmq.test.util;
+ 
+ import java.io.File;
+ import java.io.FileOutputStream;
+-import java.io.FileWriter;
+ import java.io.IOException;
+ import java.io.OutputStreamWriter;
+ import java.io.Writer;
+diff --git a/test/src/test/java/org/apache/rocketmq/test/schema/SchemaTest.java b/test/src/test/java/org/apache/rocketmq/test/schema/SchemaTest.java
+index 397f2c3..538f8f0 100644
+--- a/test/src/test/java/org/apache/rocketmq/test/schema/SchemaTest.java
++++ b/test/src/test/java/org/apache/rocketmq/test/schema/SchemaTest.java
+@@ -35,8 +35,8 @@ public class SchemaTest {
+ 
+     public void generate() throws Exception {
+         SchemaDefiner.doLoad();
+-        SchemaTools.write(SchemaTools.generate(SchemaDefiner.apiClassList), BASE_SCHEMA_PATH, "api");
+-        SchemaTools.write(SchemaTools.generate(SchemaDefiner.protocolClassList), BASE_SCHEMA_PATH, "protocol");
++        SchemaTools.write(SchemaTools.generate(SchemaDefiner.API_CLASS_LIST), BASE_SCHEMA_PATH, "api");
++        SchemaTools.write(SchemaTools.generate(SchemaDefiner.PROTOCOL_CLASS_LIST), BASE_SCHEMA_PATH, "protocol");
+     }
+ 
+     @Test
+@@ -50,8 +50,8 @@ public class SchemaTest {
+         }
+         Map<String, Map<String, String>> schemaFromCode = new HashMap<>();
+         {
+-            schemaFromCode.putAll(SchemaTools.generate(SchemaDefiner.apiClassList));
+-            schemaFromCode.putAll(SchemaTools.generate(SchemaDefiner.protocolClassList));
++            schemaFromCode.putAll(SchemaTools.generate(SchemaDefiner.API_CLASS_LIST));
++            schemaFromCode.putAll(SchemaTools.generate(SchemaDefiner.PROTOCOL_CLASS_LIST));
+         }
+ 
+         Map<String, String> fileChanges = new TreeMap<>();

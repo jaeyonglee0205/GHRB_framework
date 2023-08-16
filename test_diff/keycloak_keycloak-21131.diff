@@ -1,0 +1,12 @@
+diff --git a/services/src/test/java/org/keycloak/test/ValidationTest.java b/services/src/test/java/org/keycloak/test/ValidationTest.java
+index fa47d3c..4b2ed0d 100644
+--- a/services/src/test/java/org/keycloak/test/ValidationTest.java
++++ b/services/src/test/java/org/keycloak/test/ValidationTest.java
+@@ -40,6 +40,7 @@ public class ValidationTest {
+         Assert.assertFalse(Validation.isEmailValid("abc@.foo"));
+         Assert.assertFalse(Validation.isEmailValid("abc@foo."));
+         Assert.assertFalse(Validation.isEmailValid("abc@foo..bar"));
++        Assert.assertTrue(Validation.isEmailValid("diegø@foo.com"));
+     }
+     
+     @Test

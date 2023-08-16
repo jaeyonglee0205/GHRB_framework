@@ -1,0 +1,227 @@
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/BaseOperatorTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/BaseOperatorTest.java
+index 33f0e72..59d2355 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/BaseOperatorTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/BaseOperatorTest.java
+@@ -24,6 +24,7 @@ import io.fabric8.kubernetes.client.Config;
+ import io.fabric8.kubernetes.client.ConfigBuilder;
+ import io.fabric8.kubernetes.client.KubernetesClient;
+ import io.fabric8.kubernetes.client.KubernetesClientBuilder;
++import io.fabric8.kubernetes.client.NamespacedKubernetesClient;
+ import io.javaoperatorsdk.operator.Operator;
+ import io.javaoperatorsdk.operator.api.config.ConfigurationServiceProvider;
+ import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+@@ -166,6 +167,8 @@ public abstract class BaseOperatorTest {
+   private static void createNamespace() {
+     Log.info("Creating Namespace " + namespace);
+     k8sclient.resource(new NamespaceBuilder().withNewMetadata().addToLabels("app","keycloak-test").withName(namespace).endMetadata().build()).create();
++    // ensure that the client defaults to the namespace - eventually most of the test code usage of inNamespace can be removed
++    k8sclient = k8sclient.adapt(NamespacedKubernetesClient.class).inNamespace(namespace);
+   }
+ 
+   private static void calculateNamespace() {
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/ClusteringTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/ClusteringTest.java
+index fec1769..4a90b57 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/ClusteringTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/ClusteringTest.java
+@@ -17,6 +17,12 @@
+ 
+ package org.keycloak.operator.testsuite.integration;
+ 
++import io.fabric8.kubernetes.api.model.HasMetadata;
++import io.fabric8.kubernetes.api.model.Secret;
++import io.fabric8.kubernetes.api.model.Service;
++import io.fabric8.kubernetes.api.model.apps.StatefulSet;
++import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
++import io.fabric8.kubernetes.client.readiness.Readiness;
+ import io.fabric8.kubernetes.client.utils.Serialization;
+ import io.quarkus.logging.Log;
+ import io.quarkus.test.junit.QuarkusTest;
+@@ -46,13 +52,65 @@ import static org.assertj.core.api.Assertions.assertThat;
+ public class ClusteringTest extends BaseOperatorTest {
+ 
+     @Test
++    public void testMultipleDeployments() throws InterruptedException {
++        // given
++        var kc = K8sUtils.getDefaultKeycloakDeployment();
++
++        // another instance running off the same database
++        // - should eventually give this a separate schema
++        var kc1 = K8sUtils.getDefaultKeycloakDeployment();
++        kc1.getMetadata().setName("another-example");
++        kc1.getSpec().getHostnameSpec().setHostname("another-example.com");
++        // this is using the wrong tls-secret, but simply removing http spec renders the pod unstartable
++
++        try {
++            K8sUtils.deployKeycloak(k8sclient, kc, true);
++            K8sUtils.deployKeycloak(k8sclient, kc1, true);
++        } catch (Exception e) {
++            k8sclient.resources(Keycloak.class).list().getItems().stream().forEach(k -> {
++                Log.infof("Keycloak %s status: %s", k.getMetadata().getName(), Serialization.asYaml(k.getStatus()));
++            });
++            k8sclient.pods().list().getItems().stream().filter(p -> !Readiness.isPodReady(p)).forEach(p -> {
++                Log.infof("Pod %s not ready: %s", p.getMetadata().getName(), Serialization.asYaml(p.getStatus()));
++            });
++            throw e;
++        }
++
++        assertThat(k8sclient.resources(Keycloak.class).list().getItems().size()).isEqualTo(2);
++
++        // get the current version for the uid
++        kc = k8sclient.resource(kc).get();
++        kc1 = k8sclient.resource(kc1).get();
++
++        // the main resources are ready, check for the expected dependents
++        checkInstanceCount(1, StatefulSet.class, kc, kc1);
++        checkInstanceCount(2, Secret.class, kc, kc1);
++        checkInstanceCount(1, Ingress.class, kc, kc1);
++        checkInstanceCount(2, Service.class, kc, kc1);
++
++        // ensure they don't see each other's pods
++        assertThat(k8sclient.resource(kc).scale().getStatus().getReplicas()).isEqualTo(1);
++        assertThat(k8sclient.resource(kc1).scale().getStatus().getReplicas()).isEqualTo(1);
++
++        // could also scale one instance to zero end ensure the services are no longer reachable
++    }
++
++    private void checkInstanceCount(int count, Class<? extends HasMetadata> type, HasMetadata... toCheck) {
++        var instances = k8sclient.resources(type).list().getItems();
++
++        for (HasMetadata hasMetadata : toCheck) {
++            assertThat(instances.stream()
++                    .filter(h -> h.getOwnerReferenceFor(hasMetadata).isPresent() && hasMetadata.getMetadata()
++                            .getName().equals(h.getMetadata().getLabels().get(Constants.INSTANCE_LABEL)))
++                    .count()).isEqualTo(count);
++        }
++    }
++
++    @Test
+     public void testKeycloakScaleAsExpected() {
+         // given
+         var kc = K8sUtils.getDefaultKeycloakDeployment();
+-        var crSelector = k8sclient
+-                .resources(Keycloak.class)
+-                .inNamespace(kc.getMetadata().getNamespace())
+-                .withName(kc.getMetadata().getName());
++        var crSelector = k8sclient.resource(kc);
+         K8sUtils.deployKeycloak(k8sclient, kc, true);
+ 
+         var kcPodsSelector = k8sclient.pods().inNamespace(namespace).withLabel("app", "keycloak");
+@@ -60,7 +118,7 @@ public class ClusteringTest extends BaseOperatorTest {
+         var scale = crSelector.scale();
+         assertThat(scale.getSpec().getReplicas()).isEqualTo(1);
+         assertThat(scale.getStatus().getReplicas()).isEqualTo(1);
+-        assertThat(scale.getStatus().getSelector()).isEqualTo(Constants.DEFAULT_LABELS_AS_STRING);
++        assertThat(scale.getStatus().getSelector()).isEqualTo("app=keycloak,app.kubernetes.io/managed-by=keycloak-operator,app.kubernetes.io/instance=example-kc");
+ 
+         // when scale it to 0
+         Keycloak scaled = crSelector.scale(0);
+@@ -139,16 +197,10 @@ public class ClusteringTest extends BaseOperatorTest {
+         // given
+         Log.info("Setup");
+         var kc = K8sUtils.getDefaultKeycloakDeployment();
+-        var crSelector = k8sclient
+-                .resources(Keycloak.class)
+-                .inNamespace(kc.getMetadata().getNamespace())
+-                .withName(kc.getMetadata().getName());
++        var crSelector = k8sclient.resource(kc);
+         K8sUtils.deployKeycloak(k8sclient, kc, false);
+         var targetInstances = 3;
+-        crSelector.accept(keycloak -> {
+-        	keycloak.getMetadata().setResourceVersion(null);
+-        	keycloak.getSpec().setInstances(targetInstances);
+-        });
++        crSelector.scale(targetInstances);
+         K8sUtils.set(k8sclient, getClass().getResourceAsStream("/token-test-realm.yaml"));
+         var realmImportSelector = k8sclient.resources(KeycloakRealmImport.class).inNamespace(namespace).withName("example-token-test-kc");
+ 
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
+index 46f266a..b440790 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
+@@ -23,9 +23,12 @@ import io.fabric8.kubernetes.api.model.LocalObjectReferenceBuilder;
+ import io.fabric8.kubernetes.api.model.Secret;
+ import io.fabric8.kubernetes.api.model.SecretBuilder;
+ import io.fabric8.kubernetes.api.model.SecretKeySelectorBuilder;
++import io.fabric8.kubernetes.api.model.apps.StatefulSet;
++import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
+ import io.fabric8.kubernetes.api.model.apps.StatefulSetSpecBuilder;
+ import io.quarkus.logging.Log;
+ import io.quarkus.test.junit.QuarkusTest;
++
+ import org.awaitility.Awaitility;
+ import org.junit.jupiter.api.Assumptions;
+ import org.junit.jupiter.api.Test;
+@@ -204,7 +207,21 @@ public class KeycloakDeploymentTest extends BaseOperatorTest {
+         try {
+             var kc = getDefaultKeycloakDeployment();
+             var deploymentName = kc.getMetadata().getName();
+-            deployKeycloak(k8sclient, kc, true);
++
++            // create a dummy StatefulSet representing the pre-multiinstance state that we'll be forced to delete
++            StatefulSet statefulSet = new StatefulSetBuilder().withMetadata(kc.getMetadata()).editMetadata()
++                    .addToLabels(Constants.DEFAULT_LABELS).endMetadata().withNewSpec().withNewSelector()
++                    .withMatchLabels(Constants.DEFAULT_LABELS).endSelector().withServiceName("foo").withReplicas(0)
++                    .withNewTemplate().withNewMetadata().withLabels(Constants.DEFAULT_LABELS).endMetadata()
++                    .withNewSpec().addNewContainer().withName("pause").withImage("registry.k8s.io/pause:3.1")
++                    .endContainer().endSpec().endTemplate().endSpec().build();
++            k8sclient.resource(statefulSet).create();
++
++            // start will not be successful because the statefulSet is in the way
++            deployKeycloak(k8sclient, kc, false);
++            // once the statefulset is owned by the keycloak it will be picked up by the informer
++            k8sclient.resource(statefulSet).accept(s -> s.addOwnerReference(k8sclient.resource(kc).get()));
++            waitForKeycloakToBeReady(k8sclient, kc);
+ 
+             Log.info("Trying to delete deployment");
+             assertThat(k8sclient.apps().statefulSets().withName(deploymentName).delete()).isNotNull();
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/unit/PodTemplateTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/unit/PodTemplateTest.java
+index b7adaf8..1de1f3a 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/unit/PodTemplateTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/unit/PodTemplateTest.java
+@@ -28,7 +28,8 @@ import io.quarkus.test.junit.QuarkusTest;
+ import org.junit.jupiter.api.Test;
+ import org.keycloak.operator.Config;
+ import org.keycloak.operator.controllers.KeycloakDeployment;
+-import org.keycloak.operator.crds.v2alpha1.deployment.Keycloak;
++import org.keycloak.operator.controllers.OperatorManagedResource;
++import org.keycloak.operator.crds.v2alpha1.deployment.KeycloakBuilder;
+ import org.keycloak.operator.crds.v2alpha1.deployment.KeycloakSpecBuilder;
+ import org.keycloak.operator.crds.v2alpha1.deployment.ValueOrSecret;
+ import org.keycloak.operator.crds.v2alpha1.deployment.spec.HostnameSpecBuilder;
+@@ -67,7 +68,10 @@ public class PodTemplateTest {
+                 };
+             }
+         };
+-        var kc = new Keycloak();
++        var kc = new KeycloakBuilder().withNewMetadata().withName("instance").endMetadata().build();
++        existingDeployment = new StatefulSetBuilder(existingDeployment).editOrNewSpec().editOrNewSelector()
++                .addToMatchLabels(OperatorManagedResource.updateWithInstanceLabels(null, kc.getMetadata().getName()))
++                .endSelector().endSpec().build();
+ 
+         var httpSpec = new HttpSpecBuilder().withTlsSecret("example-tls-secret").build();
+         var hostnameSpec = new HostnameSpecBuilder().withHostname("example.com").build();
+@@ -84,6 +88,7 @@ public class PodTemplateTest {
+         kc.setSpec(keycloakSpecBuilder.build());
+ 
+         var deployment = new KeycloakDeployment(null, config, kc, existingDeployment, "dummy-admin");
++
+         return (StatefulSet) deployment.getReconciledResource().get();
+     }
+ 
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/utils/K8sUtils.java b/operator/src/test/java/org/keycloak/operator/testsuite/utils/K8sUtils.java
+index 658afef..7d9fa36 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/utils/K8sUtils.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/utils/K8sUtils.java
+@@ -101,11 +101,7 @@ public final class K8sUtils {
+                 .timeout(5, TimeUnit.MINUTES)
+                 .ignoreExceptions()
+                 .untilAsserted(() -> {
+-                    var currentKc = client
+-                            .resources(Keycloak.class)
+-                            .inNamespace(kc.getMetadata().getNamespace())
+-                            .withName(kc.getMetadata().getName())
+-                            .get();
++                    var currentKc = client.resource(kc).get();
+ 
+                     CRAssert.assertKeycloakStatusCondition(currentKc, KeycloakStatusCondition.READY, true);
+                     CRAssert.assertKeycloakStatusCondition(currentKc, KeycloakStatusCondition.HAS_ERRORS, false);

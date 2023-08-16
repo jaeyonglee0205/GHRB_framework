@@ -1,0 +1,45 @@
+diff --git a/resolver-dns/src/test/java/io/netty/resolver/dns/DnsNameResolverTest.java b/resolver-dns/src/test/java/io/netty/resolver/dns/DnsNameResolverTest.java
+index e466140..1292d6b 100644
+--- a/resolver-dns/src/test/java/io/netty/resolver/dns/DnsNameResolverTest.java
++++ b/resolver-dns/src/test/java/io/netty/resolver/dns/DnsNameResolverTest.java
+@@ -73,6 +73,7 @@ import org.junit.jupiter.api.Test;
+ 
+ import java.io.IOException;
+ import java.io.InputStream;
++import java.net.BindException;
+ import java.net.DatagramSocket;
+ import java.net.Inet4Address;
+ import java.net.Inet6Address;
+@@ -3634,4 +3635,32 @@ public class DnsNameResolverTest {
+             resolver.close();
+         }
+     }
++
++    @Test
++    public void testAddressAlreadyInUse() throws Exception {
++        DatagramSocket datagramSocket = new DatagramSocket();
++        try {
++            assertTrue(datagramSocket.isBound());
++            try {
++                final DnsNameResolver resolver = newResolver()
++                        .localAddress(datagramSocket.getLocalSocketAddress()).build();
++                try {
++                    Throwable cause = assertThrows(UnknownHostException.class, new Executable() {
++                        @Override
++                        public void execute() throws Throwable {
++                            resolver.resolve("netty.io").sync();
++                        }
++                    });
++                    assertThat(cause.getCause(), Matchers.<Throwable>instanceOf(BindException.class));
++                } finally {
++                    resolver.close();
++                }
++            } catch (IllegalStateException cause) {
++                // We might also throw directly here... in this case let's verify that we use the correct exception.
++                assertThat(cause.getCause(), Matchers.<Throwable>instanceOf(BindException.class));
++            }
++        } finally {
++            datagramSocket.close();
++        }
++    }
+ }

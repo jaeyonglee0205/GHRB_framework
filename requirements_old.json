@@ -1,0 +1,138 @@
+{
+    "jackson-dataformat-xml": {
+        "maven": "3.8.6",
+        "jdk": "17",
+        "extra": {
+
+        }
+    },
+    "checkstyle": {
+        "maven": "3.8.6",
+        "jdk": "17",
+        "extra": {
+
+        }
+    },
+    "jackson-core": {
+        "maven": "3.8.6",
+        "jdk": "17",
+        "extra": {
+
+        }
+    },
+    "dubbo": {
+        "maven": "3.8.6",
+        "jdk": "8",
+        "extra": {
+
+        }
+    },
+    "jackson-databind": {
+        "maven": "3.8.6",
+        "jdk": "17",
+        "extra": {
+
+        }
+    },
+    "seata": {
+        "maven": "3.8.6",
+        "jdk": "11",
+        "extra": {
+
+        }
+    },
+    "jsoup": {
+        "maven": "3.8.6",
+        "jdk": "17",
+        "extra": {
+
+        }
+    },
+    "gson": {
+        "maven": "3.8.6",
+        "jdk": "11",
+        "extra": {
+
+        }
+    },
+    "nacos": {
+        "maven": "3.8.6",
+        "jdk": "8",
+        "extra": {
+
+        }
+    },
+    "fastjson": {
+
+    },
+    "assertj": {
+        "maven": "3.8.6",
+        "jdk": "17",
+        "extra": {
+
+        }
+    },
+    "sslcontext-kickstart": {
+        "maven": "3.8.6",
+        "jdk": "17",
+        "extra": {
+
+        }
+    },
+    "rocketmq": {
+        "maven": "3.8.1",
+        "jdk": "8",
+        "extra": {
+            "commands": {
+                "0": "-Dargline='-Xmx1024m'",
+                "1": "-Dcheckstyle.skip"
+            }
+        }
+    },
+    "openapi-generator": {
+        "maven": "3.8.6",
+        "jdk": "11",
+        "extra": {
+            "mvnw": true,
+            "commands": {
+                "0": "-Dsurefire.failIfNoSpecifiedTests=false"
+            }
+        }
+    },
+    "keycloak_keycloak": {
+        "maven": "3.8.6",
+        "jdk": "11",
+        "extra": {
+            "mvnw": true,
+            "install": "mvn clean install -DskipTests=true -DskipTestsuite",
+            "commands": {
+    
+            }
+        }
+    },
+    "apache_shardingsphere": {
+        "maven": "3.8.6",
+        "jdk": "11",
+        "extra": {
+            "commands": {
+                "0": "./mvnw clean test -T1C -Denforcer.skip=true -Djacoco.skip=true -Dcheckstyle.skip=true",
+                "1": "-Dmaven.javadoc.skip=true -Dargline='-Xmx1024m'"
+            }
+        }
+    },
+    "Apktool": {
+        "maven": "3.6.3",
+        "jdk": "17",
+        "extra": {
+            "gradlew": true
+        }
+    },
+    "retrofit": {
+        "extra": {
+            "gradlew": true,
+            "commands": {
+                "0": ":retrofit:test"
+            }
+        }
+    }
+  }

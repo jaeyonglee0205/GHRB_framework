@@ -1,0 +1,519 @@
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/authentication/ExecutionTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/authentication/ExecutionTest.java
+index 8d094b4..c909a77 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/authentication/ExecutionTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/authentication/ExecutionTest.java
+@@ -22,7 +22,6 @@ import org.junit.Test;
+ import org.keycloak.authentication.AuthenticationFlow;
+ import org.keycloak.authentication.authenticators.browser.UsernameFormFactory;
+ import org.keycloak.authentication.authenticators.browser.WebAuthnAuthenticatorFactory;
+-import org.keycloak.authentication.authenticators.challenge.NoCookieFlowRedirectAuthenticatorFactory;
+ import org.keycloak.authentication.authenticators.client.ClientIdAndSecretAuthenticator;
+ import org.keycloak.events.admin.OperationType;
+ import org.keycloak.events.admin.ResourceType;
+@@ -330,7 +329,6 @@ public class ExecutionTest extends AbstractAuthenticationTest {
+ 
+         addExecutionCheckReq(newBrowserFlow, UsernameFormFactory.PROVIDER_ID, params, REQUIRED);
+         addExecutionCheckReq(newBrowserFlow, WebAuthnAuthenticatorFactory.PROVIDER_ID, params, DISABLED);
+-        addExecutionCheckReq(newBrowserFlow, NoCookieFlowRedirectAuthenticatorFactory.PROVIDER_ID, params, REQUIRED);
+ 
+         AuthenticationFlowRepresentation rep = findFlowByAlias(newBrowserFlow, authMgmtResource.getFlows());
+         Assert.assertNotNull(rep);
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/authentication/InitialFlowsTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/authentication/InitialFlowsTest.java
+index 22317af..927c75a 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/authentication/InitialFlowsTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/authentication/InitialFlowsTest.java
+@@ -192,18 +192,6 @@ public class InitialFlowsTest extends AbstractAuthenticationTest {
+         addExecInfo(execs, "OTP Form", "auth-otp-form", false, 5, 1, REQUIRED, null, new String[]{REQUIRED, ALTERNATIVE, DISABLED});
+         expected.add(new FlowExecutions(flow, execs));
+ 
+-        flow = newFlow("http challenge", "An authentication flow based on challenge-response HTTP Authentication Schemes","basic-flow", true, true);
+-        addExecExport(flow, null, false, "no-cookie-redirect", false, null, REQUIRED, 10);
+-        addExecExport(flow, "Authentication Options", false, null, true, null, REQUIRED, 20);
+-
+-        execs = new LinkedList<>();
+-        addExecInfo(execs, "Browser Redirect for Cookie free authentication", "no-cookie-redirect", false, 0, 0, REQUIRED, null, new String[]{REQUIRED});
+-        addExecInfo(execs, "Authentication Options", null, false, 0, 1, REQUIRED, true, new String[]{REQUIRED, ALTERNATIVE, DISABLED, CONDITIONAL});
+-        addExecInfo(execs, "Basic Auth Challenge", "basic-auth", false, 1, 0, REQUIRED, null, new String[]{REQUIRED, ALTERNATIVE, DISABLED});
+-        addExecInfo(execs, "Basic Auth Password+OTP", "basic-auth-otp", false, 1, 1, DISABLED, null, new String[]{REQUIRED, ALTERNATIVE, DISABLED});
+-        addExecInfo(execs, "Kerberos", "auth-spnego", false, 1, 2, DISABLED, null, kerberosAuthExpectedChoices);
+-        expected.add(new FlowExecutions(flow, execs));
+-
+          flow = newFlow("registration", "registration flow", "basic-flow", true, true);
+         addExecExport(flow, "registration form", false, "registration-page-form", true, null, REQUIRED, 10);
+ 
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/authentication/ProvidersTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/authentication/ProvidersTest.java
+index 517aeea..10cac51 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/authentication/ProvidersTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/authentication/ProvidersTest.java
+@@ -154,8 +154,6 @@ public class ProvidersTest extends AbstractAuthenticationTest {
+                 "Validates a username and password from login form.");
+         addProviderInfo(result, "auth-x509-client-username-form", "X509/Validate Username Form",
+                 "Validates username and password from X509 client certificate received as a part of mutual SSL handshake.");
+-        addProviderInfo(result, "basic-auth", "Basic Auth Challenge", "Challenge-response authentication using HTTP BASIC scheme.");
+-        addProviderInfo(result, "basic-auth-otp", "Basic Auth Password+OTP", "Challenge-response authentication using HTTP BASIC scheme.  Password param should contain a combination of password + otp. Realm's OTP policy is used to determine how to parse this. This SHOULD NOT BE USED in conjection with regular basic auth provider.");
+         addProviderInfo(result, "direct-grant-auth-x509-username", "X509/Validate Username",
+                 "Validates username and password from X509 client certificate received as a part of mutual SSL handshake.");
+         addProviderInfo(result, "direct-grant-validate-otp", "OTP", "Validates the one time password supplied as a 'totp' form parameter in direct grant request");
+@@ -179,7 +177,6 @@ public class ProvidersTest extends AbstractAuthenticationTest {
+                 "User reviews and updates profile data retrieved from Identity Provider in the displayed form");
+         addProviderInfo(result, "idp-username-password-form", "Username Password Form for identity provider reauthentication",
+                 "Validates a password from login form. Username may be already known from identity provider authentication");
+-        addProviderInfo(result, "no-cookie-redirect", "Browser Redirect for Cookie free authentication", "Perform a 302 redirect to get user agent's current URI on authenticate path with an auth_session_id query parameter.  This is for client's that do not support cookies.");
+         addProviderInfo(result, "push-button-authenticator", "TEST: Button Login",
+                 "Just press the button to login.");
+         addProviderInfo(result, "reset-credential-email", "Send Reset Email", "Send email to user and wait for response.");
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/kerberos/KerberosLdapTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/kerberos/KerberosLdapTest.java
+index 48cc996..049df39 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/kerberos/KerberosLdapTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/federation/kerberos/KerberosLdapTest.java
+@@ -17,9 +17,7 @@
+ 
+ package org.keycloak.testsuite.federation.kerberos;
+ 
+-import java.util.HashMap;
+ import java.util.List;
+-import java.util.Map;
+ 
+ import jakarta.ws.rs.core.Response;
+ 
+@@ -30,10 +28,6 @@ import org.junit.Test;
+ import org.keycloak.common.Profile;
+ import org.keycloak.events.Details;
+ import org.keycloak.federation.kerberos.CommonKerberosConfig;
+-import org.keycloak.models.AuthenticationFlowBindings;
+-import org.keycloak.representations.idm.AuthenticationExecutionInfoRepresentation;
+-import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
+-import org.keycloak.representations.idm.ClientRepresentation;
+ import org.keycloak.representations.idm.ComponentRepresentation;
+ import org.keycloak.representations.idm.UserRepresentation;
+ import org.keycloak.storage.UserStorageProvider;
+@@ -88,36 +82,6 @@ public class KerberosLdapTest extends AbstractKerberosSingleRealmTest {
+     }
+ 
+     @Test
+-    public void testClientOverrideFlowUsingBrowserHttpChallenge() throws Exception {
+-        List<AuthenticationExecutionInfoRepresentation> executions = testRealmResource().flows().getExecutions("http challenge");
+-
+-        for (AuthenticationExecutionInfoRepresentation execution : executions) {
+-            if ("basic-auth".equals(execution.getProviderId())) {
+-                execution.setRequirement("ALTERNATIVE");
+-                testRealmResource().flows().updateExecutions("http challenge", execution);
+-            }
+-            if ("auth-spnego".equals(execution.getProviderId())) {
+-                execution.setRequirement("ALTERNATIVE");
+-                testRealmResource().flows().updateExecutions("http challenge", execution);
+-            }
+-        }
+-
+-
+-        Map<String, String> flows = new HashMap<>();
+-        AuthenticationFlowRepresentation flow = testRealmResource().flows().getFlows().stream().filter(flowRep -> flowRep.getAlias().equalsIgnoreCase("http challenge")).findAny().get();
+-
+-        flows.put(AuthenticationFlowBindings.BROWSER_BINDING, flow.getId());
+-
+-        ClientRepresentation client = testRealmResource().clients().findByClientId("kerberos-app-challenge").get(0);
+-
+-        client.setAuthenticationFlowBindingOverrides(flows);
+-
+-        testRealmResource().clients().get(client.getId()).update(client);
+-
+-        assertSuccessfulSpnegoLogin(client.getClientId(),"hnelson", "hnelson", "secret");
+-    }
+-
+-    @Test
+     public void validatePasswordPolicyTest() throws Exception{
+          updateProviderEditMode(UserStorageProvider.EditMode.WRITABLE);
+ 
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/FlowOverrideTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/FlowOverrideTest.java
+index c185ff1..3e7a85c 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/FlowOverrideTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/forms/FlowOverrideTest.java
+@@ -25,7 +25,6 @@ import org.junit.Test;
+ import org.keycloak.OAuth2Constants;
+ import org.keycloak.admin.client.resource.ClientsResource;
+ import org.keycloak.authentication.authenticators.browser.UsernamePasswordFormFactory;
+-import org.keycloak.authentication.authenticators.challenge.BasicAuthOTPAuthenticatorFactory;
+ import org.keycloak.common.Profile;
+ import org.keycloak.events.Details;
+ import org.keycloak.models.AuthenticationExecutionModel;
+@@ -33,12 +32,9 @@ import org.keycloak.models.AuthenticationFlowBindings;
+ import org.keycloak.models.AuthenticationFlowModel;
+ import org.keycloak.models.ClientModel;
+ import org.keycloak.models.RealmModel;
+-import org.keycloak.models.credential.OTPCredentialModel;
+ import org.keycloak.models.utils.TimeBasedOTP;
+ import org.keycloak.representations.idm.ClientRepresentation;
+-import org.keycloak.representations.idm.CredentialRepresentation;
+ import org.keycloak.representations.idm.RealmRepresentation;
+-import org.keycloak.representations.idm.UserRepresentation;
+ import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
+ import org.keycloak.testsuite.AssertEvents;
+ import org.keycloak.testsuite.arquillian.annotation.EnableFeature;
+@@ -47,7 +43,6 @@ import org.keycloak.testsuite.authentication.PushButtonAuthenticatorFactory;
+ import org.keycloak.testsuite.pages.AppPage;
+ import org.keycloak.testsuite.pages.ErrorPage;
+ import org.keycloak.testsuite.pages.LoginPage;
+-import org.keycloak.testsuite.util.UserBuilder;
+ import org.keycloak.util.BasicAuthHelper;
+ import org.openqa.selenium.By;
+ 
+@@ -71,8 +66,6 @@ public class FlowOverrideTest extends AbstractTestRealmKeycloakTest {
+ 
+     public static final String TEST_APP_DIRECT_OVERRIDE = "test-app-direct-override";
+     public static final String TEST_APP_FLOW = "test-app-flow";
+-    public static final String TEST_APP_HTTP_CHALLENGE = "http-challenge-client";
+-    public static final String TEST_APP_HTTP_CHALLENGE_OTP = "http-challenge-otp-client";
+ 
+     @Rule
+     public AssertEvents events = new AssertEvents(this);
+@@ -180,22 +173,6 @@ public class FlowOverrideTest extends AbstractTestRealmKeycloakTest {
+ 
+             realm.addAuthenticatorExecution(execution);
+ 
+-            AuthenticationFlowModel challengeOTP = new AuthenticationFlowModel();
+-            challengeOTP.setAlias("challenge-override-flow");
+-            challengeOTP.setDescription("challenge grant based authentication");
+-            challengeOTP.setProviderId("basic-flow");
+-            challengeOTP.setTopLevel(true);
+-            challengeOTP.setBuiltIn(true);
+-
+-            challengeOTP = realm.addAuthenticationFlow(challengeOTP);
+-
+-            execution = new AuthenticationExecutionModel();
+-            execution.setParentFlow(challengeOTP.getId());
+-            execution.setRequirement(AuthenticationExecutionModel.Requirement.REQUIRED);
+-            execution.setAuthenticator(BasicAuthOTPAuthenticatorFactory.PROVIDER_ID);
+-            execution.setPriority(10);
+-            realm.addAuthenticatorExecution(execution);
+-
+             client = realm.addClient(TEST_APP_DIRECT_OVERRIDE);
+             client.setSecret("password");
+             client.setBaseUrl(serializedApplicationData.applicationBaseUrl);
+@@ -206,29 +183,6 @@ public class FlowOverrideTest extends AbstractTestRealmKeycloakTest {
+             client.setDirectAccessGrantsEnabled(true);
+             client.setAuthenticationFlowBindingOverride(AuthenticationFlowBindings.BROWSER_BINDING, browser.getId());
+             client.setAuthenticationFlowBindingOverride(AuthenticationFlowBindings.DIRECT_GRANT_BINDING, directGrant.getId());
+-
+-
+-            client = realm.addClient(TEST_APP_HTTP_CHALLENGE);
+-            client.setSecret("password");
+-            client.setBaseUrl(serializedApplicationData.applicationBaseUrl);
+-            client.setManagementUrl(serializedApplicationData.applicationManagementUrl);
+-            client.setEnabled(true);
+-            client.addRedirectUri(serializedApplicationData.applicationRedirectUrl);
+-            client.setPublicClient(true);
+-            client.setDirectAccessGrantsEnabled(true);
+-            client.setAuthenticationFlowBindingOverride(AuthenticationFlowBindings.DIRECT_GRANT_BINDING, realm.getFlowByAlias("http challenge").getId());
+-            client.setAuthenticationFlowBindingOverride(AuthenticationFlowBindings.BROWSER_BINDING, realm.getFlowByAlias("http challenge").getId());
+-
+-            client = realm.addClient(TEST_APP_HTTP_CHALLENGE_OTP);
+-            client.setSecret("password");
+-            client.setBaseUrl("http://localhost:8180/auth/realms/master/app/auth");
+-            client.setManagementUrl("http://localhost:8180/auth/realms/master/app/admin");
+-            client.setEnabled(true);
+-            client.addRedirectUri("http://localhost:8180/auth/realms/master/app/auth/*");
+-            client.setPublicClient(true);
+-            client.setDirectAccessGrantsEnabled(true);
+-            client.setAuthenticationFlowBindingOverride(AuthenticationFlowBindings.DIRECT_GRANT_BINDING, realm.getFlowByAlias("challenge-override-flow").getId());
+-            client.setAuthenticationFlowBindingOverride(AuthenticationFlowBindings.BROWSER_BINDING, realm.getFlowByAlias("challenge-override-flow").getId());
+         });
+     }
+ 
+@@ -372,181 +326,6 @@ public class FlowOverrideTest extends AbstractTestRealmKeycloakTest {
+     }
+ 
+     @Test
+-    public void testClientOverrideFlowUsingDirectGrantHttpChallenge() {
+-        Client httpClient = AdminClientUtil.createResteasyClient();
+-        String grantUri = oauth.getResourceOwnerPasswordCredentialGrantUrl();
+-        WebTarget grantTarget = httpClient.target(grantUri);
+-
+-        // no username/password
+-        Form form = new Form();
+-        form.param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.PASSWORD);
+-        form.param(OAuth2Constants.CLIENT_ID, TEST_APP_HTTP_CHALLENGE);
+-        Response response = grantTarget.request()
+-                .post(Entity.form(form));
+-        assertEquals("Basic realm=\"test\"", response.getHeaderString(HttpHeaders.WWW_AUTHENTICATE));
+-        assertEquals(401, response.getStatus());
+-        response.close();
+-
+-        // now, username password using basic challenge response
+-        response = grantTarget.request()
+-                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("test-user@localhost", "password"))
+-                .post(Entity.form(form));
+-        assertEquals(200, response.getStatus());
+-        response.close();
+-
+-        httpClient.close();
+-        events.clear();
+-    }
+-
+-    @Test
+-    public void testDirectGrantHttpChallengeOTP() {
+-        UserRepresentation user = adminClient.realm("test").users().search("test-user@localhost").get(0);
+-        UserRepresentation userUpdate = UserBuilder.edit(user).totpSecret("totpSecret").otpEnabled().build();
+-        adminClient.realm("test").users().get(user.getId()).update(userUpdate);
+-
+-        CredentialRepresentation totpCredential = adminClient.realm("test").users()
+-                .get(user.getId()).credentials().stream().filter(c -> OTPCredentialModel.TYPE.equals(c.getType())).findFirst().get();
+-
+-        setupBruteForce();
+-
+-        Client httpClient = AdminClientUtil.createResteasyClient();
+-        String grantUri = oauth.getResourceOwnerPasswordCredentialGrantUrl();
+-        WebTarget grantTarget = httpClient.target(grantUri);
+-
+-        Form form = new Form();
+-        form.param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.PASSWORD);
+-        form.param(OAuth2Constants.CLIENT_ID, TEST_APP_HTTP_CHALLENGE_OTP);
+-
+-        // correct password + totp
+-        String totpCode = totp.generateTOTP("totpSecret");
+-        Response response = grantTarget.request()
+-                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("test-user@localhost", "password" + totpCode))
+-                .post(Entity.form(form));
+-        assertEquals(200, response.getStatus());
+-        response.close();
+-
+-        // correct password + wrong totp 2x
+-        response = grantTarget.request()
+-                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("test-user@localhost", "password123456"))
+-                .post(Entity.form(form));
+-        assertEquals(401, response.getStatus());
+-        response = grantTarget.request()
+-                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("test-user@localhost", "password123456"))
+-                .post(Entity.form(form));
+-        assertEquals(401, response.getStatus());
+-
+-        // correct password + totp but user is temporarily locked
+-        totpCode = totp.generateTOTP("totpSecret");
+-        response = grantTarget.request()
+-                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("test-user@localhost", "password" + totpCode))
+-                .post(Entity.form(form));
+-        assertEquals(401, response.getStatus());
+-        response.close();
+-
+-        clearBruteForce();
+-        adminClient.realm("test").users().get(user.getId()).removeCredential(totpCredential.getId());
+-    }
+-
+-    @Test
+-    public void testDirectGrantHttpChallengeUserDisabled() {
+-        setupBruteForce();
+-
+-        Client httpClient = AdminClientUtil.createResteasyClient();
+-        String grantUri = oauth.getResourceOwnerPasswordCredentialGrantUrl();
+-        WebTarget grantTarget = httpClient.target(grantUri);
+-
+-        Form form = new Form();
+-        form.param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.PASSWORD);
+-        form.param(OAuth2Constants.CLIENT_ID, TEST_APP_HTTP_CHALLENGE);
+-
+-        UserRepresentation user = adminClient.realm("test").users().search("test-user@localhost").get(0);
+-        user.setEnabled(false);
+-        adminClient.realm("test").users().get(user.getId()).update(user);
+-
+-        // user disabled
+-        Response response = grantTarget.request()
+-                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("test-user@localhost", "password"))
+-                .post(Entity.form(form));
+-        assertEquals(401, response.getStatus());
+-        assertEquals("Unauthorized", response.getStatusInfo().getReasonPhrase());
+-        response.close();
+-
+-        user.setEnabled(true);
+-        adminClient.realm("test").users().get(user.getId()).update(user);
+-
+-        // lock the user account
+-        grantTarget.request()
+-                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("test-user@localhost", "wrongpassword"))
+-                .post(Entity.form(form));
+-        grantTarget.request()
+-                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("test-user@localhost", "wrongpassword"))
+-                .post(Entity.form(form));
+-        // user is temporarily disabled
+-        response = grantTarget.request()
+-                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("test-user@localhost", "password"))
+-                .post(Entity.form(form));
+-        assertEquals(401, response.getStatus());
+-        assertEquals("Unauthorized", response.getStatusInfo().getReasonPhrase());
+-        response.close();
+-
+-        clearBruteForce();
+-
+-        httpClient.close();
+-        events.clear();
+-    }
+-
+-    @Test
+-    public void testClientOverrideFlowUsingBrowserHttpChallenge() {
+-        Client httpClient = AdminClientUtil.createResteasyClient();
+-        oauth.clientId(TEST_APP_HTTP_CHALLENGE);
+-        String grantUri = oauth.getLoginFormUrl();
+-        WebTarget grantTarget = httpClient.target(grantUri);
+-
+-        Response response = grantTarget.request().get();
+-        assertEquals(302, response.getStatus());
+-        String location = response.getHeaderString(HttpHeaders.LOCATION);
+-        response.close();
+-
+-        // first challenge
+-        response = httpClient.target(location).request().get();
+-        assertEquals("Basic realm=\"test\"", response.getHeaderString(HttpHeaders.WWW_AUTHENTICATE));
+-        assertEquals(401, response.getStatus());
+-        response.close();
+-
+-        // now, username password using basic challenge response
+-        response = httpClient.target(location).request()
+-                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("test-user@localhost", "password"))
+-                .post(Entity.form(new Form()));
+-        assertEquals(302, response.getStatus());
+-        location = response.getHeaderString(HttpHeaders.LOCATION);
+-        response.close();
+-
+-        Form form = new Form();
+-
+-        form.param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.AUTHORIZATION_CODE);
+-        form.param(OAuth2Constants.CLIENT_ID, TEST_APP_HTTP_CHALLENGE);
+-        form.param(OAuth2Constants.REDIRECT_URI, oauth.APP_AUTH_ROOT);
+-        form.param(OAuth2Constants.CODE, location.substring(location.indexOf(OAuth2Constants.CODE) + OAuth2Constants.CODE.length() + 1));
+-
+-        // exchange code to token
+-        response = httpClient.target(oauth.getAccessTokenUrl()).request()
+-                .post(Entity.form(form));
+-        assertEquals(200, response.getStatus());
+-        response.close();
+-
+-        httpClient.close();
+-        events.clear();
+-    }
+-
+-    // TODO remove this once DYNAMIC_SCOPES feature is enabled by default
+-    @Test
+-    @EnableFeature(value = Profile.Feature.DYNAMIC_SCOPES, skipRestart = true)
+-    public void testClientOverrideFlowUsingBrowserHttpChallengeWithDynamicScope() {
+-        // Just use existing test with DYNAMIC_SCOPES feature enabled as it was failing with DYNAMIC_SCOPES
+-        testClientOverrideFlowUsingBrowserHttpChallenge();
+-    }
+-
+-    @Test
+     public void testRestInterface() throws Exception {
+         ClientsResource clients = adminClient.realm("test").clients();
+         List<ClientRepresentation> query = clients.findByClientId(TEST_APP_DIRECT_OVERRIDE);
+@@ -592,21 +371,4 @@ public class FlowOverrideTest extends AbstractTestRealmKeycloakTest {
+         Assert.assertEquals(browserFlowId, clientRep.getAuthenticationFlowBindingOverrides().get(AuthenticationFlowBindings.BROWSER_BINDING));
+ 
+     }
+-
+-    private void setupBruteForce() {
+-        RealmRepresentation testRealm = adminClient.realm("test").toRepresentation();
+-        testRealm.setBruteForceProtected(true);
+-        testRealm.setFailureFactor(2);
+-        testRealm.setMaxDeltaTimeSeconds(20);
+-        testRealm.setMaxFailureWaitSeconds(100);
+-        testRealm.setWaitIncrementSeconds(5);
+-        adminClient.realm("test").update(testRealm);
+-    }
+-
+-    private void clearBruteForce() {
+-        RealmRepresentation testRealm = adminClient.realm("test").toRepresentation();
+-        testRealm.setBruteForceProtected(false);
+-        adminClient.realm("test").attackDetection().clearAllBruteForce();
+-        adminClient.realm("test").update(testRealm);
+-    }
+ }
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/AbstractMigrationTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/AbstractMigrationTest.java
+index 3c19b6c..c267672 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/AbstractMigrationTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/AbstractMigrationTest.java
+@@ -86,6 +86,7 @@ import java.util.regex.Matcher;
+ import java.util.regex.Pattern;
+ import java.util.stream.Collectors;
+ 
++import static net.bytebuddy.matcher.ElementMatchers.is;
+ import static org.hamcrest.CoreMatchers.not;
+ import static org.hamcrest.MatcherAssert.assertThat;
+ import static org.hamcrest.Matchers.allOf;
+@@ -168,6 +169,13 @@ public abstract class AbstractMigrationTest extends AbstractKeycloakTest {
+         Assert.assertNull("migration-saml-client login theme was not removed", client.get(0).getAttributes().get(DefaultThemeSelectorProvider.LOGIN_THEME_KEY));
+     }
+ 
++    protected void testHttpChallengeFlow(RealmResource realm) {
++        log.info("testing 'http challenge' flow not present");
++        Assert.assertFalse(realm.flows().getFlows()
++                .stream()
++                .anyMatch(authFlow -> authFlow.getAlias().equalsIgnoreCase("http challenge")));
++    }
++
+     /**
+      * @see org.keycloak.migration.migrators.MigrateTo2_0_0
+      */
+@@ -349,6 +357,7 @@ public abstract class AbstractMigrationTest extends AbstractKeycloakTest {
+ 
+     protected void testMigrationTo22_0_0() {
+         testRhssoThemes(migrationRealm);
++        testHttpChallengeFlow(migrationRealm);
+     }
+ 
+     protected void testDeleteAccount(RealmResource realm) {
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport198MigrationTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport198MigrationTest.java
+index a30743b..5d5ba4d 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport198MigrationTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport198MigrationTest.java
+@@ -76,6 +76,7 @@ public class JsonFileImport198MigrationTest extends AbstractJsonFileImportMigrat
+         testMigrationTo18_x();
+         testMigrationTo20_x();
+         testMigrationTo21_x();
++        testMigrationTo22_x();
+     }
+ 
+     @Override
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport255MigrationTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport255MigrationTest.java
+index 3f803b8..ec7fe64 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport255MigrationTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport255MigrationTest.java
+@@ -70,6 +70,7 @@ public class JsonFileImport255MigrationTest extends AbstractJsonFileImportMigrat
+         testMigrationTo18_x();
+         testMigrationTo20_x();
+         testMigrationTo21_x();
++        testMigrationTo22_x();
+     }
+ 
+ }
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport343MigrationTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport343MigrationTest.java
+index 59063f5..ec84745 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport343MigrationTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport343MigrationTest.java
+@@ -65,6 +65,7 @@ public class JsonFileImport343MigrationTest extends AbstractJsonFileImportMigrat
+         testMigrationTo18_x();
+         testMigrationTo20_x();
+         testMigrationTo21_x();
++        testMigrationTo22_x();
+     }
+ 
+ }
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport483MigrationTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport483MigrationTest.java
+index 525b8b1..4af687b 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport483MigrationTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport483MigrationTest.java
+@@ -59,6 +59,7 @@ public class JsonFileImport483MigrationTest extends AbstractJsonFileImportMigrat
+         testMigrationTo18_x();
+         testMigrationTo20_x();
+         testMigrationTo21_x();
++        testMigrationTo22_x();
+     }
+ 
+ }
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport903MigrationTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport903MigrationTest.java
+index 80e7862..19854cb 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport903MigrationTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/migration/JsonFileImport903MigrationTest.java
+@@ -52,6 +52,7 @@ public class JsonFileImport903MigrationTest extends AbstractJsonFileImportMigrat
+         testMigrationTo18_x();
+         testMigrationTo20_x();
+         testMigrationTo21_x();
++        testMigrationTo22_x();
+     }
+ 
+ }

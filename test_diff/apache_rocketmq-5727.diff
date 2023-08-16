@@ -1,0 +1,12 @@
+diff --git a/test/src/main/java/org/apache/rocketmq/test/util/VerifyUtils.java b/test/src/main/java/org/apache/rocketmq/test/util/VerifyUtils.java
+index e596d4e..aa842c5 100644
+--- a/test/src/main/java/org/apache/rocketmq/test/util/VerifyUtils.java
++++ b/test/src/main/java/org/apache/rocketmq/test/util/VerifyUtils.java
+@@ -90,6 +90,7 @@ public class VerifyUtils {
+             if (time < delayTimeMills || time > nextLevelDelayTimeMills) {
+                 delay = false;
+                 logger.info(String.format("delay error:%s", Math.abs(time - delayTimeMills)));
++                break;
+             }
+         }
+         return delay;

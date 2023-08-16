@@ -1,0 +1,180 @@
+diff --git a/src/test/java/com/fasterxml/jackson/databind/jsontype/JsonTypeInfoIgnored2968Test.java b/src/test/java/com/fasterxml/jackson/databind/jsontype/JsonTypeInfoIgnored2968Test.java
+index aae6100..619745f 100644
+--- a/src/test/java/com/fasterxml/jackson/databind/jsontype/JsonTypeInfoIgnored2968Test.java
++++ b/src/test/java/com/fasterxml/jackson/databind/jsontype/JsonTypeInfoIgnored2968Test.java
+@@ -3,10 +3,12 @@ package com.fasterxml.jackson.databind.jsontype;
+ import com.fasterxml.jackson.annotation.JsonSubTypes;
+ import com.fasterxml.jackson.annotation.JsonTypeInfo;
+ import com.fasterxml.jackson.databind.BaseMapTest;
++import com.fasterxml.jackson.databind.MapperFeature;
+ import com.fasterxml.jackson.databind.ObjectMapper;
+ import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+ import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
++import com.fasterxml.jackson.databind.json.JsonMapper;
+ 
+ public class JsonTypeInfoIgnored2968Test extends BaseMapTest {
+     /*
+@@ -15,7 +17,7 @@ public class JsonTypeInfoIgnored2968Test extends BaseMapTest {
+     /**********************************************************
+      */
+ 
+-    private static final ObjectMapper MAPPER = new ObjectMapper();
++    private static final ObjectMapper MAPPER = JsonMapper.builder().disable(MapperFeature.REQUIRE_TYPE_ID_FOR_SUBTYPES).build();
+ 
+     @JsonTypeInfo(
+         use = JsonTypeInfo.Id.NAME,
+diff --git a/src/test/java/com/fasterxml/jackson/databind/jsontype/StrictJsonTypeInfoHandling3853Test.java b/src/test/java/com/fasterxml/jackson/databind/jsontype/StrictJsonTypeInfoHandling3853Test.java
+new file mode 100644
+index 0000000..69e40a6
+--- /dev/null
++++ b/src/test/java/com/fasterxml/jackson/databind/jsontype/StrictJsonTypeInfoHandling3853Test.java
+@@ -0,0 +1,94 @@
++package com.fasterxml.jackson.databind.jsontype;
++
++import com.fasterxml.jackson.annotation.JsonTypeInfo;
++import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
++import com.fasterxml.jackson.annotation.JsonTypeName;
++import com.fasterxml.jackson.databind.BaseMapTest;
++import com.fasterxml.jackson.databind.MapperFeature;
++import com.fasterxml.jackson.databind.ObjectMapper;
++import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
++import com.fasterxml.jackson.databind.json.JsonMapper;
++
++public class StrictJsonTypeInfoHandling3853Test extends BaseMapTest {
++
++    @JsonTypeInfo(use = Id.NAME)
++    interface Command {
++    }
++
++    @JsonTypeName("do-something")
++    static class DoSomethingCommand implements Command {
++    }
++
++    public void testDefaultHasStrictTypeHandling() throws Exception {
++        ObjectMapper om = new ObjectMapper();
++        om.registerSubtypes(DoSomethingCommand.class);
++
++        // This should pass in all scenarios
++        verifyDeserializationWithFullTypeInfo(om);
++        // and throw an exception if the target was a super-type in all cases
++        verifyInvalidTypeIdWithSuperclassTarget(om);
++
++        // Default is to disallow the deserialization without a type if the target
++        // is a concrete sub-type
++        verifyInvalidTypeIdWithConcreteTarget(om);
++    }
++
++    public void testExplicitNonStrictTypeHandling() throws Exception {
++        ObjectMapper om = JsonMapper.builder().disable(MapperFeature.REQUIRE_TYPE_ID_FOR_SUBTYPES).build();
++        om.registerSubtypes(DoSomethingCommand.class);
++
++        // This should pass in all scenarios
++        verifyDeserializationWithFullTypeInfo(om);
++        // and throw an exception if the target was a super-type in all cases
++        verifyInvalidTypeIdWithSuperclassTarget(om);
++
++        // Default is to allow the deserialization without a type if the target
++        // is a concrete sub-type
++        verifyDeserializationWithConcreteTarget(om);
++    }
++
++    public void testStrictTypeHandling() throws Exception {
++        ObjectMapper om = JsonMapper.builder().enable(MapperFeature.REQUIRE_TYPE_ID_FOR_SUBTYPES).build();
++        om.registerSubtypes(DoSomethingCommand.class);
++
++        // This should pass in all scenarios
++        verifyDeserializationWithFullTypeInfo(om);
++        // and throw an exception if the target was a super-type in all cases
++        verifyInvalidTypeIdWithSuperclassTarget(om);
++
++        // With strict mode enabled, fail if there's no type information on the
++        // JSON
++        verifyInvalidTypeIdWithConcreteTarget(om);
++
++    }
++
++    private void verifyInvalidTypeIdWithSuperclassTarget(ObjectMapper om) throws Exception {
++        try {
++            om.readValue("{}", Command.class);
++            fail("Should not pass");
++        } catch (InvalidTypeIdException e) {
++            verifyException(e, "missing type id property '@type'");
++        }
++    }
++
++    private void verifyInvalidTypeIdWithConcreteTarget(ObjectMapper om) throws Exception {
++        try {
++            om.readValue("{}", DoSomethingCommand.class);
++            fail("Should not pass");
++        } catch (InvalidTypeIdException e) {
++            verifyException(e, "missing type id property '@type'");
++        }
++    }
++
++    private void verifyDeserializationWithConcreteTarget(ObjectMapper om) throws Exception {
++        DoSomethingCommand cmd = om.readValue("{}", DoSomethingCommand.class);
++        assertType(cmd, DoSomethingCommand.class);
++    }
++
++    private void verifyDeserializationWithFullTypeInfo(ObjectMapper om) throws Exception {
++        Command cmd = om.readValue("{\"@type\":\"do-something\"}", Command.class);
++        assertType(cmd, DoSomethingCommand.class);
++        cmd = om.readValue("{\"@type\":\"do-something\"}", DoSomethingCommand.class);
++        assertType(cmd, DoSomethingCommand.class);
++    }
++}
+diff --git a/src/test/java/com/fasterxml/jackson/databind/jsontype/TestBaseTypeAsDefault.java b/src/test/java/com/fasterxml/jackson/databind/jsontype/TestBaseTypeAsDefault.java
+index c33ef87..9bff647 100644
+--- a/src/test/java/com/fasterxml/jackson/databind/jsontype/TestBaseTypeAsDefault.java
++++ b/src/test/java/com/fasterxml/jackson/databind/jsontype/TestBaseTypeAsDefault.java
+@@ -40,6 +40,11 @@ public class TestBaseTypeAsDefault extends BaseMapTest
+             .disable(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL)
+             .build();
+ 
++    protected ObjectMapper MAPPER_WITHOUT_BASE_OR_SUBTYPE_ID = jsonMapperBuilder()
++            .disable(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL)
++            .disable(MapperFeature.REQUIRE_TYPE_ID_FOR_SUBTYPES)
++            .build();
++
+     public void testPositiveForParent() throws Exception {
+         Object o = MAPPER_WITH_BASE.readerFor(Parent.class).readValue("{}");
+         assertEquals(o.getClass(), Parent.class);
+@@ -60,7 +65,16 @@ public class TestBaseTypeAsDefault extends BaseMapTest
+     }
+ 
+     public void testNegativeForChild() throws Exception {
+-        Child child = MAPPER_WITHOUT_BASE.readerFor(Child.class).readValue("{}");
++        try {
++            /*Object o =*/ MAPPER_WITHOUT_BASE.readerFor(Child.class).readValue("{}");
++            fail("Should not pass");
++        } catch (InvalidTypeIdException ex) {
++            assertTrue(ex.getMessage().contains("missing type id property '@class'"));
++        }
++    }
++
++    public void testNegativeForChildWithoutRequiringTypeId() throws Exception {
++        Child child = MAPPER_WITHOUT_BASE_OR_SUBTYPE_ID.readerFor(Child.class).readValue("{}");
+ 
+         assertEquals(Child.class, child.getClass());
+     }
+diff --git a/src/test/java/com/fasterxml/jackson/databind/jsontype/deftyping/DeserDefaultTypedConcrete2968Test.java b/src/test/java/com/fasterxml/jackson/databind/jsontype/deftyping/DeserDefaultTypedConcrete2968Test.java
+index a5ae6af..d27decf 100644
+--- a/src/test/java/com/fasterxml/jackson/databind/jsontype/deftyping/DeserDefaultTypedConcrete2968Test.java
++++ b/src/test/java/com/fasterxml/jackson/databind/jsontype/deftyping/DeserDefaultTypedConcrete2968Test.java
+@@ -2,6 +2,7 @@ package com.fasterxml.jackson.databind.jsontype.deftyping;
+ 
+ import com.fasterxml.jackson.annotation.JsonTypeInfo;
+ import com.fasterxml.jackson.databind.BaseMapTest;
++import com.fasterxml.jackson.databind.MapperFeature;
+ import com.fasterxml.jackson.databind.ObjectMapper;
+ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+ import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+@@ -28,6 +29,7 @@ public class DeserDefaultTypedConcrete2968Test extends BaseMapTest {
+         ObjectMapper mapper = jsonMapperBuilder()
+             .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL,
+                     JsonTypeInfo.As.PROPERTY)
++            .disable(MapperFeature.REQUIRE_TYPE_ID_FOR_SUBTYPES)
+             .build();
+ 
+         final String concreteTypeJson = a2q("{'size': 42}");

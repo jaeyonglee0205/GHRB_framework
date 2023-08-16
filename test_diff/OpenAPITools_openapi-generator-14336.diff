@@ -1,0 +1,14 @@
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java
+index 3232f25..b571cf2 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java
+@@ -4189,6 +4189,9 @@ public class DefaultCodegenTest {
+         assertEquals(cp.complexType, "coordinates");
+         assertEquals(cp.baseName, "SchemaFor201ResponseBodyApplicationJson");
+ 
++        assertNotNull(mt.getExamples());
++        assertEquals(mt.getExamples().size(), 2);
++
+         mt = content.get("text/plain");
+         assertNull(mt.getEncoding());
+         cp = mt.getSchema();

@@ -1,0 +1,13 @@
+diff --git a/x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/dataframe/traintestsplit/StratifiedTrainTestSplitterTests.java b/x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/dataframe/traintestsplit/StratifiedTrainTestSplitterTests.java
+index 5812705..27daa80 100644
+--- a/x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/dataframe/traintestsplit/StratifiedTrainTestSplitterTests.java
++++ b/x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/dataframe/traintestsplit/StratifiedTrainTestSplitterTests.java
+@@ -169,7 +169,7 @@ public class StratifiedTrainTestSplitterTests extends ESTestCase {
+ 
+         long expectedTotalTrainingCount = 0;
+         for (long classCount : classCounts.values()) {
+-            expectedTotalTrainingCount += trainingFraction * classCount;
++            expectedTotalTrainingCount += (long) (trainingFraction * classCount);
+         }
+         assertThat(actualTotalTrainingCount, greaterThanOrEqualTo(expectedTotalTrainingCount - 2));
+         assertThat(actualTotalTrainingCount, lessThanOrEqualTo(expectedTotalTrainingCount));

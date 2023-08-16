@@ -1,0 +1,455 @@
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/BaseOperatorTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/BaseOperatorTest.java
+index ca10136..3eb1881 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/BaseOperatorTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/BaseOperatorTest.java
+@@ -22,8 +22,8 @@ import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+ import io.fabric8.kubernetes.api.model.Secret;
+ import io.fabric8.kubernetes.client.Config;
+ import io.fabric8.kubernetes.client.ConfigBuilder;
+-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+ import io.fabric8.kubernetes.client.KubernetesClient;
++import io.fabric8.kubernetes.client.KubernetesClientBuilder;
+ import io.javaoperatorsdk.operator.Operator;
+ import io.javaoperatorsdk.operator.api.config.ConfigurationServiceProvider;
+ import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+@@ -48,7 +48,6 @@ import java.io.FileNotFoundException;
+ import java.io.FileWriter;
+ import java.time.Duration;
+ import java.util.UUID;
+-import java.util.concurrent.TimeUnit;
+ 
+ import static org.assertj.core.api.Assertions.assertThat;
+ import static org.keycloak.operator.Utils.isOpenShift;
+@@ -115,13 +114,13 @@ public abstract class BaseOperatorTest {
+   }
+ 
+   private static void createK8sClient() {
+-    k8sclient = new DefaultKubernetesClient(new ConfigBuilder(Config.autoConfigure(null)).withNamespace(namespace).build());
++    k8sclient = new KubernetesClientBuilder().withConfig(new ConfigBuilder(Config.autoConfigure(null)).withNamespace(namespace).build()).build();
+   }
+ 
+   private static void createRBACresourcesAndOperatorDeployment() throws FileNotFoundException {
+     Log.info("Creating RBAC and Deployment into Namespace " + namespace);
+     k8sclient.load(new FileInputStream(TARGET_KUBERNETES_GENERATED_YML_FOLDER + deploymentTarget + ".yml"))
+-            .inNamespace(namespace).createOrReplace();
++            .inNamespace(namespace).forceConflicts().serverSideApply();
+   }
+ 
+   private static void cleanRBACresourcesAndOperatorDeployment() throws FileNotFoundException {
+@@ -134,11 +133,9 @@ public abstract class BaseOperatorTest {
+     Log.info("Creating CRDs");
+     try {
+       var deploymentCRD = k8sclient.load(new FileInputStream(TARGET_KUBERNETES_GENERATED_YML_FOLDER + "keycloaks.k8s.keycloak.org-v1.yml"));
+-      deploymentCRD.createOrReplace();
+-      deploymentCRD.waitUntilReady(5, TimeUnit.SECONDS);
++      deploymentCRD.forceConflicts().serverSideApply();
+       var realmImportCRD = k8sclient.load(new FileInputStream(TARGET_KUBERNETES_GENERATED_YML_FOLDER + "keycloakrealmimports.k8s.keycloak.org-v1.yml"));
+-      realmImportCRD.createOrReplace();
+-      realmImportCRD.waitUntilReady(5, TimeUnit.SECONDS);
++      realmImportCRD.forceConflicts().serverSideApply();
+     } catch (Exception e) {
+       Log.warn("Failed to create Keycloak CRD, retrying", e);
+       createCRDs();
+@@ -162,7 +159,7 @@ public abstract class BaseOperatorTest {
+ 
+   private static void createNamespace() {
+     Log.info("Creating Namespace " + namespace);
+-    k8sclient.namespaces().create(new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
++    k8sclient.resource(new NamespaceBuilder().withNewMetadata().addToLabels("app","keycloak-test").withName(namespace).endMetadata().build()).create();
+   }
+ 
+   private static void calculateNamespace() {
+@@ -172,7 +169,7 @@ public abstract class BaseOperatorTest {
+   protected static void deployDB() {
+     // DB
+     Log.info("Creating new PostgreSQL deployment");
+-    k8sclient.load(BaseOperatorTest.class.getResourceAsStream("/example-postgres.yaml")).inNamespace(namespace).createOrReplace();
++    k8sclient.load(BaseOperatorTest.class.getResourceAsStream("/example-postgres.yaml")).inNamespace(namespace).forceConflicts().serverSideApply();
+ 
+     // Check DB has deployed and ready
+     Log.info("Checking Postgres is running");
+@@ -183,7 +180,7 @@ public abstract class BaseOperatorTest {
+   }
+ 
+   protected static void deployDBSecret() {
+-    k8sclient.secrets().inNamespace(namespace).createOrReplace(getResourceFromFile("example-db-secret.yaml", Secret.class));
++    k8sclient.resource(getResourceFromFile("example-db-secret.yaml", Secret.class)).inNamespace(namespace).forceConflicts().serverSideApply();
+   }
+ 
+   protected static void deleteDB() {
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/ClusteringTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/ClusteringTest.java
+index 05335d1..970d0d1 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/ClusteringTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/ClusteringTest.java
+@@ -55,11 +55,11 @@ public class ClusteringTest extends BaseOperatorTest {
+ 
+         var kcPodsSelector = k8sclient.pods().inNamespace(namespace).withLabel("app", "keycloak");
+ 
+-        Keycloak keycloak = crSelector.get();
+-
+         // when scale it to 3
+-        keycloak.getSpec().setInstances(3);
+-        k8sclient.resources(Keycloak.class).inNamespace(namespace).createOrReplace(keycloak);
++        crSelector.accept(keycloak -> {
++        	keycloak.getMetadata().setResourceVersion(null); 
++        	keycloak.getSpec().setInstances(3);	
++        });
+ 
+         Awaitility.await()
+                 .atMost(1, MINUTES)
+@@ -73,8 +73,10 @@ public class ClusteringTest extends BaseOperatorTest {
+                 .untilAsserted(() -> assertThat(kcPodsSelector.list().getItems().size()).isEqualTo(3));
+ 
+         // when scale it down to 2
+-        keycloak.getSpec().setInstances(2);
+-        k8sclient.resources(Keycloak.class).inNamespace(namespace).createOrReplace(keycloak);
++        crSelector.accept(keycloak -> {
++        	keycloak.getMetadata().setResourceVersion(null); 
++        	keycloak.getSpec().setInstances(2);	
++        });
+         Awaitility.await()
+                 .atMost(Duration.ofSeconds(180))
+                 .ignoreExceptions()
+@@ -119,11 +121,13 @@ public class ClusteringTest extends BaseOperatorTest {
+                 .withName(kc.getMetadata().getName());
+         K8sUtils.deployKeycloak(k8sclient, kc, false);
+         var targetInstances = 3;
+-        kc.getSpec().setInstances(targetInstances);
+-        k8sclient.resources(Keycloak.class).inNamespace(namespace).createOrReplace(kc);
+-        var realm = k8sclient.resources(KeycloakRealmImport.class).inNamespace(namespace).load(getClass().getResourceAsStream("/token-test-realm.yaml"));
++        crSelector.accept(keycloak -> {
++        	keycloak.getMetadata().setResourceVersion(null); 
++        	keycloak.getSpec().setInstances(targetInstances);	
++        });
++        var realm = k8sclient.load(getClass().getResourceAsStream("/token-test-realm.yaml")).inNamespace(namespace);
+         var realmImportSelector = k8sclient.resources(KeycloakRealmImport.class).inNamespace(namespace).withName("example-token-test-kc");
+-        realm.createOrReplace();
++        realm.forceConflicts().serverSideApply();
+ 
+         Log.info("Waiting for a stable Keycloak Cluster");
+         Awaitility.await()
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
+index 27f58be..8cbcb1f 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
+@@ -81,7 +81,7 @@ public class KeycloakDeploymentTest extends BaseOperatorTest {
+ 
+             // Delete CR
+             Log.info("Deleting Keycloak CR and watching cleanup");
+-            k8sclient.resources(Keycloak.class).delete(kc);
++            k8sclient.resource(kc).delete();
+             Awaitility.await()
+                     .untilAsserted(() -> assertThat(k8sclient.apps().statefulSets().inNamespace(namespace).withName(deploymentName).get()).isNull());
+         } catch (Exception e) {
+@@ -217,7 +217,7 @@ public class KeycloakDeploymentTest extends BaseOperatorTest {
+ 
+             deployment.getMetadata().getLabels().putAll(labels);
+             deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(List.of(flandersEnvVar));
+-            k8sclient.apps().statefulSets().createOrReplace(deployment);
++            k8sclient.resource(deployment).forceConflicts().serverSideApply();
+ 
+             Awaitility.await()
+                     .atMost(5, MINUTES)
+@@ -556,7 +556,7 @@ public class KeycloakDeploymentTest extends BaseOperatorTest {
+                     .endMetadata()
+                     .addToStringData(keyName, "/barfoo")
+                     .build();
+-            k8sclient.secrets().inNamespace(namespace).createOrReplace(httpRelativePathSecret);
++            k8sclient.resource(httpRelativePathSecret).forceConflicts().serverSideApply();
+ 
+             kc.getSpec().getAdditionalOptions().add(new ValueOrSecret(Constants.KEYCLOAK_HTTP_RELATIVE_PATH_KEY,
+                     new SecretKeySelectorBuilder()
+@@ -651,7 +651,7 @@ public class KeycloakDeploymentTest extends BaseOperatorTest {
+                                                    String secretDescriptorFilename) {
+ 
+         Secret imagePullSecret = getResourceFromFile(secretDescriptorFilename, Secret.class);
+-        k8sclient.secrets().inNamespace(namespace).createOrReplace(imagePullSecret);
++        k8sclient.resource(imagePullSecret).inNamespace(namespace).forceConflicts().serverSideApply();
+         LocalObjectReference localObjRefAsSecretTmp = new LocalObjectReferenceBuilder().withName(imagePullSecret.getMetadata().getName()).build();
+         keycloakCR.getSpec().setImagePullSecrets(Collections.singletonList(localObjRefAsSecretTmp));
+     }
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakIngressTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakIngressTest.java
+index cd26a5a..8271247 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakIngressTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakIngressTest.java
+@@ -193,14 +193,14 @@ public class KeycloakIngressTest extends BaseOperatorTest {
+ 
+         Log.info("Trying to modify the ingress");
+ 
+-        var currentIngress = ingressSelector.get();
+         var labels = Map.of("address", "EvergreenTerrace742");
+-        currentIngress.getSpec().getDefaultBackend().getService().setPort(new ServiceBackendPortBuilder().withName("foo").build());
++		ingressSelector.accept(currentIngress -> {
++			currentIngress.getMetadata().setResourceVersion(null);
++			currentIngress.getSpec().getDefaultBackend().getService().setPort(new ServiceBackendPortBuilder().withName("foo").build());
+ 
+-        currentIngress.getMetadata().getAnnotations().clear();
+-        currentIngress.getMetadata().getLabels().putAll(labels);
+-
+-        ingressSelector.createOrReplace(currentIngress);
++	        currentIngress.getMetadata().getAnnotations().clear();
++	        currentIngress.getMetadata().getLabels().putAll(labels);
++		});
+ 
+         Awaitility.await()
+                 .ignoreExceptions()
+@@ -396,7 +396,7 @@ public class KeycloakIngressTest extends BaseOperatorTest {
+                 .endSpec()
+                 .build();
+ 
+-        customIngressCreated = k8sclient.network().v1().ingresses().inNamespace(targetNamespace).create(customIngressCreated);
++        customIngressCreated = k8sclient.resource(customIngressCreated).create();
+ 
+         return customIngressCreated;
+     }
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakServicesTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakServicesTest.java
+index 9fa246c..50ddb13 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakServicesTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakServicesTest.java
+@@ -57,8 +57,9 @@ public class KeycloakServicesTest extends BaseOperatorTest {
+ 
+         currentService.getMetadata().getLabels().putAll(labels);
+         currentService.getSpec().setSessionAffinity("ClientIP");
+-
+-        serviceSelector.createOrReplace(currentService);
++        
++        currentService.getMetadata().setResourceVersion(null);
++        k8sclient.resource(currentService).forceConflicts().serverSideApply();
+ 
+         Awaitility.await()
+                 .untilAsserted(() -> {
+@@ -97,7 +98,7 @@ public class KeycloakServicesTest extends BaseOperatorTest {
+         currentDiscoveryService.getMetadata().getLabels().putAll(labels);
+         currentDiscoveryService.getSpec().setSessionAffinity("ClientIP");
+ 
+-        discoveryServiceSelector.createOrReplace(currentDiscoveryService);
++        discoveryServiceSelector.edit(ignored -> currentDiscoveryService);
+ 
+         Awaitility.await()
+                 .untilAsserted(() -> {
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/PodTemplateTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/PodTemplateTest.java
+index f657841..d91dbfe 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/PodTemplateTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/PodTemplateTest.java
+@@ -58,7 +58,7 @@ public class PodTemplateTest extends BaseOperatorTest {
+                 .load(getClass().getResourceAsStream("/correct-podtemplate-keycloak.yml"));
+ 
+         // Act
+-        keycloakWithPodTemplate.createOrReplace();
++        keycloakWithPodTemplate.forceConflicts().serverSideApply();
+ 
+         // Assert
+         Awaitility
+@@ -99,7 +99,7 @@ public class PodTemplateTest extends BaseOperatorTest {
+         plainKc.getSpec().getUnsupported().setPodTeplate(podTemplate);
+ 
+         // Act
+-        k8sclient.resource(plainKc).createOrReplace();
++        k8sclient.resource(plainKc).forceConflicts().serverSideApply();
+ 
+         // Assert
+         Log.info("Getting status of Keycloak");
+@@ -123,7 +123,7 @@ public class PodTemplateTest extends BaseOperatorTest {
+         plainKc.getSpec().getUnsupported().setPodTeplate(podTemplate);
+ 
+         // Act
+-        k8sclient.resource(plainKc).createOrReplace();
++        k8sclient.resource(plainKc).forceConflicts().serverSideApply();
+ 
+         // Assert
+         Log.info("Getting status of Keycloak");
+@@ -149,7 +149,7 @@ public class PodTemplateTest extends BaseOperatorTest {
+         plainKc.getSpec().getUnsupported().setPodTeplate(podTemplate);
+ 
+         // Act
+-        k8sclient.resource(plainKc).createOrReplace();
++        k8sclient.resource(plainKc).forceConflicts().serverSideApply();
+ 
+         // Assert
+         Log.info("Getting status of Keycloak");
+@@ -175,7 +175,7 @@ public class PodTemplateTest extends BaseOperatorTest {
+         plainKc.getSpec().getUnsupported().setPodTeplate(podTemplate);
+ 
+         // Act
+-        k8sclient.resource(plainKc).createOrReplace();
++        k8sclient.resource(plainKc).forceConflicts().serverSideApply();
+ 
+         // Assert
+         Log.info("Getting status of Keycloak");
+@@ -193,7 +193,7 @@ public class PodTemplateTest extends BaseOperatorTest {
+         String secretDescriptorFilename = "test-docker-registry-secret.yaml";
+ 
+         Secret imagePullSecret = getResourceFromFile(secretDescriptorFilename, Secret.class);
+-        k8sclient.secrets().inNamespace(namespace).createOrReplace(imagePullSecret);
++        k8sclient.resource(imagePullSecret).inNamespace(namespace).forceConflicts().serverSideApply();
+         LocalObjectReference localObjRefAsSecretTmp = new LocalObjectReferenceBuilder().withName(imagePullSecret.getMetadata().getName()).build();
+ 
+         assertThat(localObjRefAsSecretTmp.getName()).isNotNull();
+@@ -209,7 +209,7 @@ public class PodTemplateTest extends BaseOperatorTest {
+         plainKc.getSpec().getUnsupported().setPodTeplate(podTemplate);
+ 
+         // Act
+-        k8sclient.resource(plainKc).createOrReplace();
++        k8sclient.resource(plainKc).forceConflicts().serverSideApply();
+ 
+         // Assert
+         Log.info("Getting status of Keycloak");
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/RealmImportTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/RealmImportTest.java
+index 1535dad..90049ff 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/RealmImportTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/RealmImportTest.java
+@@ -90,7 +90,7 @@ public class RealmImportTest extends BaseOperatorTest {
+         deployKeycloak(k8sclient, kc, false);
+ 
+         // Act
+-        k8sclient.load(getClass().getResourceAsStream("/example-realm.yaml")).inNamespace(namespace).createOrReplace();
++        k8sclient.load(getClass().getResourceAsStream("/example-realm.yaml")).inNamespace(namespace).forceConflicts().serverSideApply();
+ 
+         // Assert
+         var crSelector = k8sclient
+@@ -151,7 +151,7 @@ public class RealmImportTest extends BaseOperatorTest {
+         deployKeycloak(k8sclient, keycloak, false);
+ 
+         // Act
+-        k8sclient.load(getClass().getResourceAsStream("/example-realm.yaml")).inNamespace(namespace).createOrReplace();
++        k8sclient.load(getClass().getResourceAsStream("/example-realm.yaml")).inNamespace(namespace).forceConflicts().serverSideApply();
+ 
+         // Assert
+         var crSelector = k8sclient
+@@ -178,7 +178,7 @@ public class RealmImportTest extends BaseOperatorTest {
+         deployKeycloak(k8sclient, getDefaultKeycloakDeployment(), true); // make sure there are no errors due to missing KC Deployment
+ 
+         // Act
+-        k8sclient.load(getClass().getResourceAsStream("/incorrect-realm.yaml")).inNamespace(namespace).createOrReplace();
++        k8sclient.load(getClass().getResourceAsStream("/incorrect-realm.yaml")).inNamespace(namespace).forceConflicts().serverSideApply();
+ 
+         // Assert
+         Awaitility.await()
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/WatchedSecretsTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/WatchedSecretsTest.java
+index 20740ee..1789f00 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/WatchedSecretsTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/WatchedSecretsTest.java
+@@ -18,6 +18,7 @@
+ package org.keycloak.operator.testsuite.integration;
+ 
+ import io.fabric8.kubernetes.api.model.Secret;
++import io.fabric8.kubernetes.api.model.SecretBuilder;
+ import io.quarkus.logging.Log;
+ import io.quarkus.test.junit.QuarkusTest;
+ import org.awaitility.Awaitility;
+@@ -63,19 +64,19 @@ public class WatchedSecretsTest extends BaseOperatorTest {
+             Log.info("Updating DB Secret, expecting restart");
+             testDeploymentRestarted(Set.of(kc), Set.of(), () -> {
+                 dbSecret.getData().put(UUID.randomUUID().toString(), "YmxhaGJsYWg=");
+-                k8sclient.secrets().createOrReplace(dbSecret);
++                k8sclient.resource(dbSecret).forceConflicts().serverSideApply();
+             });
+ 
+             Log.info("Updating TLS Secret, expecting restart");
+             testDeploymentRestarted(Set.of(kc), Set.of(), () -> {
+                 tlsSecret.getData().put(UUID.randomUUID().toString(), "YmxhaGJsYWg=");
+-                k8sclient.secrets().createOrReplace(tlsSecret);
++                k8sclient.resource(tlsSecret).forceConflicts().serverSideApply();
+             });
+ 
+             Log.info("Updating DB Secret metadata, NOT expecting restart");
+             testDeploymentRestarted(Set.of(), Set.of(kc), () -> {
+                 dbSecret.getMetadata().getLabels().put(UUID.randomUUID().toString(), "YmxhaGJsYWg");
+-                k8sclient.secrets().createOrReplace(dbSecret);
++                k8sclient.resource(dbSecret).forceConflicts().serverSideApply();
+             });
+         } catch (Exception e) {
+             savePodLogs();
+@@ -97,7 +98,7 @@ public class WatchedSecretsTest extends BaseOperatorTest {
+ 
+             dbSecret.getData().put("username",
+                     Base64.getEncoder().encodeToString(username.getBytes()));
+-            k8sclient.secrets().createOrReplace(dbSecret);
++            k8sclient.resource(dbSecret).forceConflicts().serverSideApply();
+ 
+             Awaitility.await()
+                     .ignoreExceptions()
+@@ -145,7 +146,7 @@ public class WatchedSecretsTest extends BaseOperatorTest {
+             testDeploymentRestarted(Set.of(), Set.of(kc), () -> {
+                 var dbSecret = getDbSecret();
+                 dbSecret.getMetadata().getLabels().put(UUID.randomUUID().toString(), "YmxhaGJsYWg");
+-                k8sclient.secrets().createOrReplace(dbSecret);
++                k8sclient.resource(dbSecret).forceConflicts().serverSideApply();
+             });
+ 
+             Awaitility.await().untilAsserted(() -> {
+@@ -179,7 +180,7 @@ public class WatchedSecretsTest extends BaseOperatorTest {
+             Log.info("Updating DB Secret, expecting restart of both KCs");
+             testDeploymentRestarted(Set.of(kc1, kc2), Set.of(), () -> {
+                 dbSecret.getData().put(UUID.randomUUID().toString(), "YmxhaGJsYWg=");
+-                k8sclient.secrets().createOrReplace(dbSecret);
++                k8sclient.resource(dbSecret).forceConflicts().serverSideApply();
+             });
+ 
+             Log.info("Updating KC1 to not to rely on DB Secret");
+@@ -191,7 +192,7 @@ public class WatchedSecretsTest extends BaseOperatorTest {
+             Log.info("Updating DB Secret, expecting restart of just KC2");
+             testDeploymentRestarted(Set.of(kc2), Set.of(kc1), () -> {
+                 dbSecret.getData().put(UUID.randomUUID().toString(), "YmxhaGJsYWg=");
+-                k8sclient.secrets().createOrReplace(dbSecret);
++                k8sclient.resource(dbSecret).forceConflicts().serverSideApply();
+             });
+         }
+         catch (Exception e) {
+@@ -264,11 +265,13 @@ public class WatchedSecretsTest extends BaseOperatorTest {
+     }
+ 
+     private Secret getDbSecret() {
+-        return k8sclient.secrets().inNamespace(namespace).withName("keycloak-db-secret").get();
++		return new SecretBuilder(k8sclient.secrets().inNamespace(namespace).withName("keycloak-db-secret").get())
++				.editMetadata().withResourceVersion(null).endMetadata().build();
+     }
+ 
+     private Secret getTlsSecret() {
+-        return k8sclient.secrets().inNamespace(namespace).withName("example-tls-secret").get();
++		return new SecretBuilder(k8sclient.secrets().inNamespace(namespace).withName("example-tls-secret").get())
++				.editMetadata().withResourceVersion(null).endMetadata().build();
+     }
+ 
+     private void hardcodeDBCredsInCR(Keycloak kc) {
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/utils/K8sUtils.java b/operator/src/test/java/org/keycloak/operator/testsuite/utils/K8sUtils.java
+index 9dc5e98..0744e70 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/utils/K8sUtils.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/utils/K8sUtils.java
+@@ -22,7 +22,6 @@ import io.fabric8.kubernetes.api.model.Pod;
+ import io.fabric8.kubernetes.api.model.Secret;
+ import io.fabric8.kubernetes.client.KubernetesClient;
+ import io.fabric8.kubernetes.client.KubernetesClientException;
+-import io.fabric8.kubernetes.client.extended.run.RunConfigBuilder;
+ import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
+ import io.fabric8.kubernetes.client.utils.Serialization;
+ import io.quarkus.logging.Log;
+@@ -59,10 +58,10 @@ public final class K8sUtils {
+     }
+ 
+     public static void deployKeycloak(KubernetesClient client, Keycloak kc, boolean waitUntilReady, boolean deployTlsSecret) {
+-        client.resources(Keycloak.class).inNamespace(kc.getMetadata().getNamespace()).createOrReplace(kc);
++        client.resource(kc).forceConflicts().serverSideApply();
+ 
+         if (deployTlsSecret) {
+-            client.secrets().inNamespace(kc.getMetadata().getNamespace()).createOrReplace(getDefaultTlsSecret());
++            client.resource(getDefaultTlsSecret()).inNamespace(kc.getMetadata().getNamespace()).serverSideApply();
+         }
+ 
+         if (waitUntilReady) {
+@@ -100,13 +99,12 @@ public final class K8sUtils {
+         var podName = KubernetesResourceUtil.sanitizeName("curl-" + UUID.randomUUID());
+         try {
+             Pod curlPod = k8sclient.run().inNamespace(namespace)
+-                    .withRunConfig(new RunConfigBuilder()
++                    .withNewRunConfig()
+                             .withArgs(args)
+                             .withName(podName)
+                             .withImage("curlimages/curl:7.78.0")
+                             .withRestartPolicy("Never")
+-                            .build())
+-                    .done();
++                            .done();
+             Log.info("Waiting for curl Pod to finish running");
+             Awaitility.await().atMost(3, TimeUnit.MINUTES)
+                     .until(() -> {

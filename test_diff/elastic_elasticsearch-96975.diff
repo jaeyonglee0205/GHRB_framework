@@ -1,0 +1,368 @@
+diff --git a/server/src/test/java/org/elasticsearch/index/store/StoreTests.java b/server/src/test/java/org/elasticsearch/index/store/StoreTests.java
+index 25f4c4f..3641694 100644
+--- a/server/src/test/java/org/elasticsearch/index/store/StoreTests.java
++++ b/server/src/test/java/org/elasticsearch/index/store/StoreTests.java
+@@ -150,159 +150,6 @@ public class StoreTests extends ESTestCase {
+         expectThrows(IllegalStateException.class, store::ensureOpen);
+     }
+ 
+-    public void testVerifyingIndexOutput() throws IOException {
+-        Directory dir = newDirectory();
+-        IndexOutput output = dir.createOutput("foo.bar", IOContext.DEFAULT);
+-        int iters = scaledRandomIntBetween(10, 100);
+-        for (int i = 0; i < iters; i++) {
+-            BytesRef bytesRef = new BytesRef(TestUtil.randomRealisticUnicodeString(random(), 10, 1024));
+-            output.writeBytes(bytesRef.bytes, bytesRef.offset, bytesRef.length);
+-        }
+-        CodecUtil.writeFooter(output);
+-        output.close();
+-        IndexInput indexInput = dir.openInput("foo.bar", IOContext.DEFAULT);
+-        String checksum = Store.digestToString(CodecUtil.retrieveChecksum(indexInput));
+-        indexInput.seek(0);
+-        BytesRef ref = new BytesRef(scaledRandomIntBetween(1, 1024));
+-        long length = indexInput.length();
+-        IndexOutput verifyingOutput = new Store.LuceneVerifyingIndexOutput(
+-            new StoreFileMetadata("foo1.bar", length, checksum, MIN_SUPPORTED_LUCENE_VERSION.toString()),
+-            dir.createOutput("foo1.bar", IOContext.DEFAULT)
+-        );
+-        while (length > 0) {
+-            if (random().nextInt(10) == 0) {
+-                verifyingOutput.writeByte(indexInput.readByte());
+-                length--;
+-            } else {
+-                int min = (int) Math.min(length, ref.bytes.length);
+-                indexInput.readBytes(ref.bytes, ref.offset, min);
+-                verifyingOutput.writeBytes(ref.bytes, ref.offset, min);
+-                length -= min;
+-            }
+-        }
+-        Store.verify(verifyingOutput);
+-        try {
+-            appendRandomData(verifyingOutput);
+-            fail("should be a corrupted index");
+-        } catch (CorruptIndexException | IndexFormatTooOldException | IndexFormatTooNewException ex) {
+-            // ok
+-        }
+-        try {
+-            Store.verify(verifyingOutput);
+-            fail("should be a corrupted index");
+-        } catch (CorruptIndexException | IndexFormatTooOldException | IndexFormatTooNewException ex) {
+-            // ok
+-        }
+-
+-        IOUtils.close(indexInput, verifyingOutput, dir);
+-    }
+-
+-    public void testVerifyingIndexOutputOnEmptyFile() throws IOException {
+-        Directory dir = newDirectory();
+-        IndexOutput verifyingOutput = new Store.LuceneVerifyingIndexOutput(
+-            new StoreFileMetadata("foo.bar", 0, Store.digestToString(0), MIN_SUPPORTED_LUCENE_VERSION.toString()),
+-            dir.createOutput("foo1.bar", IOContext.DEFAULT)
+-        );
+-        try {
+-            Store.verify(verifyingOutput);
+-            fail("should be a corrupted index");
+-        } catch (CorruptIndexException | IndexFormatTooOldException | IndexFormatTooNewException ex) {
+-            // ok
+-        }
+-        IOUtils.close(verifyingOutput, dir);
+-    }
+-
+-    public void testChecksumCorrupted() throws IOException {
+-        Directory dir = newDirectory();
+-        IndexOutput output = dir.createOutput("foo.bar", IOContext.DEFAULT);
+-        int iters = scaledRandomIntBetween(10, 100);
+-        for (int i = 0; i < iters; i++) {
+-            BytesRef bytesRef = new BytesRef(TestUtil.randomRealisticUnicodeString(random(), 10, 1024));
+-            output.writeBytes(bytesRef.bytes, bytesRef.offset, bytesRef.length);
+-        }
+-        CodecUtil.writeBEInt(output, CodecUtil.FOOTER_MAGIC);
+-        CodecUtil.writeBEInt(output, 0);
+-        String checksum = Store.digestToString(output.getChecksum());
+-        CodecUtil.writeBELong(output, output.getChecksum() + 1); // write a wrong checksum to the file
+-        output.close();
+-
+-        IndexInput indexInput = dir.openInput("foo.bar", IOContext.DEFAULT);
+-        indexInput.seek(0);
+-        BytesRef ref = new BytesRef(scaledRandomIntBetween(1, 1024));
+-        long length = indexInput.length();
+-        IndexOutput verifyingOutput = new Store.LuceneVerifyingIndexOutput(
+-            new StoreFileMetadata("foo1.bar", length, checksum, MIN_SUPPORTED_LUCENE_VERSION.toString()),
+-            dir.createOutput("foo1.bar", IOContext.DEFAULT)
+-        );
+-        length -= 8; // we write the checksum in the try / catch block below
+-        while (length > 0) {
+-            if (random().nextInt(10) == 0) {
+-                verifyingOutput.writeByte(indexInput.readByte());
+-                length--;
+-            } else {
+-                int min = (int) Math.min(length, ref.bytes.length);
+-                indexInput.readBytes(ref.bytes, ref.offset, min);
+-                verifyingOutput.writeBytes(ref.bytes, ref.offset, min);
+-                length -= min;
+-            }
+-        }
+-
+-        try {
+-            BytesRef checksumBytes = new BytesRef(8);
+-            checksumBytes.length = 8;
+-            indexInput.readBytes(checksumBytes.bytes, checksumBytes.offset, checksumBytes.length);
+-            if (randomBoolean()) {
+-                verifyingOutput.writeBytes(checksumBytes.bytes, checksumBytes.offset, checksumBytes.length);
+-            } else {
+-                for (int i = 0; i < checksumBytes.length; i++) {
+-                    verifyingOutput.writeByte(checksumBytes.bytes[i]);
+-                }
+-            }
+-            fail("should be a corrupted index");
+-        } catch (CorruptIndexException | IndexFormatTooOldException | IndexFormatTooNewException ex) {
+-            // ok
+-        }
+-        IOUtils.close(indexInput, verifyingOutput, dir);
+-    }
+-
+-    private void appendRandomData(IndexOutput output) throws IOException {
+-        int numBytes = randomIntBetween(1, 1024);
+-        final BytesRef ref = new BytesRef(scaledRandomIntBetween(1, numBytes));
+-        ref.length = ref.bytes.length;
+-        while (numBytes > 0) {
+-            if (random().nextInt(10) == 0) {
+-                output.writeByte(randomByte());
+-                numBytes--;
+-            } else {
+-                for (int i = 0; i < ref.length; i++) {
+-                    ref.bytes[i] = randomByte();
+-                }
+-                final int min = Math.min(numBytes, ref.bytes.length);
+-                output.writeBytes(ref.bytes, ref.offset, min);
+-                numBytes -= min;
+-            }
+-        }
+-    }
+-
+-    public void testVerifyingIndexOutputWithBogusInput() throws IOException {
+-        Directory dir = newDirectory();
+-        int length = scaledRandomIntBetween(10, 1024);
+-        IndexOutput verifyingOutput = new Store.LuceneVerifyingIndexOutput(
+-            new StoreFileMetadata("foo1.bar", length, "", MIN_SUPPORTED_LUCENE_VERSION.toString()),
+-            dir.createOutput("foo1.bar", IOContext.DEFAULT)
+-        );
+-        try {
+-            while (length > 0) {
+-                verifyingOutput.writeByte((byte) random().nextInt());
+-                length--;
+-            }
+-            fail("should be a corrupted index");
+-        } catch (CorruptIndexException | IndexFormatTooOldException | IndexFormatTooNewException ex) {
+-            // ok
+-        }
+-        IOUtils.close(verifyingOutput, dir);
+-    }
+-
+     public void testNewChecksums() throws IOException {
+         final ShardId shardId = new ShardId("index", "_na_", 1);
+         Store store = new Store(shardId, INDEX_SETTINGS, StoreTests.newDirectory(random()), new DummyShardLock(shardId));
+diff --git a/server/src/test/java/org/elasticsearch/index/store/VerifyingIndexOutputTests.java b/server/src/test/java/org/elasticsearch/index/store/VerifyingIndexOutputTests.java
+new file mode 100644
+index 0000000..4cf9c26
+--- /dev/null
++++ b/server/src/test/java/org/elasticsearch/index/store/VerifyingIndexOutputTests.java
+@@ -0,0 +1,198 @@
++/*
++ * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
++ * or more contributor license agreements. Licensed under the Elastic License
++ * 2.0 and the Server Side Public License, v 1; you may not use this file except
++ * in compliance with, at your election, the Elastic License 2.0 or the Server
++ * Side Public License, v 1.
++ */
++
++package org.elasticsearch.index.store;
++
++import org.apache.lucene.codecs.CodecUtil;
++import org.apache.lucene.index.CorruptIndexException;
++import org.apache.lucene.store.Directory;
++import org.apache.lucene.store.IOContext;
++import org.apache.lucene.util.Version;
++import org.elasticsearch.common.Numbers;
++import org.elasticsearch.index.IndexVersion;
++import org.elasticsearch.test.ESTestCase;
++import org.hamcrest.Matcher;
++
++import java.io.IOException;
++import java.nio.ByteBuffer;
++
++import static org.hamcrest.Matchers.allOf;
++import static org.hamcrest.Matchers.containsString;
++
++public class VerifyingIndexOutputTests extends ESTestCase {
++
++    private static final int CHECKSUM_LENGTH = 8;
++
++    private static final Version MIN_SUPPORTED_LUCENE_VERSION = IndexVersion.MINIMUM_COMPATIBLE.luceneVersion();
++    private static final Matcher<String> VERIFICATION_FAILURE = containsString("verification failed (hardware problem?)");
++    private static final Matcher<String> FOOTER_NOT_CHECKED = allOf(VERIFICATION_FAILURE, containsString("footer=<not checked>"));
++    private static final Matcher<String> INVALID_LENGTH = allOf(VERIFICATION_FAILURE, containsString("footer=<invalid length>"));
++
++    public void testVerifyingIndexOutput() throws IOException {
++        try (var directory = newDirectory()) {
++            final StoreFileMetadata metadata = createFileWithChecksum(directory);
++
++            try (var verifyingOutput = new VerifyingIndexOutput(metadata, directory.createOutput("rewritten.dat", IOContext.DEFAULT))) {
++                try (var indexInput = directory.openInput(metadata.name(), IOContext.DEFAULT)) {
++                    final byte[] buffer = new byte[1024];
++                    int length = Math.toIntExact(metadata.length());
++                    while (length > 0) {
++                        if (random().nextInt(10) == 0) {
++                            verifyingOutput.writeByte(indexInput.readByte());
++                            length--;
++                        } else {
++                            int offset = between(0, buffer.length - 1);
++                            int len = between(1, Math.min(length, buffer.length - offset));
++                            indexInput.readBytes(buffer, offset, len);
++                            verifyingOutput.writeBytes(buffer, offset, len);
++                            length -= len;
++                        }
++                    }
++                }
++
++                for (int i = 0; i < 2; i++) {
++                    // check twice to make sure the first call doesn't leave things in a broken state
++                    verifyingOutput.verify(); // should not throw
++                }
++
++                ensureCorruptAfterRandomWrite(verifyingOutput);
++            }
++        }
++    }
++
++    public void testVerifyingIndexOutputOnTooShortFile() throws IOException {
++        final var metadata = new StoreFileMetadata(
++            "foo.bar",
++            between(0, CHECKSUM_LENGTH - 1),
++            randomAlphaOfLength(5),
++            MIN_SUPPORTED_LUCENE_VERSION.toString()
++        );
++        try (
++            var dir = newDirectory();
++            var verifyingOutput = new VerifyingIndexOutput(metadata, dir.createOutput("rewritten.dat", IOContext.DEFAULT))
++        ) {
++
++            int length = Math.toIntExact(metadata.length());
++            final ByteBuffer buffer = ByteBuffer.wrap(randomByteArrayOfLength(length));
++            while (buffer.remaining() > 0) {
++                // verify should fail on truncated file
++                assertThat(expectThrows(CorruptIndexException.class, verifyingOutput::verify).getMessage(), INVALID_LENGTH);
++
++                if (randomBoolean()) {
++                    verifyingOutput.writeByte(buffer.get());
++                } else {
++                    var lenToWrite = between(1, buffer.remaining());
++                    verifyingOutput.writeBytes(buffer.array(), buffer.arrayOffset() + buffer.position(), lenToWrite);
++                    buffer.position(buffer.position() + lenToWrite);
++                }
++            }
++
++            for (int i = 0; i < 2; i++) {
++                // check twice to make sure the first call doesn't leave things in a broken state
++                assertThat(
++                    expectThrows(CorruptIndexException.class, verifyingOutput::verify).getMessage(),
++                    allOf(VERIFICATION_FAILURE, containsString("actual=<too short>"))
++                );
++            }
++
++            ensureCorruptAfterRandomWrite(verifyingOutput);
++        }
++    }
++
++    public void testVerifyingIndexOutputOnCorruptFile() throws IOException {
++        try (var dir = newDirectory()) {
++            final StoreFileMetadata metadata = createFileWithChecksum(dir);
++
++            int length = Math.toIntExact(metadata.length());
++            final var byteToCorrupt = between(0, length - 1);
++            final var isExpectedMessage = byteToCorrupt < length - CHECKSUM_LENGTH ? FOOTER_NOT_CHECKED : VERIFICATION_FAILURE;
++
++            try (var verifyingOutput = new VerifyingIndexOutput(metadata, dir.createOutput("rewritten.dat", IOContext.DEFAULT))) {
++                try (var indexInput = dir.openInput(metadata.name(), IOContext.DEFAULT)) {
++                    final byte[] buffer = new byte[1024];
++                    while (length > 0) {
++
++                        // verify should fail on truncated file
++                        assertThat(expectThrows(CorruptIndexException.class, verifyingOutput::verify).getMessage(), INVALID_LENGTH);
++
++                        int offset = between(0, buffer.length - 1);
++                        var singleByte = randomInt(10) == 0;
++                        var len = singleByte ? 1 : between(1, Math.min(length, buffer.length - offset));
++                        indexInput.readBytes(buffer, offset, len);
++
++                        if (verifyingOutput.getFilePointer() <= byteToCorrupt && byteToCorrupt < indexInput.getFilePointer()) {
++                            // CRC32 will always detect single-bit errors
++                            final byte oneBit = (byte) (1 << between(0, Byte.SIZE - 1));
++                            buffer[offset + byteToCorrupt - Math.toIntExact(verifyingOutput.getFilePointer())] ^= oneBit;
++                        }
++
++                        if (singleByte) {
++                            verifyingOutput.writeByte(buffer[offset]);
++                        } else {
++                            verifyingOutput.writeBytes(buffer, offset, len);
++                        }
++
++                        length -= len;
++                    }
++                }
++
++                assertEquals(metadata.length(), verifyingOutput.getFilePointer());
++
++                for (int i = 0; i < 2; i++) {
++                    // check twice to make sure the first call doesn't leave things in a broken state
++                    assertThat(expectThrows(CorruptIndexException.class, verifyingOutput::verify).getMessage(), isExpectedMessage);
++                }
++
++                ensureCorruptAfterRandomWrite(verifyingOutput);
++            }
++        }
++    }
++
++    private static StoreFileMetadata createFileWithChecksum(Directory directory) throws IOException {
++        final var filename = randomAlphaOfLength(10);
++        final var bytes = randomByteArrayOfLength(scaledRandomIntBetween(0, 2048));
++        try (var output = directory.createOutput(filename, IOContext.DEFAULT)) {
++            output.writeBytes(bytes, bytes.length);
++            if (rarely()) {
++                // in practice there's always a complete 16-byte footer, but this ensures that we only care about the checksum
++                final var checksum = output.getChecksum();
++                final var metadata = new StoreFileMetadata(
++                    filename,
++                    bytes.length + Long.BYTES,
++                    Store.digestToString(checksum),
++                    MIN_SUPPORTED_LUCENE_VERSION.toString()
++                );
++                output.writeBytes(Numbers.longToBytes(checksum), Long.BYTES);
++                return metadata;
++            } else {
++                CodecUtil.writeFooter(output);
++                // fall through and obtain the checksum using an IndexInput
++            }
++        }
++
++        try (var indexInput = directory.openInput(filename, IOContext.DEFAULT)) {
++            assertEquals(bytes.length + CodecUtil.footerLength(), indexInput.length());
++            return new StoreFileMetadata(
++                filename,
++                indexInput.length(),
++                Store.digestToString(CodecUtil.retrieveChecksum(indexInput)),
++                MIN_SUPPORTED_LUCENE_VERSION.toString()
++            );
++        }
++    }
++
++    private static void ensureCorruptAfterRandomWrite(VerifyingIndexOutput verifyingOutput) throws IOException {
++        if (randomBoolean()) {
++            verifyingOutput.writeByte(randomByte());
++        } else {
++            final var len = between(1, 10);
++            verifyingOutput.writeBytes(randomByteArrayOfLength(len), 0, len);
++        }
++        assertThat(expectThrows(CorruptIndexException.class, verifyingOutput::verify).getMessage(), INVALID_LENGTH);
++    }
++}

@@ -1,0 +1,36 @@
+diff --git a/store/src/test/java/org/apache/rocketmq/store/DefaultMessageStoreTest.java b/store/src/test/java/org/apache/rocketmq/store/DefaultMessageStoreTest.java
+index 151bfa8..12d1e57 100644
+--- a/store/src/test/java/org/apache/rocketmq/store/DefaultMessageStoreTest.java
++++ b/store/src/test/java/org/apache/rocketmq/store/DefaultMessageStoreTest.java
+@@ -37,6 +37,7 @@ import java.util.List;
+ import java.util.Map;
+ import java.util.Random;
+ import java.util.UUID;
++import java.util.Properties;
+ import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.ConcurrentMap;
+ import java.util.concurrent.TimeUnit;
+@@ -48,6 +49,7 @@ import org.apache.rocketmq.common.message.MessageDecoder;
+ import org.apache.rocketmq.common.message.MessageExt;
+ import org.apache.rocketmq.common.message.MessageExtBatch;
+ import org.apache.rocketmq.common.message.MessageExtBrokerInner;
++import org.apache.rocketmq.common.MixAll;
+ import org.apache.rocketmq.store.config.BrokerRole;
+ import org.apache.rocketmq.store.config.FlushDiskType;
+ import org.apache.rocketmq.store.config.MessageStoreConfig;
+@@ -941,6 +943,15 @@ public class DefaultMessageStoreTest {
+         Assert.assertEquals(resultSet, consumeQueueTable.keySet());
+     }
+ 
++    @Test
++    public void testChangeStoreConfig() {
++        Properties properties = new Properties();
++        properties.setProperty("enableBatchPush", "true");
++        MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
++        MixAll.properties2Object(properties, messageStoreConfig);
++        assertThat(messageStoreConfig.isEnableBatchPush()).isTrue();
++    }
++
+     private class MyMessageArrivingListener implements MessageArrivingListener {
+         @Override
+         public void arriving(String topic, int queueId, long logicOffset, long tagsCode, long msgStoreTime,

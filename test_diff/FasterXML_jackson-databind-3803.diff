@@ -1,0 +1,373 @@
+diff --git a/src/test/java/com/fasterxml/jackson/databind/deser/dos/DeepJsonParsingTest.java b/src/test/java/com/fasterxml/jackson/databind/deser/dos/DeepJsonParsingTest.java
+deleted file mode 100644
+index aac39f7..0000000
+--- a/src/test/java/com/fasterxml/jackson/databind/deser/dos/DeepJsonParsingTest.java
++++ /dev/null
+@@ -1,90 +0,0 @@
+-package com.fasterxml.jackson.databind.deser.dos;
+-
+-import com.fasterxml.jackson.core.JsonFactory;
+-import com.fasterxml.jackson.core.JsonParser;
+-import com.fasterxml.jackson.core.JsonToken;
+-import com.fasterxml.jackson.core.StreamReadConstraints;
+-import com.fasterxml.jackson.core.exc.StreamConstraintsException;
+-import com.fasterxml.jackson.databind.BaseMapTest;
+-import com.fasterxml.jackson.databind.JsonNode;
+-import com.fasterxml.jackson.databind.ObjectMapper;
+-import com.fasterxml.jackson.databind.json.JsonMapper;
+-
+-public class DeepJsonParsingTest extends BaseMapTest
+-{
+-    private final static int TOO_DEEP_NESTING = 2_000;
+-
+-    private final JsonFactory unconstrainedFactory = JsonFactory.builder()
+-            .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
+-            .build();
+-    private final ObjectMapper unconstrainedMapper = JsonMapper.builder(unconstrainedFactory).build();
+-    private final ObjectMapper defaultMapper = JsonMapper.builder().build();
+-
+-    public void testParseWithArrayWithDefaultConfig() throws Exception
+-    {
+-        final String doc = _nestedDoc(TOO_DEEP_NESTING, "[ ", "] ");
+-        try (JsonParser jp = defaultMapper.createParser(doc)) {
+-            JsonToken jt;
+-            while ((jt = jp.nextToken()) != null) {
+-
+-            }
+-            fail("expected StreamConstraintsException");
+-
+-        } catch (StreamConstraintsException e) {
+-            assertEquals("Depth (1001) exceeds the maximum allowed nesting depth (1000)", e.getMessage());
+-        }
+-    }
+-
+-    public void testParseWithObjectWithDefaultConfig() throws Exception
+-    {
+-        final String doc = "{"+_nestedDoc(TOO_DEEP_NESTING, "\"x\":{", "} ") + "}";
+-        try (JsonParser jp = defaultMapper.createParser(doc)) {
+-            JsonToken jt;
+-            while ((jt = jp.nextToken()) != null) {
+-
+-            }
+-            fail("expected StreamConstraintsException");
+-        } catch (StreamConstraintsException e) {
+-            assertEquals("Depth (1001) exceeds the maximum allowed nesting depth (1000)", e.getMessage());
+-        }
+-    }
+-
+-    public void testParseWithArrayWithUnconstrainedConfig() throws Exception
+-    {
+-        final String doc = _nestedDoc(TOO_DEEP_NESTING, "[ ", "] ");
+-        try (JsonParser jp = unconstrainedMapper.createParser(doc)) {
+-            JsonToken jt;
+-            while ((jt = jp.nextToken()) != null) {
+-
+-            }
+-        }
+-    }
+-
+-    public void testParseWithObjectWithUnconstrainedConfig() throws Exception
+-    {
+-        final String doc = "{"+_nestedDoc(TOO_DEEP_NESTING, "\"x\":{", "} ") + "}";
+-        try (JsonParser jp = unconstrainedMapper.createParser(doc)) {
+-            JsonToken jt;
+-            while ((jt = jp.nextToken()) != null) {
+-
+-            }
+-        }
+-    }
+-
+-    private String _nestedDoc(int nesting, String open, String close) {
+-        StringBuilder sb = new StringBuilder(nesting * (open.length() + close.length()));
+-        for (int i = 0; i < nesting; ++i) {
+-            sb.append(open);
+-            if ((i & 31) == 0) {
+-                sb.append("\n");
+-            }
+-        }
+-        for (int i = 0; i < nesting; ++i) {
+-            sb.append(close);
+-            if ((i & 31) == 0) {
+-                sb.append("\n");
+-            }
+-        }
+-        return sb.toString();
+-    }
+-}
+diff --git a/src/test/java/com/fasterxml/jackson/databind/deser/dos/DeepJsonTreeTraversingTest.java b/src/test/java/com/fasterxml/jackson/databind/deser/dos/DeepJsonTreeTraversingTest.java
+deleted file mode 100644
+index f634af2..0000000
+--- a/src/test/java/com/fasterxml/jackson/databind/deser/dos/DeepJsonTreeTraversingTest.java
++++ /dev/null
+@@ -1,83 +0,0 @@
+-package com.fasterxml.jackson.databind.deser.dos;
+-
+-import com.fasterxml.jackson.core.JsonFactory;
+-import com.fasterxml.jackson.core.JsonParser;
+-import com.fasterxml.jackson.core.JsonToken;
+-import com.fasterxml.jackson.core.StreamReadConstraints;
+-import com.fasterxml.jackson.core.exc.StreamConstraintsException;
+-import com.fasterxml.jackson.databind.BaseMapTest;
+-import com.fasterxml.jackson.databind.JsonNode;
+-import com.fasterxml.jackson.databind.ObjectMapper;
+-import com.fasterxml.jackson.databind.json.JsonMapper;
+-
+-public class DeepJsonTreeTraversingTest extends BaseMapTest
+-{
+-    private final static int TOO_DEEP_NESTING = 2_000;
+-
+-    private final JsonFactory unconstrainedFactory = JsonFactory.builder()
+-            .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
+-            .build();
+-    private final ObjectMapper unconstrainedMapper = JsonMapper.builder(unconstrainedFactory).build();
+-    private final ObjectMapper defaultMapper = JsonMapper.builder().build();
+-
+-    public void testTreeWithArrayWithDefaultConfig() throws Exception
+-    {
+-        final String doc = _nestedDoc(TOO_DEEP_NESTING, "[ ", "] ");
+-        try {
+-            JsonNode tree = defaultMapper.readTree(doc);
+-        } catch (StreamConstraintsException e) {
+-            assertEquals("Depth (1001) exceeds the maximum allowed nesting depth (1000)", e.getMessage());
+-        }
+-    }
+-
+-    public void testTreeWithObjectWithDefaultConfig() throws Exception
+-    {
+-        final String doc = "{"+_nestedDoc(TOO_DEEP_NESTING, "\"x\":{", "} ") + "}";
+-        try {
+-            JsonNode tree = defaultMapper.readTree(doc);
+-        } catch (StreamConstraintsException e) {
+-            assertEquals("Depth (1001) exceeds the maximum allowed nesting depth (1000)", e.getMessage());
+-        }
+-    }
+-
+-    public void testTreeWithArrayWithUnconstrainedConfig() throws Exception
+-    {
+-        final String doc = _nestedDoc(TOO_DEEP_NESTING, "[ ", "] ");
+-        JsonNode tree = unconstrainedMapper.readTree(doc);
+-        try (JsonParser jp = tree.traverse()) {
+-            JsonToken jt;
+-            while ((jt = jp.nextToken()) != null) {
+-
+-            }
+-        }
+-    }
+-
+-    public void testTreeWithObjectWithUnconstrainedConfig() throws Exception
+-    {
+-        final String doc = "{"+_nestedDoc(TOO_DEEP_NESTING, "\"x\":{", "} ") + "}";
+-        JsonNode tree = unconstrainedMapper.readTree(doc);
+-        try (JsonParser jp = tree.traverse()) {
+-            JsonToken jt;
+-            while ((jt = jp.nextToken()) != null) {
+-
+-            }
+-        }
+-    }
+-
+-    private String _nestedDoc(int nesting, String open, String close) {
+-        StringBuilder sb = new StringBuilder(nesting * (open.length() + close.length()));
+-        for (int i = 0; i < nesting; ++i) {
+-            sb.append(open);
+-            if ((i & 31) == 0) {
+-                sb.append("\n");
+-            }
+-        }
+-        for (int i = 0; i < nesting; ++i) {
+-            sb.append(close);
+-            if ((i & 31) == 0) {
+-                sb.append("\n");
+-            }
+-        }
+-        return sb.toString();
+-    }
+-}
+diff --git a/src/test/java/com/fasterxml/jackson/databind/jsontype/JsonTypeInfoIgnored2968Test.java b/src/test/java/com/fasterxml/jackson/databind/jsontype/JsonTypeInfoIgnored2968Test.java
+new file mode 100644
+index 0000000..93544b9
+--- /dev/null
++++ b/src/test/java/com/fasterxml/jackson/databind/jsontype/JsonTypeInfoIgnored2968Test.java
+@@ -0,0 +1,121 @@
++package com.fasterxml.jackson.databind.jsontype;
++
++import com.fasterxml.jackson.annotation.JsonSubTypes;
++import com.fasterxml.jackson.annotation.JsonTypeInfo;
++import com.fasterxml.jackson.databind.BaseMapTest;
++import com.fasterxml.jackson.databind.ObjectMapper;
++import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
++import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
++import com.fasterxml.jackson.databind.exc.MismatchedInputException;
++
++public class JsonTypeInfoIgnored2968Test extends BaseMapTest {
++    /*
++    /**********************************************************
++    /* Set up
++    /**********************************************************
++     */
++
++    private static final ObjectMapper MAPPER = new ObjectMapper();
++
++    @JsonTypeInfo(
++        use = JsonTypeInfo.Id.NAME,
++        include = JsonTypeInfo.As.PROPERTY,
++        property = "_class"
++    )
++    @JsonSubTypes({
++        @JsonSubTypes.Type(value = Dog.class, name = "_dog"),
++        @JsonSubTypes.Type(value = Cat.class, name = "_cat")
++    })
++    static abstract class Animal {
++        public String name;
++    }
++
++    static class Cat extends Animal {}
++
++    static class Dog extends Animal {}
++
++    static abstract class SimpleBall {
++        public int size = 3;
++    }
++
++    static class BasketBall extends SimpleBall {
++        protected BasketBall() {}
++
++        public BasketBall(int size) {
++            super();
++            this.size = size;
++        }
++    }
++
++    // make this type `final` to avoid polymorphic handling
++    static final class BallValueWrapper {
++        public SimpleBall value;
++    }
++
++    /*
++    /**********************************************************
++    /* Tests
++    /**********************************************************
++     */
++
++    public void testDeserializeParentPositiveWithTypeId() throws Exception {
++        String json = a2q("{'_class': '_cat', 'name': 'Cat-in-the-hat'} ");
++
++        Animal cat = MAPPER.readValue(json, Animal.class);
++
++        assertEquals("Cat-in-the-hat", cat.name);
++    }
++
++    public void testDeserializeParentNegativeWithOutTypeId() throws Exception {
++        String json = a2q("{'name': 'cat'} ");
++
++        try {
++            MAPPER.readValue(json, Animal.class);
++        } catch (InvalidTypeIdException e) {
++            assertTrue(e.getMessage().contains("missing type id property '_class'"));
++        }
++    }
++
++    public void testDeserializedAsConcreteTypeSuccessfulWithOutPropertySet() throws Exception {
++        String json = a2q("{'name': 'cat'} ");
++
++        Cat cat = MAPPER.readValue(json, Cat.class);
++
++        assertEquals("cat", cat.name);
++    }
++
++    public void testDeserializationWrapperWithDefaultTyping() throws Exception {
++        final PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
++            .allowIfBaseType(SimpleBall.class)
++            .build();
++        ObjectMapper mapper = jsonMapperBuilder()
++            .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL)
++            .build();
++
++        final String defaultTypedJson = a2q(
++            "{'value':" +
++                "['com.fasterxml.jackson.databind.jsontype.JsonTypeInfoIgnored2968Test$BasketBall'," +
++                "{'size':42}]}");
++
++        BallValueWrapper wrapper = mapper.readValue(defaultTypedJson, BallValueWrapper.class);
++        assertEquals(42, wrapper.value.size);
++        assertEquals(BasketBall.class, wrapper.value.getClass());
++    }
++
++    public void testDeserializationBaseClassWithDefaultTyping() throws Exception {
++        final PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
++            .allowIfBaseType(SimpleBall.class)
++            .build();
++        ObjectMapper mapper = jsonMapperBuilder()
++            .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL)
++            .build();
++
++        final String concreteTypeJson = a2q("{'size': 42}");
++        try {
++            mapper.readValue(concreteTypeJson, SimpleBall.class);
++        } catch (MismatchedInputException | InvalidDefinitionException e) {
++            verifyException(e, "Unexpected token (START_OBJECT), expected START_ARRAY: need Array value " +
++                "to contain `As.WRAPPER_ARRAY` type information for class");
++        }
++    }
++}
+diff --git a/src/test/java/com/fasterxml/jackson/databind/jsontype/TestBaseTypeAsDefault.java b/src/test/java/com/fasterxml/jackson/databind/jsontype/TestBaseTypeAsDefault.java
+index cf9d6e8..c33ef87 100644
+--- a/src/test/java/com/fasterxml/jackson/databind/jsontype/TestBaseTypeAsDefault.java
++++ b/src/test/java/com/fasterxml/jackson/databind/jsontype/TestBaseTypeAsDefault.java
+@@ -60,12 +60,9 @@ public class TestBaseTypeAsDefault extends BaseMapTest
+     }
+ 
+     public void testNegativeForChild() throws Exception {
+-        try {
+-            /*Object o =*/ MAPPER_WITHOUT_BASE.readerFor(Child.class).readValue("{}");
+-            fail("Should not pass");
+-        } catch (InvalidTypeIdException ex) {
+-            assertTrue(ex.getMessage().contains("missing type id property '@class'"));
+-        }
++        Child child = MAPPER_WITHOUT_BASE.readerFor(Child.class).readValue("{}");
++
++        assertEquals(Child.class, child.getClass());
+     }
+ 
+     public void testConversionForAbstractWithDefault() throws Exception {
+diff --git a/src/test/java/com/fasterxml/jackson/failing/DeserDefaultTypedConcrete2968Test.java b/src/test/java/com/fasterxml/jackson/failing/DeserDefaultTypedConcrete2968Test.java
+new file mode 100644
+index 0000000..1582d69
+--- /dev/null
++++ b/src/test/java/com/fasterxml/jackson/failing/DeserDefaultTypedConcrete2968Test.java
+@@ -0,0 +1,35 @@
++package com.fasterxml.jackson.failing;
++
++import com.fasterxml.jackson.databind.BaseMapTest;
++import com.fasterxml.jackson.databind.ObjectMapper;
++import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
++import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
++
++public class DeserDefaultTypedConcrete2968Test extends BaseMapTest {
++
++    static abstract class SimpleBall {
++        public int size = 3;
++    }
++
++    static class BasketBall extends SimpleBall {
++        protected BasketBall() {}
++
++        public BasketBall(int size) {
++            super();
++            this.size = size;
++        }
++    }
++
++    public void testDeserializationConcreteClassWithDefaultTyping() throws Exception {
++        final PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
++            .allowIfBaseType(SimpleBall.class)
++            .build();
++        ObjectMapper mapper = jsonMapperBuilder()
++            .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL)
++            .build();
++
++        final String concreteTypeJson = a2q("{'size': 42}");
++        BasketBall basketBall = mapper.readValue(concreteTypeJson, BasketBall.class);
++        assertEquals(42, basketBall.size);
++    }
++}

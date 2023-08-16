@@ -1,0 +1,49 @@
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/exportimport/ExportImportTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/exportimport/ExportImportTest.java
+index a01df00..880e073 100755
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/exportimport/ExportImportTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/exportimport/ExportImportTest.java
+@@ -105,10 +105,12 @@ public class ExportImportTest extends AbstractKeycloakTest {
+         testRealm1.getSmtpServer().put("password", "secret");
+ 
+         setEventsConfig(testRealm1);
++        setLocalizationTexts(testRealm1);
+         testRealms.add(testRealm1);
+ 
+         RealmRepresentation testRealm2 = loadJson(getClass().getResourceAsStream("/model/testrealm.json"), RealmRepresentation.class);
+         testRealm2.setId("test-realm");
++        setLocalizationTexts(testRealm2);
+         testRealms.add(testRealm2);
+     }
+ 
+@@ -146,6 +148,15 @@ public class ExportImportTest extends AbstractKeycloakTest {
+                 .build();
+     }
+ 
++    private void setLocalizationTexts(RealmRepresentation realm) {
++        Map<String, Map<String, String>> localizationTexts = new HashMap<>();
++        Map<String, String> enMap = new HashMap<>();
++        enMap.put("key1", "value1");
++        enMap.put("key2", "value2");
++        localizationTexts.put("en", enMap);
++        realm.setLocalizationTexts(localizationTexts);
++    }
++
+     @After
+     public void clearExportImportProps() throws LifecycleException {
+         clearExportImportProperties();
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/exportimport/ExportImportUtil.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/exportimport/ExportImportUtil.java
+index 19e9380..7721648 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/exportimport/ExportImportUtil.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/exportimport/ExportImportUtil.java
+@@ -430,6 +430,11 @@ public class ExportImportUtil {
+             assertAuthorizationSettingsOtherApp(realmRsc);
+             assertAuthorizationSettingsTestAppAuthz(realmRsc);
+         }
++
++        // Test Message Bundle
++        Map<String, String> localizations = adminClient.realm(realm.getRealm()).localization().getRealmLocalizationTexts("en");
++        Assert.assertEquals("value1", localizations.get("key1"));
++        Assert.assertEquals("value2", localizations.get("key2"));
+     }
+ 
+ 

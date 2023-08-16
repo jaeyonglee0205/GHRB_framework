@@ -1,0 +1,68 @@
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
+index 1261840..27f58be 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/integration/KeycloakDeploymentTest.java
+@@ -27,6 +27,7 @@ import io.fabric8.kubernetes.api.model.apps.StatefulSetSpecBuilder;
+ import io.quarkus.logging.Log;
+ import io.quarkus.test.junit.QuarkusTest;
+ import org.awaitility.Awaitility;
++import org.junit.jupiter.api.Assumptions;
+ import org.junit.jupiter.api.Test;
+ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+ import org.keycloak.operator.Constants;
+@@ -622,6 +623,30 @@ public class KeycloakDeploymentTest extends BaseOperatorTest {
+         }
+     }
+ 
++    @Test
++    public void testPreconfiguredPodLabels() {
++        Assumptions.assumeTrue(operatorDeployment == OperatorDeployment.local,
++                "Skipping the test when Operator deployed remotely to keep stuff simple, it's just SmallRye, we don't need to retest it");
++
++        try {
++            var kc = getDefaultKeycloakDeployment();
++            deployKeycloak(k8sclient, kc, true);
++
++            // labels are set in test/resources/application.properties
++            var labels = k8sclient.apps().statefulSets().inNamespace(namespace).withName(kc.getMetadata().getName()).get()
++                    .getSpec().getTemplate().getMetadata().getLabels();
++
++            var expected = Map.of(
++                    "test.label", "foobar",
++                    "testLabelWithExpression", "my-value"
++            );
++            assertThat(labels).containsAllEntriesOf(expected);
++        } catch (Exception e) {
++            savePodLogs();
++            throw e;
++        }
++    }
++
+     private void handleFakeImagePullSecretCreation(Keycloak keycloakCR,
+                                                    String secretDescriptorFilename) {
+ 
+diff --git a/operator/src/test/java/org/keycloak/operator/testsuite/unit/PodTemplateTest.java b/operator/src/test/java/org/keycloak/operator/testsuite/unit/PodTemplateTest.java
+index f436c6d..0df4642 100644
+--- a/operator/src/test/java/org/keycloak/operator/testsuite/unit/PodTemplateTest.java
++++ b/operator/src/test/java/org/keycloak/operator/testsuite/unit/PodTemplateTest.java
+@@ -33,6 +33,9 @@ import org.keycloak.operator.crds.v2alpha1.deployment.spec.HostnameSpecBuilder;
+ import org.keycloak.operator.crds.v2alpha1.deployment.spec.HttpSpecBuilder;
+ import org.keycloak.operator.crds.v2alpha1.deployment.spec.UnsupportedSpec;
+ 
++import java.util.Collections;
++import java.util.Map;
++
+ import static org.assertj.core.api.Assertions.assertThat;
+ import static org.junit.jupiter.api.Assertions.assertEquals;
+ import static org.junit.jupiter.api.Assertions.assertTrue;
+@@ -53,6 +56,10 @@ public class PodTemplateTest {
+                     public String imagePullPolicy() {
+                         return "Never";
+                     }
++                    @Override
++                    public Map<String, String> podLabels() {
++                        return Collections.emptyMap();
++                    }
+                 };
+             }
+         };

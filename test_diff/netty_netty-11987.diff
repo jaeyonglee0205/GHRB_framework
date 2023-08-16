@@ -1,0 +1,62 @@
+diff --git a/buffer/src/test/java/io/netty/buffer/AlignedPooledByteBufAllocatorTest.java b/buffer/src/test/java/io/netty/buffer/AlignedPooledByteBufAllocatorTest.java
+index 59fcf77..47c23f3 100644
+--- a/buffer/src/test/java/io/netty/buffer/AlignedPooledByteBufAllocatorTest.java
++++ b/buffer/src/test/java/io/netty/buffer/AlignedPooledByteBufAllocatorTest.java
+@@ -15,6 +15,11 @@
+  */
+ package io.netty.buffer;
+ 
++import org.junit.jupiter.api.Test;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
+ public class AlignedPooledByteBufAllocatorTest extends PooledByteBufAllocatorTest {
+     @Override
+     protected PooledByteBufAllocator newAllocator(boolean preferDirect) {
+@@ -30,4 +35,32 @@ public class AlignedPooledByteBufAllocatorTest extends PooledByteBufAllocatorTes
+                 PooledByteBufAllocator.defaultUseCacheForAllThreads(),
+                 directMemoryCacheAlignment);
+     }
++
++    // https://github.com/netty/netty/issues/11955
++    @Test
++    public void testCorrectElementSize() {
++        ByteBufAllocator allocator = new PooledByteBufAllocator(
++                true,
++                PooledByteBufAllocator.defaultNumHeapArena(),
++                PooledByteBufAllocator.defaultNumDirectArena(),
++                PooledByteBufAllocator.defaultPageSize(),
++                11,
++                PooledByteBufAllocator.defaultSmallCacheSize(),
++                64,
++                PooledByteBufAllocator.defaultUseCacheForAllThreads(),
++                64);
++
++        ByteBuf a = allocator.directBuffer(0, 16384);
++        ByteBuf b = allocator.directBuffer(0, 16384);
++        a.capacity(16);
++        assertEquals(16, a.capacity());
++        b.capacity(16);
++        assertEquals(16, b.capacity());
++        a.capacity(17);
++        assertEquals(17, a.capacity());
++        b.capacity(18);
++        assertEquals(18, b.capacity());
++        assertTrue(a.release());
++        assertTrue(b.release());
++    }
+ }
+diff --git a/buffer/src/test/java/io/netty/buffer/PoolArenaTest.java b/buffer/src/test/java/io/netty/buffer/PoolArenaTest.java
+index 0eb7a5e..32f9189 100644
+--- a/buffer/src/test/java/io/netty/buffer/PoolArenaTest.java
++++ b/buffer/src/test/java/io/netty/buffer/PoolArenaTest.java
+@@ -45,7 +45,7 @@ public class PoolArenaTest {
+     public void testNormalizeAlignedCapacity() {
+         PoolArena<ByteBuffer> arena = new PoolArena.DirectArena(null, PAGE_SIZE, PAGE_SHIFTS, CHUNK_SIZE, 64);
+         int[] reqCapacities = {0, 15, 510, 1024, 1023, 1025};
+-        int[] expectedResult = {16, 64, 512, 1024, 1024, 1280};
++        int[] expectedResult = {64, 64, 512, 1024, 1024, 1280};
+         for (int i = 0; i < reqCapacities.length; i ++) {
+             assertEquals(expectedResult[i], arena.sizeIdx2size(arena.size2SizeIdx(reqCapacities[i])));
+         }

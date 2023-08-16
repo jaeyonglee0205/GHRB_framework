@@ -1,0 +1,54 @@
+diff --git a/agent/core/src/test/java/org/apache/shardingsphere/agent/core/advisor/config/yaml/swapper/YamlAdvisorsConfigurationSwapperTest.java b/agent/core/src/test/java/org/apache/shardingsphere/agent/core/advisor/config/yaml/swapper/YamlAdvisorsConfigurationSwapperTest.java
+index d0fa6ea..352fa3d 100644
+--- a/agent/core/src/test/java/org/apache/shardingsphere/agent/core/advisor/config/yaml/swapper/YamlAdvisorsConfigurationSwapperTest.java
++++ b/agent/core/src/test/java/org/apache/shardingsphere/agent/core/advisor/config/yaml/swapper/YamlAdvisorsConfigurationSwapperTest.java
+@@ -20,11 +20,10 @@ package org.apache.shardingsphere.agent.core.advisor.config.yaml.swapper;
+ import net.bytebuddy.matcher.ElementMatchers;
+ import org.apache.shardingsphere.agent.core.advisor.config.AdvisorConfiguration;
+ import org.apache.shardingsphere.agent.core.advisor.config.MethodAdvisorConfiguration;
+-import org.apache.shardingsphere.agent.core.advisor.config.yaml.entity.YamlAdvisorsConfiguration;
+ import org.apache.shardingsphere.agent.core.advisor.config.yaml.fixture.YamlAdviceFixture;
+ import org.apache.shardingsphere.agent.core.advisor.config.yaml.fixture.YamlTargetObjectFixture;
++import org.apache.shardingsphere.agent.core.yaml.AgentYamlEngine;
+ import org.junit.jupiter.api.Test;
+-import org.yaml.snakeyaml.Yaml;
+ 
+ import java.util.ArrayList;
+ import java.util.Collection;
+@@ -38,7 +37,7 @@ public final class YamlAdvisorsConfigurationSwapperTest {
+     @Test
+     public void assertSwapToObject() {
+         Collection<AdvisorConfiguration> actual = YamlAdvisorsConfigurationSwapper.swap(
+-                new Yaml().loadAs(getClass().getResourceAsStream("/META-INF/conf/advisors.yaml"), YamlAdvisorsConfiguration.class), "FIXTURE");
++                AgentYamlEngine.unmarshalYamlAdvisorsConfiguration(getClass().getResourceAsStream("/META-INF/conf/advisors.yaml")), "FIXTURE");
+         assertThat(actual.size(), is(1));
+         assertAdvisorConfiguration(actual.iterator().next());
+     }
+diff --git a/agent/core/src/test/java/org/apache/shardingsphere/agent/core/plugin/config/yaml/swapper/YamlPluginsConfigurationSwapperTest.java b/agent/core/src/test/java/org/apache/shardingsphere/agent/core/plugin/config/yaml/swapper/YamlPluginsConfigurationSwapperTest.java
+index ebd1a5c..5fe941b 100644
+--- a/agent/core/src/test/java/org/apache/shardingsphere/agent/core/plugin/config/yaml/swapper/YamlPluginsConfigurationSwapperTest.java
++++ b/agent/core/src/test/java/org/apache/shardingsphere/agent/core/plugin/config/yaml/swapper/YamlPluginsConfigurationSwapperTest.java
+@@ -21,13 +21,12 @@ import org.apache.shardingsphere.agent.api.PluginConfiguration;
+ import org.apache.shardingsphere.agent.core.plugin.config.yaml.entity.YamlAgentConfiguration;
+ import org.apache.shardingsphere.agent.core.plugin.config.yaml.entity.YamlPluginCategoryConfiguration;
+ import org.apache.shardingsphere.agent.core.plugin.config.yaml.entity.YamlPluginConfiguration;
++import org.apache.shardingsphere.agent.core.yaml.AgentYamlEngine;
+ import org.junit.jupiter.api.Test;
+-import org.yaml.snakeyaml.Yaml;
+ 
+ import java.io.File;
+ import java.io.FileInputStream;
+ import java.io.IOException;
+-import java.io.InputStreamReader;
+ import java.io.UnsupportedEncodingException;
+ import java.net.URLDecoder;
+ import java.util.Collections;
+@@ -82,7 +81,7 @@ public final class YamlPluginsConfigurationSwapperTest {
+     
+     @Test
+     public void assertSwapWithFile() throws IOException {
+-        YamlAgentConfiguration yamlAgentConfig = new Yaml().loadAs(new InputStreamReader(new FileInputStream(new File(getResourceURL(), CONFIG_PATH))), YamlAgentConfiguration.class);
++        YamlAgentConfiguration yamlAgentConfig = AgentYamlEngine.unmarshalYamlAgentConfiguration(new FileInputStream(new File(getResourceURL(), CONFIG_PATH)));
+         Map<String, PluginConfiguration> actual = YamlPluginsConfigurationSwapper.swap(yamlAgentConfig);
+         assertThat(actual.size(), is(3));
+         assertLogFixturePluginConfiguration(actual.get("log_fixture"));

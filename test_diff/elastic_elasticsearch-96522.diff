@@ -1,0 +1,12 @@
+diff --git a/server/src/test/java/org/elasticsearch/index/mapper/flattened/FlattenedFieldSearchTests.java b/server/src/test/java/org/elasticsearch/index/mapper/flattened/FlattenedFieldSearchTests.java
+index ce630ce..8518d57 100644
+--- a/server/src/test/java/org/elasticsearch/index/mapper/flattened/FlattenedFieldSearchTests.java
++++ b/server/src/test/java/org/elasticsearch/index/mapper/flattened/FlattenedFieldSearchTests.java
+@@ -209,7 +209,6 @@ public class FlattenedFieldSearchTests extends ESSingleNodeTestCase {
+         assertHitCount(searchResponse, 0L);
+     }
+ 
+-    @AwaitsFix(bugUrl = "https://github.com/elastic/elasticsearch/issues/86115")
+     public void testCardinalityAggregation() throws IOException {
+         int numDocs = randomIntBetween(2, 100);
+         int precisionThreshold = randomIntBetween(0, 1 << randomInt(20));

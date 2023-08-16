@@ -1,0 +1,50 @@
+diff --git a/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/framework/param/array/E2ETestParameterGenerator.java b/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/framework/param/array/E2ETestParameterGenerator.java
+index 6a019f0..c6e21fe 100644
+--- a/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/framework/param/array/E2ETestParameterGenerator.java
++++ b/test/e2e/sql/src/test/java/org/apache/shardingsphere/test/e2e/framework/param/array/E2ETestParameterGenerator.java
+@@ -128,8 +128,8 @@ public final class E2ETestParameterGenerator {
+         if (sqlStatementClass == RALStatement.class) {
+             return "empty_rules".equals(scenario);
+         }
+-        if (sqlStatementClass == RDLStatement.class) {
+-            return "rdl_empty_rules".equals(scenario);
++        if (sqlStatementClass == RDLStatement.class || "rdl_empty_rules".equals(scenario)) {
++            return sqlStatementClass == RDLStatement.class && "rdl_empty_rules".equals(scenario);
+         }
+         if ("empty_rules".equals(scenario)) {
+             return false;
+diff --git a/test/e2e/sql/src/test/resources/cases/dql/dql-integration-select.xml b/test/e2e/sql/src/test/resources/cases/dql/dql-integration-select.xml
+index 88807b0..31f7a14 100644
+--- a/test/e2e/sql/src/test/resources/cases/dql/dql-integration-select.xml
++++ b/test/e2e/sql/src/test/resources/cases/dql/dql-integration-select.xml
+@@ -17,9 +17,13 @@
+   -->
+ 
+ <integration-test-cases>
+-    <test-case sql="SELECT 1 FROM dual" />
++    <test-case sql="SELECT 1 FROM dual" db-types="MySQL,SQLServer,Oracle,H2" >
++        <assertion />
++    </test-case>
+ 
+-    <test-case sql="SELECT 1 as a" />
++    <test-case sql="SELECT 1 as a" db-types="PostgreSQL,openGauss" >
++        <assertion />
++    </test-case>
+     
+     <test-case sql="SELECT t_order.* FROM t_order t_order WHERE user_id = ? AND order_id = ?" scenario-types="db,tbl,dbtbl_with_readwrite_splitting,readwrite_splitting">
+         <assertion parameters="10:int, 1000:int" expected-data-source-name="read_dataset" />
+diff --git a/test/e2e/sql/src/test/resources/env/scenario/rdl_empty_rules/data/actual/databases.xml b/test/e2e/sql/src/test/resources/env/scenario/rdl_empty_rules/data/actual/databases.xml
+index e09d0ba..30e2b91 100644
+--- a/test/e2e/sql/src/test/resources/env/scenario/rdl_empty_rules/data/actual/databases.xml
++++ b/test/e2e/sql/src/test/resources/env/scenario/rdl_empty_rules/data/actual/databases.xml
+@@ -17,7 +17,7 @@
+   -->
+ 
+ <databases>
+-    <database>rql_ds_0</database>
+-    <database>rql_ds_1</database>
+-    <database>rql_ds_2</database>
++    <database>rdl_ds_0</database>
++    <database>rdl_ds_1</database>
++    <database>rdl_ds_2</database>
+ </databases>

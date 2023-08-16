@@ -1,0 +1,218 @@
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/partialimport/PartialImportTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/partialimport/PartialImportTest.java
+index 97d7386..f204868 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/partialimport/PartialImportTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/partialimport/PartialImportTest.java
+@@ -922,8 +922,9 @@ public class PartialImportTest extends AbstractAuthTest {
+         piRep.setRoles(roles);
+ 
+         Assert.assertEquals("default role should have been overwritten", 1, doImport().getOverwritten());
+-        Assert.assertNotEquals("when overwriting, the ID of the role changes",
+-                testRealmResource().toRepresentation().getDefaultRole().getId(), oldDefaultRole.getId());
++        // The following check is not valid anymore since file store does have the same ID
++        // Assert.assertNotEquals("when overwriting, the ID of the role changes",
++        //        testRealmResource().toRepresentation().getDefaultRole().getId(), oldDefaultRole.getId());
+     }
+ 
+ }
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/realm/RealmTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/realm/RealmTest.java
+index 319aeb9..5740a98 100755
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/realm/RealmTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/admin/realm/RealmTest.java
+@@ -627,9 +627,6 @@ public class RealmTest extends AbstractAdminTest {
+     }
+ 
+     public static void assertRealm(RealmRepresentation realm, RealmRepresentation storedRealm) {
+-        if (realm.getId() != null) {
+-            assertEquals(realm.getId(), storedRealm.getId());
+-        }
+         if (realm.getRealm() != null) {
+             assertEquals(realm.getRealm(), storedRealm.getRealm());
+         }
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/client/policies/AbstractClientPoliciesTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/client/policies/AbstractClientPoliciesTest.java
+index 5bfac18..c9b5b9f 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/client/policies/AbstractClientPoliciesTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/client/policies/AbstractClientPoliciesTest.java
+@@ -1502,7 +1502,8 @@ public abstract class AbstractClientPoliciesTest extends AbstractKeycloakTest {
+         AccessToken token = oauth.verifyToken(res.getAccessToken());
+         String userId = findUserByUsername(adminClient.realm(REALM_NAME), userName).getId();
+         assertEquals(userId, token.getSubject());
+-        Assert.assertNotEquals(userName, token.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // Assert.assertNotEquals(userName, token.getSubject());
+         assertEquals(sessionId, token.getSessionState());
+         assertEquals(clientId, token.getIssuedFor());
+ 
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/model/MultipleRealmsTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/model/MultipleRealmsTest.java
+index ab9f66e..a64d741 100755
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/model/MultipleRealmsTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/model/MultipleRealmsTest.java
+@@ -81,7 +81,8 @@ public class MultipleRealmsTest extends AbstractTestRealmKeycloakTest {
+             r1user1Atomic.set(r1user1);
+ 
+             Assert.assertEquals(r1user1.getUsername(), r2user1.getUsername());
+-            Assert.assertNotEquals(r1user1.getId(), r2user1.getId());
++            // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++            // Assert.assertNotEquals(r1user1.getId(), r2user1.getId());
+ 
+             // Test password
+             r1user1.credentialManager().updateCredential(UserCredentialModel.password("pass1"));
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/AccessTokenTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/AccessTokenTest.java
+index 2608214..6bfc59a 100755
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/AccessTokenTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/AccessTokenTest.java
+@@ -221,7 +221,8 @@ public class AccessTokenTest extends AbstractKeycloakTest {
+         AccessToken token = oauth.verifyToken(response.getAccessToken());
+ 
+         assertEquals(findUserByUsername(adminClient.realm("test"), "test-user@localhost").getId(), token.getSubject());
+-        assertNotEquals("test-user@localhost", token.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // assertNotEquals("test-user@localhost", token.getSubject());
+ 
+         assertEquals(sessionId, token.getSessionState());
+ 
+@@ -1389,7 +1390,8 @@ public class AccessTokenTest extends AbstractKeycloakTest {
+         AccessToken token = oauth.verifyToken(response.getAccessToken());
+ 
+         assertEquals(findUserByUsername(adminClient.realm("test"), "test-user@localhost").getId(), token.getSubject());
+-        assertNotEquals("test-user@localhost", token.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // assertNotEquals("test-user@localhost", token.getSubject());
+ 
+         assertEquals(sessionId, token.getSessionState());
+ 
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/OAuthProofKeyForCodeExchangeTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/OAuthProofKeyForCodeExchangeTest.java
+index 067bb68..342ab7d 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/OAuthProofKeyForCodeExchangeTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/OAuthProofKeyForCodeExchangeTest.java
+@@ -445,7 +445,8 @@ public class OAuthProofKeyForCodeExchangeTest extends AbstractKeycloakTest {
+         AccessToken token = oauth.verifyToken(response.getAccessToken());
+ 
+         assertEquals(findUserByUsername(adminClient.realm("test"), "test-user@localhost").getId(), token.getSubject());
+-        Assert.assertNotEquals("test-user@localhost", token.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // Assert.assertNotEquals("test-user@localhost", token.getSubject());
+         assertEquals(sessionId, token.getSessionState());
+         assertEquals(2, token.getRealmAccess().getRoles().size());
+         assertTrue(token.getRealmAccess().isUserInRole("user"));
+@@ -492,7 +493,8 @@ public class OAuthProofKeyForCodeExchangeTest extends AbstractKeycloakTest {
+         assertEquals("Bearer", refreshResponse.getTokenType());
+ 
+         assertEquals(findUserByUsername(adminClient.realm("test"), "test-user@localhost").getId(), refreshedToken.getSubject());
+-        Assert.assertNotEquals("test-user@localhost", refreshedToken.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // Assert.assertNotEquals("test-user@localhost", refreshedToken.getSubject());
+ 
+         assertEquals(2, refreshedToken.getRealmAccess().getRoles().size());
+         Assert.assertTrue(refreshedToken.getRealmAccess().isUserInRole("user"));
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/RefreshTokenTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/RefreshTokenTest.java
+index 3427fef..b6fcaa7 100755
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/RefreshTokenTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/RefreshTokenTest.java
+@@ -264,7 +264,8 @@ public class RefreshTokenTest extends AbstractKeycloakTest {
+         assertEquals("Bearer", response.getTokenType());
+ 
+         assertEquals(findUserByUsername(adminClient.realm("test"), "test-user@localhost").getId(), refreshedToken.getSubject());
+-        Assert.assertNotEquals("test-user@localhost", refreshedToken.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // Assert.assertNotEquals("test-user@localhost", refreshedToken.getSubject());
+ 
+         assertTrue(refreshedToken.getRealmAccess().isUserInRole("user"));
+ 
+@@ -1529,7 +1530,8 @@ public class RefreshTokenTest extends AbstractKeycloakTest {
+         assertEquals("Bearer", response.getTokenType());
+ 
+         assertEquals(findUserByUsername(adminClient.realm("test"), "test-user@localhost").getId(), refreshedToken.getSubject());
+-        Assert.assertNotEquals("test-user@localhost", refreshedToken.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // Assert.assertNotEquals("test-user@localhost", refreshedToken.getSubject());
+ 
+         EventRepresentation refreshEvent = events.expectRefresh(tokenEvent.getDetails().get(Details.REFRESH_TOKEN_ID), sessionId).assertEvent();
+         Assert.assertNotEquals(tokenEvent.getDetails().get(Details.TOKEN_ID), refreshEvent.getDetails().get(Details.TOKEN_ID));
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/hok/HoKTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/hok/HoKTest.java
+index 1a74c93..abc5cc3 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/hok/HoKTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/hok/HoKTest.java
+@@ -251,7 +251,8 @@ public class HoKTest extends AbstractTestRealmKeycloakTest {
+         AccessToken token = oauth.verifyToken(response.getAccessToken());
+ 
+         assertEquals(findUserByUsername(adminClient.realm("test"), "test-user@localhost").getId(), token.getSubject());
+-        Assert.assertNotEquals("test-user@localhost", token.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // Assert.assertNotEquals("test-user@localhost", token.getSubject());
+ 
+         assertEquals(sessionId, token.getSessionState());
+ 
+@@ -420,7 +421,8 @@ public class HoKTest extends AbstractTestRealmKeycloakTest {
+         assertEquals("Bearer", response.getTokenType());
+ 
+         assertEquals(findUserByUsername(adminClient.realm("test"), username).getId(), refreshedToken.getSubject());
+-        Assert.assertNotEquals(username, refreshedToken.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // Assert.assertNotEquals("test-user@localhost", token.getSubject());
+ 
+         assertEquals(2, refreshedToken.getRealmAccess().getRoles().size());
+         Assert.assertTrue(refreshedToken.getRealmAccess().isUserInRole("user"));
+diff --git a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/par/ParTest.java b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/par/ParTest.java
+index 0e97a25..a443c8f 100644
+--- a/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/par/ParTest.java
++++ b/testsuite/integration-arquillian/tests/base/src/test/java/org/keycloak/testsuite/oauth/par/ParTest.java
+@@ -183,7 +183,8 @@ public class ParTest extends AbstractClientPoliciesTest {
+             String userId = findUserByUsername(adminClient.realm(REALM_NAME), TEST_USER_NAME).getId();
+             assertEquals(userId, token.getSubject());
+             assertEquals(sessionId, token.getSessionState());
+-            Assert.assertNotEquals(TEST_USER_NAME, token.getSubject());
++            // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++            // Assert.assertNotEquals(TEST_USER_NAME, token.getSubject());
+             assertEquals(clientId, token.getIssuedFor());
+ 
+             // Token Refresh
+@@ -567,7 +568,8 @@ public class ParTest extends AbstractClientPoliciesTest {
+         String userId = findUserByUsername(adminClient.realm(REALM_NAME), TEST_USER2_NAME).getId();
+         assertEquals(userId, token.getSubject());
+         assertEquals(sessionId, token.getSessionState());
+-        Assert.assertNotEquals(TEST_USER2_NAME, token.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // Assert.assertNotEquals(TEST_USER2_NAME, token.getSubject());
+         assertEquals(clientId, token.getIssuedFor());
+         assertTrue(token.getScope().contains("openid"));
+         assertTrue(token.getScope().contains("microprofile-jwt"));
+@@ -598,7 +600,8 @@ public class ParTest extends AbstractClientPoliciesTest {
+         userId = findUserByUsername(adminClient.realm(REALM_NAME), TEST_USER_NAME).getId();
+         assertEquals(userId, token.getSubject());
+         assertEquals(sessionId, token.getSessionState());
+-        Assert.assertNotEquals(TEST_USER_NAME, token.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // Assert.assertNotEquals(TEST_USER_NAME, token.getSubject());
+         assertEquals(clientId, token.getIssuedFor());
+         assertFalse(token.getScope().contains("microprofile-jwt"));
+         assertTrue(token.getScope().contains("openid"));
+@@ -667,7 +670,8 @@ public class ParTest extends AbstractClientPoliciesTest {
+         String userId = findUserByUsername(adminClient.realm(REALM_NAME), TEST_USER2_NAME).getId();
+         assertEquals(userId, token.getSubject());
+         assertEquals(sessionId, token.getSessionState());
+-        Assert.assertNotEquals(TEST_USER2_NAME, token.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // Assert.assertNotEquals(TEST_USER_NAME, token.getSubject());
+         assertEquals(client2Id, token.getIssuedFor());
+         assertTrue(token.getScope().contains("openid"));
+         assertTrue(token.getScope().contains("microprofile-jwt"));
+@@ -699,7 +703,8 @@ public class ParTest extends AbstractClientPoliciesTest {
+         userId = findUserByUsername(adminClient.realm(REALM_NAME), TEST_USER_NAME).getId();
+         assertEquals(userId, token.getSubject());
+         assertEquals(sessionId, token.getSessionState());
+-        Assert.assertNotEquals(TEST_USER_NAME, token.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // Assert.assertNotEquals(TEST_USER_NAME, token.getSubject());
+         assertEquals(clientId, token.getIssuedFor());
+         assertFalse(token.getScope().contains("microprofile-jwt"));
+         assertTrue(token.getScope().contains("openid"));
+@@ -1201,7 +1206,8 @@ public class ParTest extends AbstractClientPoliciesTest {
+         String userId = findUserByUsername(adminClient.realm(REALM_NAME), TEST_USER_NAME).getId();
+         assertEquals(userId, token.getSubject());
+         assertEquals(sessionId, token.getSessionState());
+-        Assert.assertNotEquals(TEST_USER_NAME, token.getSubject());
++        // The following check is not valid anymore since file store does have the same ID, and is redundant due to the previous line
++        // Assert.assertNotEquals(TEST_USER_NAME, token.getSubject());
+         assertEquals(clientId, token.getIssuedFor());
+ 
+         // Token Refresh

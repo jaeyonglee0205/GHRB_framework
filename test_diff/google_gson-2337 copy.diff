@@ -1,0 +1,13 @@
+diff --git a/gson/src/test/java/com/google/gson/stream/JsonReaderTest.java b/gson/src/test/java/com/google/gson/stream/JsonReaderTest.java
+index 8ebe20b..c3940ef 100644
+--- a/gson/src/test/java/com/google/gson/stream/JsonReaderTest.java
++++ b/gson/src/test/java/com/google/gson/stream/JsonReaderTest.java
+@@ -355,7 +355,7 @@ public final class JsonReaderTest {
+     try {
+       reader.nextString();
+       fail();
+-    } catch (NumberFormatException expected) {
++    } catch (MalformedJsonException expected) {
+     }
+   }
+ 
