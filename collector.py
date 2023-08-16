@@ -110,10 +110,34 @@ def find_total_bug():
     print(bug_dict)
     print('total: ', total)
 
+
+def remove_test_diff ():
+    all_bug = []
+    for file in os.listdir("verified_bug/"):
+        with open("verified_bug/" + file, 'r') as f:
+            active_bug_list = json.load(f)
+        for key in active_bug_list.keys():
+            all_bug.append(key)
+    i = 0
+    bug_dict = defaultdict(int)
+    
+    for diff in os.listdir("test_diff/"):
+        bug_dict[diff.split("_")[-2]] += 1
+        
+        name = diff.replace(".diff", "")
+        if name in all_bug:
+            # sp.run(["rm", "-rf", f"test_diff/{name}.diff"])
+            i += 1
+    print(bug_dict)
+    print(i)
+
+    
+
 if __name__ == '__main__':
 
     project_id_collector()
     commit_db_collector()
     find_og_collector()
     find_total_bug()
+    remove_test_diff()
     

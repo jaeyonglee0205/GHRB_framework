@@ -186,12 +186,28 @@ def find_env (pid):
     if len(requirements["extra"]) != 0:
         extra = requirements["extra"]
     
-    mvn_required = requirements["maven"]
+    build = requirements["build"]
     jdk_required = requirements["jdk"]
+    wrapper = requirements["wrapper"]
     # if requirements["gradle"] != "0":
     #     gradle_required = requirements["gradle"]
 
-    print(f"Required Maven Version: {mvn_required}")
+    mvn_required = None
+    mvnw = False
+    gradlew = False
+
+    if build == "maven":
+        if wrapper:
+            mvnw = True
+            print("Using Maven Wrapper")
+        else:
+            mvn_required = requirements["version"]
+            print(f"Required Maven Version: {mvn_required}")
+    elif build == "gradle":
+        if wrapper:
+            gradlew = True
+            print("Using Gradle Wrapper")
+
     print(f"Required JDK Version: {jdk_required}")
 
     JAVA_HOME = mvn_path = None
@@ -202,16 +218,19 @@ def find_env (pid):
     elif jdk_required == '17':
         JAVA_HOME = '/usr/lib/jvm/java-17-openjdk-amd64'
     
-    if mvn_required == '3.8.6':
+    if mvn_required is None:
+        mvn_path = None
+    elif mvn_required == '3.8.6':
         mvn_path = '/opt/apache-maven-3.8.6/bin'
     elif mvn_required == '3.8.1':
         mvn_path = '/opt/apache-maven-3.8.1/bin'
 
     new_env = os.environ.copy()
     new_env['JAVA_HOME'] = JAVA_HOME
-    new_env['PATH'] = os.pathsep.join([mvn_path, new_env['PATH']])
+    if mvn_path is not None:
+        new_env['PATH'] = os.pathsep.join([mvn_path, new_env['PATH']])
 
-    return new_env
+    return new_env, mvnw, gradlew
 
 def call_compile(pid, dir):
     '''
@@ -221,6 +240,7 @@ def call_compile(pid, dir):
         gradle 7.6.2
     
     '''
+    output = ""
     with open("project_id.json", "r") as f:
         project_id = json.load(f)
 
@@ -230,18 +250,53 @@ def call_compile(pid, dir):
 
     repo_path = project_id[pid]["repo_path"]
 
-    new_env = find_env(pid)
-    out = sp.run(['mvn', 'clean', 'compile'], env=new_env, stdout = sp.PIPE, stderr = sp.PIPE, check=True, cwd=repo_path)
+    new_env, mvnw, gradlew = find_env(pid)
 
-    if "BUILD SUCCESS" in out.stdout.decode():
-        output = "Build Success"
-    else:
-        output = "Build Failed"
+    if not mvnw and not gradlew:
+        out = sp.run(['mvn', 'clean', 'compile'], env=new_env, stdout = sp.PIPE, stderr = sp.PIPE, check=True, cwd=repo_path)
+    elif mvnw:
+        out = sp.run(['./mvnw', 'clean', 'compile'], env=new_env, check=True, cwd=repo_path)
+    
+    elif gradlew:
+        pass
+
+    # if "BUILD SUCCESS" in out.stdout.decode():
+    #     output = "Build Success"
+    # else:
+    #     output = "Build Failed"
     '''
     mvn clean install -DskipTests=true
     mvn clean package -Dmaven.buildDirectory='target'
     '''
     return output
+
+def run_test (new_env, mvnw, gradlew, test_case, repo_path, command=None):
+
+    if not mvnw and not gradlew:
+        run = sp.run(['mvn', 'clean', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false'],
+                    env=new_env, cwd=repo_path)
+
+    elif mvnw:
+        default = ['./mvnw', 'clean', 'test', f'-Dtest={test_case}']
+        if command is not None:
+            extra_command = command.split()
+            new_command = default + extra_command
+
+            run = sp.run(new_command,
+                        env=new_env, cwd=repo_path)
+        else:
+            run = sp.run(default,
+                        env=new_env, cwd=repo_path)
+    elif gradlew:
+        default = ["./gradlew", "test", "-tests", f'{test_case}']
+        if command is not None:
+            if 'test' in command:
+                new_command = ["./gradlew", command, '--tests', f'{test_case}']
+                run = sp.run(new_command,
+                             env=new_env, cwd=repo_path)
+            else:
+                run = sp.run(new_command,
+                             env=new_env, cwd=repo_path)
 
 def call_test(pid, bid, dir, test_case, test_suite):
     '''
@@ -263,6 +318,11 @@ def call_test(pid, bid, dir, test_case, test_suite):
     owner = project_id[pid]["owner"]
 
     repo_name = owner + "_" + pid
+
+    command = None
+
+    if len(project_id[pid]['requirements']['extra']) != 0:
+        command = project_id[pid]['requirements']['extra']['command']
     
     with open(f"verified_bug/verified_bugs_{repo_name}.json", "r") as f:
         verified_bugs = json.load(f)
@@ -272,7 +332,9 @@ def call_test(pid, bid, dir, test_case, test_suite):
     
     target_tests = verified_bugs[report_id]["execution_result"]["success_tests"]
     print(target_tests)
-    new_env = find_env(pid)
+
+    new_env, mvnw, gradlew = find_env(pid)
+
 
     def find_test (input):
         for test in target_tests:
@@ -285,23 +347,20 @@ def call_test(pid, bid, dir, test_case, test_suite):
         test_case = find_test(test_case)
 
         if test_case is None:
-            output += "Cannot find specified test case"
+            print("External test case")
+            run_test(new_env, mvnw, gradlew, test_case, repo_path, command)
         else:
             print("Internal test case")
             print(test_case)
-            run = sp.run(['mvn', 'clean', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false'],
-                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=repo_path)
-            output += run.stdout.decode()
+            run_test(new_env, mvnw, gradlew, test_case, repo_path, command)
     elif test_suite is not None:
         print("External test suite")
         pass
     else:
         print("Running all test cases")
         for test in target_tests:
-            run = sp.run(['mvn', 'clean', 'test', f'-Dtest={test}', '-DfailIfNoTests=false'], 
-                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=repo_path)
-            #output += run.stderr.decode()
-            output += run.stdout.decode()
+            run_test(new_env, mvnw, gradlew, test, repo_path, command)
+
     
     return output
 
@@ -324,10 +383,10 @@ def call_bid(pid):
     ------------------------------------------
 '''
 
-    # active_bugs = pd.read_csv(commit_db)
+    active_bugs = pd.read_csv(commit_db)
 
-    # for bug_id in active_bugs["bug_id"]:
-    #     output += f"\t{bug_id}\n"
+    for bug_id in active_bugs["bug_id"]:
+        output += f"\t{bug_id}\n"
     
     return output
 
