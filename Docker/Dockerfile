@@ -42,9 +42,10 @@ RUN python3.9 -m pip install pip --upgrade
 
 RUN echo 'alias python=python3.9' >> /root/.bashrc
 
-RUN pip install tqdm
-RUN pip install enlighten
-RUN pip install javalang
+RUN pip install json
+RUN pip install subprocess
+RUN pip install argparse
+RUN pip install -r requirements.txt
 
 WORKDIR /root
 
@@ -56,13 +57,15 @@ ENV TMP_DIR="/tmp"
 
 ENV PYTHONIOENCODING=utf-8
 
-# install maven 3.8.1
+# install Maven 3.8.1
 RUN wget https://archive.apache.org/dist/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.tar.gz -P /tmp # for running projects in GHRB benchmark
 RUN tar -xzvf /tmp/apache-maven-3.8.1-bin.tar.gz -C /opt
 
-# install maven 3.8.6
+# install Maven 3.8.6
 RUN wget https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz -P /tmp # for running projects in GHRB benchmark
 RUN tar -xzvf /tmp/apache-maven-3.8.6-bin.tar.gz -C /opt
+
+# install gradle
 
 
 RUN git config --global --add safe.directory '*'

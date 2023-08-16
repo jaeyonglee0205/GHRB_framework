@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 
 import os
-import re
-import glob
 import json
 from os import path
 from collections import Counter
@@ -11,9 +9,7 @@ from tqdm import tqdm
 #from util import config, fix_build_env
 
 import subprocess as sp
-import javalang
 import argparse
-import shutil
 import pandas as pd
 
 def call_info(pid, bid):
