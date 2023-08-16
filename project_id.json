@@ -3,7 +3,7 @@
     "owner": "FasterXML",
     "number_of_bugs": 1,
     "commit_db": "commit_db/jackson-dataformat-xml_bugs.csv",
-    "repo_path": "/repos/jackson-dataformat-xml",
+    "repo_path": "/root/framework/repos/jackson-dataformat-xml",
     "requirements": {
       "maven": "3.8.6",
       "jdk": "17",
@@ -14,7 +14,7 @@
     "owner": "checkstyle",
     "number_of_bugs": 16,
     "commit_db": "commit_db/checkstyle_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/checkstyle",
     "requirements": {
       "maven": "3.8.6",
       "jdk": "17",
@@ -25,7 +25,7 @@
     "owner": "FasterXML",
     "number_of_bugs": 3,
     "commit_db": "commit_db/jackson-core_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/jackson-core",
     "requirements": {
       "maven": "3.8.6",
       "jdk": "17",
@@ -36,7 +36,7 @@
     "owner": "apache",
     "number_of_bugs": 2,
     "commit_db": "commit_db/dubbo_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/dubbo",
     "requirements": {
       "maven": "3.8.6",
       "jdk": "8",
@@ -47,7 +47,7 @@
     "owner": "FasterXML",
     "number_of_bugs": 4,
     "commit_db": "commit_db/jackson-databind_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/jackson-databind",
     "requirements": {
       "maven": "3.8.6",
       "jdk": "17",
@@ -58,7 +58,7 @@
     "owner": "seata",
     "number_of_bugs": 2,
     "commit_db": "commit_db/seata_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/seata",
     "requirements": {
       "maven": "3.8.6",
       "jdk": "11",
@@ -69,7 +69,7 @@
     "owner": "iBotPeaches",
     "number_of_bugs": 1,
     "commit_db": "commit_db/Apktool_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/Apktool",
     "requirements": {
       "maven": "3.6.3",
       "jdk": "17",
@@ -82,7 +82,7 @@
     "owner": "OpenAPITools",
     "number_of_bugs": 22,
     "commit_db": "commit_db/openapi-generator_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/openapi-generator",
     "requirements": {
       "maven": "3.8.6",
       "jdk": "11",
@@ -98,7 +98,7 @@
     "owner": "jhy",
     "number_of_bugs": 5,
     "commit_db": "commit_db/jsoup_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/jsoup",
     "requirements": {
       "maven": "3.8.6",
       "jdk": "17",
@@ -109,7 +109,7 @@
     "owner": "google",
     "number_of_bugs": 13,
     "commit_db": "commit_db/gson_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/gson",
     "requirements": {
       "maven": "3.8.6",
       "jdk": "11",
@@ -120,7 +120,7 @@
     "owner": "alibaba",
     "number_of_bugs": 5,
     "commit_db": "commit_db/nacos_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/nacos",
     "requirements": {
       "maven": "3.8.6",
       "jdk": "8",
@@ -131,14 +131,14 @@
     "owner": "alibaba",
     "number_of_bugs": 2,
     "commit_db": "commit_db/fastjson_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/fastjson",
     "requirements": {}
   },
   "assertj": {
     "owner": "assertj",
     "number_of_bugs": 5,
     "commit_db": "commit_db/assertj_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/assertj",
     "requirements": {
       "maven": "3.8.6",
       "jdk": "17",
@@ -149,7 +149,7 @@
     "owner": "apache",
     "number_of_bugs": 17,
     "commit_db": "commit_db/rocketmq_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/rocketmq",
     "requirements": {
       "maven": "3.8.1",
       "jdk": "8",
@@ -165,7 +165,7 @@
     "owner": "square",
     "number_of_bugs": 1,
     "commit_db": "commit_db/retrofit_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/retrofit",
     "requirements": {
       "extra": {
         "gradlew": true,
@@ -179,7 +179,7 @@
     "owner": "Hakky54",
     "number_of_bugs": 6,
     "commit_db": "commit_db/sslcontext-kickstart_bugs.csv",
-    "repo_path": null,
+    "repo_path": "/root/framework/repos/sslcontext-kickstart",
     "requirements": {
       "maven": "3.8.6",
       "jdk": "17",

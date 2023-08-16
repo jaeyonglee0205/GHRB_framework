@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3.9
 
 import os
 import json
@@ -231,12 +231,17 @@ def call_compile(pid, dir):
     repo_path = project_id[pid]["repo_path"]
 
     new_env = find_env(pid)
-    out = sp.run(['mvn', 'clean', 'compile'], env=new_env, check=True, cwd=repo_path)
+    out = sp.run(['mvn', 'clean', 'compile'], env=new_env, stdout = sp.PIPE, stderr = sp.PIPE, check=True, cwd=repo_path)
 
+    if "BUILD SUCCESS" in out.stdout.decode():
+        output = "Build Success"
+    else:
+        output = "Build Failed"
     '''
     mvn clean install -DskipTests=true
     mvn clean package -Dmaven.buildDirectory='target'
     '''
+    return output
 
 def call_test(pid, bid, dir, test_case, test_suite):
     '''
@@ -284,7 +289,10 @@ def call_test(pid, bid, dir, test_case, test_suite):
         for test in target_tests:
             run = sp.run(['mvn', 'clean', 'test', f'-Dtest={test}', '-DfailIfNoTests=false'], 
                          env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=repo_path)
+            #output += run.stderr.decode()
             output += run.stdout.decode()
+    
+    return output
 
 
 def call_bid(pid):
@@ -418,6 +426,7 @@ if __name__ == '__main__':
         print(output)
     elif args.command == "test":
         output = call_test(args.project_id, args.bug_id, args.work_dir, args.single_test, args.test_suite)
+        print(output)
     elif args.command == "bid":
         output = call_bid(args.project_id)
         print(output)

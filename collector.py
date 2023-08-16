@@ -37,7 +37,7 @@ def project_id_collector():
 
         for dir in os.listdir("repos/"):
             if project_id in dir:
-                repo_path = os.path.abspath(os.path.join('/repos/', f'{dir}'))
+                repo_path = os.path.abspath(os.path.join('repos/', f'{dir}'))
         project_map[project_id]["owner"] = owner
         project_map[project_id]["number_of_bugs"] = number_of_bugs
         project_map[project_id]['commit_db'] = commit_db

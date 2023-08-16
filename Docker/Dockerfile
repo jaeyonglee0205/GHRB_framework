@@ -42,12 +42,12 @@ RUN python3.9 -m pip install pip --upgrade
 
 RUN echo 'alias python=python3.9' >> /root/.bashrc
 
-RUN apt-get install pkg-config
-RUN apt-get install libcairo2-dev -yq
+# RUN apt-get install pkg-config
+# RUN apt-get install libcairo2-dev -yq
 
-RUN pip install argparse
-RUN pip freeze > requirements.txt
-RUN pip install -r requirements.txt
+# RUN pip install argparse
+# RUN pip freeze > requirements.txt
+# RUN pip install -r requirements.txt
 
 WORKDIR /root
 
