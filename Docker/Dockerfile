@@ -42,14 +42,12 @@ RUN python3.9 -m pip install pip --upgrade
 
 RUN echo 'alias python=python3.9' >> /root/.bashrc
 
-RUN pip install json
-RUN pip install subprocess
 RUN pip install argparse
-RUN pip install -r requirements.txt
+#RUN pip install -r requirements.txt
 
 WORKDIR /root
 
-ENV GHRB_HOME="/root/GHRB"
+ENV FRAMEWORK_HOME="/root/framework"
 
 COPY vimrc .vimrc
 ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
@@ -58,11 +56,11 @@ ENV TMP_DIR="/tmp"
 ENV PYTHONIOENCODING=utf-8
 
 # install Maven 3.8.1
-RUN wget https://archive.apache.org/dist/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.tar.gz -P /tmp # for running projects in GHRB benchmark
+RUN wget https://archive.apache.org/dist/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.tar.gz -P /tmp 
 RUN tar -xzvf /tmp/apache-maven-3.8.1-bin.tar.gz -C /opt
 
 # install Maven 3.8.6
-RUN wget https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz -P /tmp # for running projects in GHRB benchmark
+RUN wget https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz -P /tmp
 RUN tar -xzvf /tmp/apache-maven-3.8.6-bin.tar.gz -C /opt
 
 # install gradle
