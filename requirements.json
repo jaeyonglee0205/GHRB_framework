@@ -81,7 +81,13 @@
         }
     },
     "fastjson": {
-
+        "build": "maven",
+        "wrapper": false,
+        "version": "3.8.6",
+        "jdk": "8",
+        "extra": {
+            
+        }
     },
     "assertj": {
         "build": "maven",
