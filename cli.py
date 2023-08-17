@@ -261,9 +261,9 @@ def call_compile(pid, dir):
         out = sp.run(['./gradlew', 'clean', 'compileJava'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=repo_path)
 
     if "BUILD SUCCESS" in out.stdout.decode():
-        output = "Build Success"
+        output += "\033[92mBuild Success\033[0m"
     else:
-        output = "Build Failed"
+        output += "\033[91mBuild Failed\033[0m"
     '''
     mvn clean install -DskipTests=true
     mvn clean package -Dmaven.buildDirectory='target'
