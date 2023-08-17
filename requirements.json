@@ -86,7 +86,7 @@
         "version": "3.8.6",
         "jdk": "8",
         "extra": {
-            
+
         }
     },
     "assertj": {
@@ -104,7 +104,7 @@
         "version": "3.8.6",
         "jdk": "17",
         "extra": {
-
+            "command": "-Dsurefire.failIfNoSpecifiedTests=false"
         }
     },
     "rocketmq": {

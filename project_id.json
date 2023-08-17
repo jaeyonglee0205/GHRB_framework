@@ -206,7 +206,9 @@
       "wrapper": false,
       "version": "3.8.6",
       "jdk": "17",
-      "extra": {}
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false"
+      }
     }
   }
 }

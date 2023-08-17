@@ -99,7 +99,7 @@ def call_info(pid, bid):
                 output += '\t' + modified_file + '\n'
     return output
 
-def call_checkout(pid, vid, dir):
+def call_checkout(pid, vid, dir, patch):
     with open("project_id.json", "r") as f:
         project_id = json.load(f)
 
@@ -162,7 +162,7 @@ def call_checkout(pid, vid, dir):
         
         output += (f"Checking out {commit} to {working_dir}\n")
         
-        if version == "b":
+        if version == "b" and patch == True:
             sp.run(['git', 'apply', test_patch_dir], cwd=working_dir,
                 stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
@@ -273,8 +273,15 @@ def call_compile(pid, dir):
 def run_test (new_env, mvnw, gradlew, test_case, repo_path, command=None):
 
     if not mvnw and not gradlew:
-        run = sp.run(['mvn', 'clean', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false'],
-                    env=new_env, cwd=repo_path)
+        default = ['mvn', 'clean', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false']
+        if command is not None:
+            extra_command = command.split()
+            new_command = default + extra_command
+            run = sp.run(new_command,
+                         env=new_env, cwd=repo_path)
+        else:
+            run = sp.run(default,
+                        env=new_env, cwd=repo_path)
 
     elif mvnw:
         default = ['./mvnw', 'clean', 'test', f'-Dtest={test_case}']
@@ -348,15 +355,15 @@ def call_test(pid, bid, dir, test_case, test_suite):
                 return None
             
     if test_case is not None:
-        test_case = find_test(test_case)
+        found_test_case = find_test(test_case)
 
-        if test_case is None:
+        if found_test_case is None:
             print("External test case")
             run_test(new_env, mvnw, gradlew, test_case, repo_path, command)
         else:
             print("Internal test case")
-            print(test_case)
-            run_test(new_env, mvnw, gradlew, test_case, repo_path, command)
+            print(found_test_case)
+            run_test(new_env, mvnw, gradlew, found_test_case, repo_path, command)
     elif test_suite is not None:
         print("External test suite")
         pass
@@ -442,6 +449,9 @@ if __name__ == '__main__':
     parser_checkout.add_argument("-w", dest="work_dir", action="store",
                                  help="The working directory to which the buggy or fixed project version shall be checked out")
     
+    parser_checkout.add_argument("-pch", dest="patch", action="store", default=True,
+                                 help="(Only for buggy versions) Checkout with/without patch")
+    
 
     # d4j-compile -- compile a checked-out project version.
     parser_compile = subparsers.add_parser('compile',
@@ -493,7 +503,7 @@ if __name__ == '__main__':
         output = call_info(args.project_id, args.bug_id)
         print(output)
     elif args.command == "checkout":
-        output = call_checkout(args.project_id, args.version_id, args.work_dir)
+        output = call_checkout(args.project_id, args.version_id, args.work_dir, args.patch)
         print(output)
     elif args.command == "compile":
         output = call_compile(args.project_id, args.work_dir)
