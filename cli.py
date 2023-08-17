@@ -258,7 +258,7 @@ def call_compile(pid, dir):
         out = sp.run(['./mvnw', 'clean', 'compile'], env=new_env, check=True, cwd=repo_path)
     
     elif gradlew:
-        pass
+        out = sp.run(['./gradlew', 'clean', 'compileJava'], env=new_env, check=True, cwd=repo_path)
 
     # if "BUILD SUCCESS" in out.stdout.decode():
     #     output = "Build Success"
@@ -288,7 +288,8 @@ def run_test (new_env, mvnw, gradlew, test_case, repo_path, command=None):
             run = sp.run(default,
                         env=new_env, cwd=repo_path)
     elif gradlew:
-        default = ["./gradlew", "test", "-tests", f'{test_case}']
+        default = ["./gradlew", "test", "--tests", f'{test_case}']
+        print("gradlew")
         if command is not None:
             if 'test' in command:
                 new_command = ["./gradlew", command, '--tests', f'{test_case}']
@@ -297,6 +298,9 @@ def run_test (new_env, mvnw, gradlew, test_case, repo_path, command=None):
             else:
                 run = sp.run(new_command,
                              env=new_env, cwd=repo_path)
+        else:
+            run = sp.run(default,
+                         env=new_env, cwd=repo_path)
 
 def call_test(pid, bid, dir, test_case, test_suite):
     '''
