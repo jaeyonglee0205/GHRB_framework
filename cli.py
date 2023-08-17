@@ -7,7 +7,7 @@ from collections import Counter
 from tqdm import tqdm
 
 #from util import config, fix_build_env
-
+import re
 import subprocess as sp
 import argparse
 import pandas as pd
@@ -255,15 +255,15 @@ def call_compile(pid, dir):
     if not mvnw and not gradlew:
         out = sp.run(['mvn', 'clean', 'compile'], env=new_env, stdout = sp.PIPE, stderr = sp.PIPE, check=True, cwd=repo_path)
     elif mvnw:
-        out = sp.run(['./mvnw', 'clean', 'compile'], env=new_env, check=True, cwd=repo_path)
+        out = sp.run(['./mvnw', 'clean', 'compile'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=repo_path)
     
     elif gradlew:
-        out = sp.run(['./gradlew', 'clean', 'compileJava'], env=new_env, check=True, cwd=repo_path)
+        out = sp.run(['./gradlew', 'clean', 'compileJava'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=repo_path)
 
-    # if "BUILD SUCCESS" in out.stdout.decode():
-    #     output = "Build Success"
-    # else:
-    #     output = "Build Failed"
+    if "BUILD SUCCESS" in out.stdout.decode():
+        output = "Build Success"
+    else:
+        output = "Build Failed"
     '''
     mvn clean install -DskipTests=true
     mvn clean package -Dmaven.buildDirectory='target'
@@ -272,16 +272,17 @@ def call_compile(pid, dir):
 
 def run_test (new_env, mvnw, gradlew, test_case, repo_path, command=None):
 
+    output = ""
     if not mvnw and not gradlew:
-        default = ['mvn', 'clean', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false']
+        default = ['mvn', 'clean', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '-e']
         if command is not None:
             extra_command = command.split()
             new_command = default + extra_command
             run = sp.run(new_command,
-                         env=new_env, cwd=repo_path)
+                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=repo_path)
         else:
             run = sp.run(default,
-                        env=new_env, cwd=repo_path)
+                        env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=repo_path)
 
     elif mvnw:
         default = ['./mvnw', 'clean', 'test', f'-Dtest={test_case}']
@@ -290,10 +291,10 @@ def run_test (new_env, mvnw, gradlew, test_case, repo_path, command=None):
             new_command = default + extra_command
 
             run = sp.run(new_command,
-                        env=new_env, cwd=repo_path)
+                        env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=repo_path)
         else:
             run = sp.run(default,
-                        env=new_env, cwd=repo_path)
+                        env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=repo_path)
     elif gradlew:
         default = ["./gradlew", "test", "--tests", f'{test_case}']
         print("gradlew")
@@ -301,13 +302,36 @@ def run_test (new_env, mvnw, gradlew, test_case, repo_path, command=None):
             if 'test' in command:
                 new_command = ["./gradlew", command, '--tests', f'{test_case}']
                 run = sp.run(new_command,
-                             env=new_env, cwd=repo_path)
+                             env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=repo_path)
             else:
                 run = sp.run(new_command,
-                             env=new_env, cwd=repo_path)
+                             env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=repo_path)
         else:
             run = sp.run(default,
-                         env=new_env, cwd=repo_path)
+                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=repo_path)
+    '''
+    Modify for gradle
+    '''
+    stdout = run.stdout.decode()
+    if "BUILD SUCCESS" in stdout:
+        output += (f'''
+\033[1mTEST: {test_case}\033[0m 
+
+\033[92mTest Success\033[0m
+------------------------------------------------------------------------\n''')
+    elif "There are test failures" in stdout:
+        pattern = r'\[ERROR\] Failures:(.*?)\[INFO\]\s+\[ERROR\] Tests run:'
+        match = re.search(pattern, stdout, re.DOTALL)
+        fail_part = match.group(1).strip()
+        fail_part = re.sub(r'\[ERROR\]', '', fail_part).strip()
+        output += (f'''
+\033[1mTEST: {test_case}\033[0m
+
+\033[91mFailure info:\033[0m
+    {fail_part}
+------------------------------------------------------------------------\n''')
+    
+    return output
 
 def call_test(pid, bid, dir, test_case, test_suite):
     '''
@@ -342,7 +366,6 @@ def call_test(pid, bid, dir, test_case, test_suite):
     report_id = active_bugs.loc[active_bugs['bug_id'] == int(bid)]['report.id'].values[0]
     
     target_tests = verified_bugs[report_id]["execution_result"]["success_tests"]
-    print(target_tests)
 
     new_env, mvnw, gradlew = find_env(pid)
 
@@ -359,24 +382,23 @@ def call_test(pid, bid, dir, test_case, test_suite):
 
         if found_test_case is None:
             print("External test case")
-            run_test(new_env, mvnw, gradlew, test_case, repo_path, command)
+            output += run_test(new_env, mvnw, gradlew, test_case, repo_path, command)
         else:
             print("Internal test case")
-            print(found_test_case)
-            run_test(new_env, mvnw, gradlew, found_test_case, repo_path, command)
+            output += run_test(new_env, mvnw, gradlew, found_test_case, repo_path, command)
     elif test_suite is not None:
         print("External test suite")
         pass
     else:
         print("Running all test cases")
         for test in target_tests:
-            run_test(new_env, mvnw, gradlew, test, repo_path, command)
+            output += run_test(new_env, mvnw, gradlew, test, repo_path, command)
 
     
     return output
 
 
-def call_bid(pid):
+def call_bid(pid, quiet):
     with open("project_id.json", "r") as f:
         project_id = json.load(f)
 
@@ -386,8 +408,9 @@ def call_bid(pid):
     
     number_of_bugs = project_id[pid]["number_of_bugs"]
     commit_db = project_id[pid]["commit_db"]
-    
-    output = f'''
+    output = ""
+    if not quiet:
+        output += f'''
     Bug Information for {pid}
 
     Total number of bugs: {number_of_bugs}
@@ -490,6 +513,9 @@ if __name__ == '__main__':
     parser_bid.add_argument("-p", dest='project_id', action="store",
                             help="The ID of the project for which the list of bug IDs is returned")
     
+    parser_bid.add_argument("-q", "--quiet", dest='quiet', action='store_true',
+                            help="Print only the bug IDs")
+    
     
     parser_pid = subparsers.add_parser('pid',
                                        help="Print the list of available project IDs")
@@ -512,7 +538,7 @@ if __name__ == '__main__':
         output = call_test(args.project_id, args.bug_id, args.work_dir, args.single_test, args.test_suite)
         print(output)
     elif args.command == "bid":
-        output = call_bid(args.project_id)
+        output = call_bid(args.project_id, args.quiet)
         print(output)
     elif args.command == "pid":
         output = call_pid()
