@@ -6,3 +6,5 @@ cd ..
 
 chmod +x cli.py
 ./cli.py -h
+
+python collector.py
