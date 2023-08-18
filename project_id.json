@@ -1,9 +1,63 @@
 {
-  "jackson-dataformat-xml": {
-    "owner": "FasterXML",
-    "number_of_bugs": 1,
-    "commit_db": "commit_db/jackson-dataformat-xml_bugs.csv",
-    "repo_path": "/root/framework/repos/jackson-dataformat-xml",
+  "fastjson": {
+    "owner": "alibaba",
+    "number_of_bugs": 2,
+    "commit_db": "commit_db/fastjson_bugs.csv",
+    "repo_path": "/root/framework/repos/fastjson",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "8",
+      "extra": {}
+    }
+  },
+  "nacos": {
+    "owner": "alibaba",
+    "number_of_bugs": 5,
+    "commit_db": "commit_db/nacos_bugs.csv",
+    "repo_path": "/root/framework/repos/nacos",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "8",
+      "extra": {}
+    }
+  },
+  "dubbo": {
+    "owner": "apache",
+    "number_of_bugs": 2,
+    "commit_db": "commit_db/dubbo_bugs.csv",
+    "repo_path": "/root/framework/repos/dubbo",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "8",
+      "extra": {}
+    }
+  },
+  "rocketmq": {
+    "owner": "apache",
+    "number_of_bugs": 17,
+    "commit_db": "commit_db/rocketmq_bugs.csv",
+    "repo_path": "/root/framework/repos/rocketmq",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.1",
+      "jdk": "8",
+      "extra": {
+        "command": "-Dargline='-Xmx1024m' -Dcheckstyle.skip"
+      }
+    }
+  },
+  "assertj": {
+    "owner": "assertj",
+    "number_of_bugs": 5,
+    "commit_db": "commit_db/assertj_bugs.csv",
+    "repo_path": "/root/framework/repos/assertj",
     "requirements": {
       "build": "maven",
       "wrapper": false,
@@ -38,19 +92,6 @@
       "extra": {}
     }
   },
-  "dubbo": {
-    "owner": "apache",
-    "number_of_bugs": 2,
-    "commit_db": "commit_db/dubbo_bugs.csv",
-    "repo_path": "/root/framework/repos/dubbo",
-    "requirements": {
-      "build": "maven",
-      "wrapper": false,
-      "version": "3.8.6",
-      "jdk": "8",
-      "extra": {}
-    }
-  },
   "jackson-databind": {
     "owner": "FasterXML",
     "number_of_bugs": 4,
@@ -64,50 +105,11 @@
       "extra": {}
     }
   },
-  "seata": {
-    "owner": "seata",
-    "number_of_bugs": 2,
-    "commit_db": "commit_db/seata_bugs.csv",
-    "repo_path": "/root/framework/repos/seata",
-    "requirements": {
-      "build": "maven",
-      "wrapper": false,
-      "version": "3.8.6",
-      "jdk": "11",
-      "extra": {}
-    }
-  },
-  "Apktool": {
-    "owner": "iBotPeaches",
+  "jackson-dataformat-xml": {
+    "owner": "FasterXML",
     "number_of_bugs": 1,
-    "commit_db": "commit_db/Apktool_bugs.csv",
-    "repo_path": "/root/framework/repos/Apktool",
-    "requirements": {
-      "build": "gradle",
-      "wrapper": true,
-      "jdk": "17",
-      "extra": {}
-    }
-  },
-  "openapi-generator": {
-    "owner": "OpenAPITools",
-    "number_of_bugs": 22,
-    "commit_db": "commit_db/openapi-generator_bugs.csv",
-    "repo_path": "/root/framework/repos/openapi-generator",
-    "requirements": {
-      "build": "maven",
-      "wrapper": true,
-      "jdk": "11",
-      "extra": {
-        "command": "-Dsurefire.failIfNoSpecifiedTests=false"
-      }
-    }
-  },
-  "jsoup": {
-    "owner": "jhy",
-    "number_of_bugs": 5,
-    "commit_db": "commit_db/jsoup_bugs.csv",
-    "repo_path": "/root/framework/repos/jsoup",
+    "commit_db": "commit_db/jackson-dataformat-xml_bugs.csv",
+    "repo_path": "/root/framework/repos/jackson-dataformat-xml",
     "requirements": {
       "build": "maven",
       "wrapper": false,
@@ -129,73 +131,6 @@
       "extra": {}
     }
   },
-  "nacos": {
-    "owner": "alibaba",
-    "number_of_bugs": 5,
-    "commit_db": "commit_db/nacos_bugs.csv",
-    "repo_path": "/root/framework/repos/nacos",
-    "requirements": {
-      "build": "maven",
-      "wrapper": false,
-      "version": "3.8.6",
-      "jdk": "8",
-      "extra": {}
-    }
-  },
-  "fastjson": {
-    "owner": "alibaba",
-    "number_of_bugs": 2,
-    "commit_db": "commit_db/fastjson_bugs.csv",
-    "repo_path": "/root/framework/repos/fastjson",
-    "requirements": {
-      "build": "maven",
-      "wrapper": false,
-      "version": "3.8.6",
-      "jdk": "8",
-      "extra": {}
-    }
-  },
-  "assertj": {
-    "owner": "assertj",
-    "number_of_bugs": 5,
-    "commit_db": "commit_db/assertj_bugs.csv",
-    "repo_path": "/root/framework/repos/assertj",
-    "requirements": {
-      "build": "maven",
-      "wrapper": false,
-      "version": "3.8.6",
-      "jdk": "17",
-      "extra": {}
-    }
-  },
-  "rocketmq": {
-    "owner": "apache",
-    "number_of_bugs": 17,
-    "commit_db": "commit_db/rocketmq_bugs.csv",
-    "repo_path": "/root/framework/repos/rocketmq",
-    "requirements": {
-      "build": "maven",
-      "wrapper": false,
-      "version": "3.8.1",
-      "jdk": "8",
-      "extra": {
-        "command": "-Dargline='-Xmx1024m' -Dcheckstyle.skip"
-      }
-    }
-  },
-  "retrofit": {
-    "owner": "square",
-    "number_of_bugs": 1,
-    "commit_db": "commit_db/retrofit_bugs.csv",
-    "repo_path": "/root/framework/repos/retrofit",
-    "requirements": {
-      "build": "gradle",
-      "wrapper": true,
-      "extra": {
-        "command": ":retrofit:test"
-      }
-    }
-  },
   "sslcontext-kickstart": {
     "owner": "Hakky54",
     "number_of_bugs": 6,
@@ -208,6 +143,71 @@
       "jdk": "17",
       "extra": {
         "command": "-Dsurefire.failIfNoSpecifiedTests=false"
+      }
+    }
+  },
+  "Apktool": {
+    "owner": "iBotPeaches",
+    "number_of_bugs": 1,
+    "commit_db": "commit_db/Apktool_bugs.csv",
+    "repo_path": "/root/framework/repos/Apktool",
+    "requirements": {
+      "build": "gradle",
+      "wrapper": true,
+      "jdk": "17",
+      "extra": {}
+    }
+  },
+  "jsoup": {
+    "owner": "jhy",
+    "number_of_bugs": 5,
+    "commit_db": "commit_db/jsoup_bugs.csv",
+    "repo_path": "/root/framework/repos/jsoup",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "17",
+      "extra": {}
+    }
+  },
+  "openapi-generator": {
+    "owner": "OpenAPITools",
+    "number_of_bugs": 22,
+    "commit_db": "commit_db/openapi-generator_bugs.csv",
+    "repo_path": "/root/framework/repos/openapi-generator",
+    "requirements": {
+      "build": "maven",
+      "wrapper": true,
+      "jdk": "11",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false"
+      }
+    }
+  },
+  "seata": {
+    "owner": "seata",
+    "number_of_bugs": 2,
+    "commit_db": "commit_db/seata_bugs.csv",
+    "repo_path": "/root/framework/repos/seata",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "11",
+      "extra": {}
+    }
+  },
+  "retrofit": {
+    "owner": "square",
+    "number_of_bugs": 1,
+    "commit_db": "commit_db/retrofit_bugs.csv",
+    "repo_path": "/root/framework/repos/retrofit",
+    "requirements": {
+      "build": "gradle",
+      "wrapper": true,
+      "extra": {
+        "command": ":retrofit:test"
       }
     }
   }
