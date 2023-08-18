@@ -1,9 +1,63 @@
 {
-  "jackson-dataformat-xml": {
-    "owner": "FasterXML",
-    "number_of_bugs": 1,
-    "commit_db": "commit_db/jackson-dataformat-xml_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/jackson-dataformat-xml",
+  "fastjson": {
+    "owner": "alibaba",
+    "number_of_bugs": 2,
+    "commit_db": "commit_db/fastjson_bugs.csv",
+    "repo_path": "/root/framework/repos/fastjson",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "8",
+      "extra": {}
+    }
+  },
+  "nacos": {
+    "owner": "alibaba",
+    "number_of_bugs": 5,
+    "commit_db": "commit_db/nacos_bugs.csv",
+    "repo_path": "/root/framework/repos/nacos",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "8",
+      "extra": {}
+    }
+  },
+  "dubbo": {
+    "owner": "apache",
+    "number_of_bugs": 2,
+    "commit_db": "commit_db/dubbo_bugs.csv",
+    "repo_path": "/root/framework/repos/dubbo",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "8",
+      "extra": {}
+    }
+  },
+  "rocketmq": {
+    "owner": "apache",
+    "number_of_bugs": 17,
+    "commit_db": "commit_db/rocketmq_bugs.csv",
+    "repo_path": "/root/framework/repos/rocketmq",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.1",
+      "jdk": "8",
+      "extra": {
+        "command": "-Dargline='-Xmx1024m' -Dcheckstyle.skip"
+      }
+    }
+  },
+  "assertj": {
+    "owner": "assertj",
+    "number_of_bugs": 5,
+    "commit_db": "commit_db/assertj_bugs.csv",
+    "repo_path": "/root/framework/repos/assertj",
     "requirements": {
       "build": "maven",
       "wrapper": false,
@@ -16,7 +70,7 @@
     "owner": "checkstyle",
     "number_of_bugs": 16,
     "commit_db": "commit_db/checkstyle_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/checkstyle",
+    "repo_path": "/root/framework/repos/checkstyle",
     "requirements": {
       "build": "maven",
       "wrapper": false,
@@ -29,25 +83,12 @@
     "owner": "FasterXML",
     "number_of_bugs": 3,
     "commit_db": "commit_db/jackson-core_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/jackson-core",
+    "repo_path": "/root/framework/repos/jackson-core",
     "requirements": {
       "build": "maven",
       "wrapper": false,
       "version": "3.8.6",
       "jdk": "17",
-      "extra": {}
-    }
-  },
-  "dubbo": {
-    "owner": "apache",
-    "number_of_bugs": 2,
-    "commit_db": "commit_db/dubbo_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/dubbo",
-    "requirements": {
-      "build": "maven",
-      "wrapper": false,
-      "version": "3.8.6",
-      "jdk": "8",
       "extra": {}
     }
   },
@@ -55,7 +96,7 @@
     "owner": "FasterXML",
     "number_of_bugs": 4,
     "commit_db": "commit_db/jackson-databind_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/jackson-databind",
+    "repo_path": "/root/framework/repos/jackson-databind",
     "requirements": {
       "build": "maven",
       "wrapper": false,
@@ -64,50 +105,11 @@
       "extra": {}
     }
   },
-  "seata": {
-    "owner": "seata",
-    "number_of_bugs": 2,
-    "commit_db": "commit_db/seata_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/seata",
-    "requirements": {
-      "build": "maven",
-      "wrapper": false,
-      "version": "3.8.6",
-      "jdk": "11",
-      "extra": {}
-    }
-  },
-  "Apktool": {
-    "owner": "iBotPeaches",
+  "jackson-dataformat-xml": {
+    "owner": "FasterXML",
     "number_of_bugs": 1,
-    "commit_db": "commit_db/Apktool_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/Apktool",
-    "requirements": {
-      "build": "gradle",
-      "wrapper": true,
-      "jdk": "17",
-      "extra": {}
-    }
-  },
-  "openapi-generator": {
-    "owner": "OpenAPITools",
-    "number_of_bugs": 22,
-    "commit_db": "commit_db/openapi-generator_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/openapi-generator",
-    "requirements": {
-      "build": "maven",
-      "wrapper": true,
-      "jdk": "11",
-      "extra": {
-        "command": "-Dsurefire.failIfNoSpecifiedTests=false"
-      }
-    }
-  },
-  "jsoup": {
-    "owner": "jhy",
-    "number_of_bugs": 5,
-    "commit_db": "commit_db/jsoup_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/jsoup",
+    "commit_db": "commit_db/jackson-dataformat-xml_bugs.csv",
+    "repo_path": "/root/framework/repos/jackson-dataformat-xml",
     "requirements": {
       "build": "maven",
       "wrapper": false,
@@ -120,7 +122,7 @@
     "owner": "google",
     "number_of_bugs": 13,
     "commit_db": "commit_db/gson_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/gson",
+    "repo_path": "/root/framework/repos/gson",
     "requirements": {
       "build": "maven",
       "wrapper": false,
@@ -129,37 +131,38 @@
       "extra": {}
     }
   },
-  "nacos": {
-    "owner": "alibaba",
-    "number_of_bugs": 5,
-    "commit_db": "commit_db/nacos_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/nacos",
+  "sslcontext-kickstart": {
+    "owner": "Hakky54",
+    "number_of_bugs": 6,
+    "commit_db": "commit_db/sslcontext-kickstart_bugs.csv",
+    "repo_path": "/root/framework/repos/sslcontext-kickstart",
     "requirements": {
       "build": "maven",
       "wrapper": false,
       "version": "3.8.6",
-      "jdk": "8",
-      "extra": {}
+      "jdk": "17",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false"
+      }
     }
   },
-  "fastjson": {
-    "owner": "alibaba",
-    "number_of_bugs": 2,
-    "commit_db": "commit_db/fastjson_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/fastjson",
+  "Apktool": {
+    "owner": "iBotPeaches",
+    "number_of_bugs": 1,
+    "commit_db": "commit_db/Apktool_bugs.csv",
+    "repo_path": "/root/framework/repos/Apktool",
     "requirements": {
-      "build": "maven",
-      "wrapper": false,
-      "version": "3.8.6",
-      "jdk": "8",
+      "build": "gradle",
+      "wrapper": true,
+      "jdk": "17",
       "extra": {}
     }
   },
-  "assertj": {
-    "owner": "assertj",
+  "jsoup": {
+    "owner": "jhy",
     "number_of_bugs": 5,
-    "commit_db": "commit_db/assertj_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/assertj",
+    "commit_db": "commit_db/jsoup_bugs.csv",
+    "repo_path": "/root/framework/repos/jsoup",
     "requirements": {
       "build": "maven",
       "wrapper": false,
@@ -168,45 +171,44 @@
       "extra": {}
     }
   },
-  "rocketmq": {
-    "owner": "apache",
-    "number_of_bugs": 17,
-    "commit_db": "commit_db/rocketmq_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/rocketmq",
+  "openapi-generator": {
+    "owner": "OpenAPITools",
+    "number_of_bugs": 22,
+    "commit_db": "commit_db/openapi-generator_bugs.csv",
+    "repo_path": "/root/framework/repos/openapi-generator",
+    "requirements": {
+      "build": "maven",
+      "wrapper": true,
+      "jdk": "11",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false"
+      }
+    }
+  },
+  "seata": {
+    "owner": "seata",
+    "number_of_bugs": 2,
+    "commit_db": "commit_db/seata_bugs.csv",
+    "repo_path": "/root/framework/repos/seata",
     "requirements": {
       "build": "maven",
       "wrapper": false,
-      "version": "3.8.1",
-      "jdk": "8",
-      "extra": {
-        "command": "-Dargline='-Xmx1024m' -Dcheckstyle.skip"
-      }
+      "version": "3.8.6",
+      "jdk": "11",
+      "extra": {}
     }
   },
   "retrofit": {
     "owner": "square",
     "number_of_bugs": 1,
     "commit_db": "commit_db/retrofit_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/retrofit",
+    "repo_path": "/root/framework/repos/retrofit",
     "requirements": {
       "build": "gradle",
       "wrapper": true,
       "extra": {
         "command": ":retrofit:test"
       }
-    }
-  },
-  "sslcontext-kickstart": {
-    "owner": "Hakky54",
-    "number_of_bugs": 6,
-    "commit_db": "commit_db/sslcontext-kickstart_bugs.csv",
-    "repo_path": "/home/coinse/Documents/jylee/GHRB_framework/repos/sslcontext-kickstart",
-    "requirements": {
-      "build": "maven",
-      "wrapper": false,
-      "version": "3.8.6",
-      "jdk": "17",
-      "extra": {}
     }
   }
 }
