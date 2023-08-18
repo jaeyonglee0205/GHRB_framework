@@ -20,7 +20,7 @@ python collector.py
 ```
 
 Check whether cli.py runs correctly  
-'./cli.py -h'  
+`./cli.py -h`  
 
 Currently, all directory path needs to be in absolute path inside the docker container  
 
