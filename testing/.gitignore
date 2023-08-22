@@ -1,22 +1,24 @@
+# use glob syntax.
+syntax: glob
+
+*.class
+*~
+*.bak
+*.off
+*.old
+.DS_Store
+
+# building
+target
+
+# Eclipse
 .classpath
 .project
 .settings
-eclipsebin
-target
-*/target
-pom.xml.*
-release.properties
 
+# IDEA
 .idea
 *.iml
 *.ipr
 *.iws
-classes
-
-.gradle
-local.properties
-build
-
-.DS_Store
-
-examples/android-proguard-example/gen
+/target

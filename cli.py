@@ -3,7 +3,7 @@
 import os
 import json
 from os import path
-from collections import Counter
+from collections import defaultdict
 from tqdm import tqdm
 
 #from util import config, fix_build_env
@@ -134,6 +134,22 @@ def call_checkout(pid, vid, dir, patch):
     else:
         output = "Choose 'b' for buggy version, 'f' for fixed version"
         return output
+    
+    ### Updating bug_cause
+
+    with open("bug_cause.json", "r") as f:
+        try:
+            bug_cause = json.load(f)
+        except:
+             bug_cause = defaultdict(str)
+
+    
+    bug_cause[report_id] = ""
+
+    with open("bug_cause.json", "w") as f:
+        json.dump(bug_cause, f, indent=2)
+
+    ### Delete this part
     
     '''
     The working directory to which the buggy or fixed project version 
@@ -285,8 +301,11 @@ def call_compile(dir):
 
     path = repo_path if dir is None else dir
 
+    if pid == "jackson-core" or pid == "jackson-databind":
+        fix_build_env(pid, path)
+
     if not mvnw and not gradlew:
-        out = sp.run(['mvn', 'clean', 'compile'], env=new_env, stdout = sp.PIPE, stderr = sp.PIPE, check=True, cwd=path)
+        out = sp.run(['mvn', 'clean', 'compile'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path)
     elif mvnw:
         out = sp.run(['./mvnw', 'clean', 'compile'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path)
     
@@ -347,6 +366,8 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
     '''
     stdout = run.stdout.decode()
 
+    clean = True    ### Remove
+
     if "BUILD SUCCESS" in stdout:
         output += (f'''
 \033[1mTEST: {test_case}\033[0m 
@@ -354,6 +375,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
 \033[92mTest Success\033[0m
 ------------------------------------------------------------------------\n''')
     elif "There are test failures" in stdout:
+        clean = False   ### Remove
         pattern = r'\[ERROR\] Failures:(.*?)\[INFO\]\s+\[ERROR\] Tests run:'
         match = re.search(pattern, stdout, re.DOTALL)
         fail_part = match.group(1).strip()
@@ -365,6 +387,42 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
     {fail_part}
 ------------------------------------------------------------------------\n''')
     
+    ######################################################
+    ### Updating bug_cause
+
+    if not clean:
+        with open("bug_cause.json", "r") as f:
+            bug_cause = json.load(f)
+        
+        with open(f"{path}/.ghrb.config", "r") as f:
+            content = f.read()
+
+        with open("project_id.json", "r") as f:
+            project_id = json.load(f)
+
+        pid_pattern = r'(pid=)(.*)\n'
+        out = re.search(pid_pattern, content)
+        pid = out.group(2)
+
+        vid_pattern = r'(vid=)(.*)'
+        out = re.search(vid_pattern, content)
+        vid = out.group(2)
+        bid = vid[0]
+
+        commit_db = project_id[pid]["commit_db"]
+
+        active_bugs = pd.read_csv(commit_db)
+
+        report_id = active_bugs.loc[active_bugs['bug_id'] == int(bid)]["report.id"].values[0]
+
+        bug_cause[report_id] += fail_part
+
+        with open("bug_cause.json", "w") as f:
+            json.dump(bug_cause, f, indent=2)
+    
+
+    ### Delete this part
+    ######################################################
     return output
 
 def call_test(dir, test_case, test_suite):
@@ -506,6 +564,42 @@ def call_env(pid):
     output = requirements
 
     return output
+
+
+properties_to_replace = {
+    'jackson-core': {
+        r'<javac.src.version>\s*1.6\s*</javac.src.version>': '',
+        r'<javac.target.version>\s*1.6\s*</javac.target.version>': '',
+        r'<maven.compiler.source>\s*1.6\s*</maven.compiler.source>': '<maven.compiler.source>11</maven.compiler.source>',
+        r'<maven.compiler.target>\s*1.6\s*</maven.compiler.target>': '<maven.compiler.target>11</maven.compiler.target>',
+    },
+    'jackson-databind': {
+        r'<version>\s*2.13.0-rc1-SNAPSHOT\s*</version>': '<version>2.14.0-SNAPSHOT</version>',
+        r'<source>\s*14\s*</source>': '<source>17</source>',
+        r'<release>\s*14\s*</release>': '<release>17</release>',
+        r'<id>\s*java17\+\s*</id>': '<id>java17+</id>',
+        r'<jdk>\s*\[17\,\)\s*</jdk>': '<jdk>[17,)</jdk>'
+    }
+}
+
+def fix_build_env(project, path):
+
+    pom_file = os.path.join(path, 'pom.xml')
+
+    with open(pom_file, 'r') as f:
+        content = f.read()
+
+    if project == 'jackson-core':
+        replace_map = properties_to_replace['jackson-core']
+    elif project == 'jackson-databind':
+        replace_map = properties_to_replace['jackson-databind']
+
+    for unsupported_property in replace_map:
+        content = re.sub(
+            unsupported_property, replace_map[unsupported_property], content)
+
+    with open(pom_file, 'w') as f:
+        f.write(content)
 
 
 if __name__ == '__main__':
