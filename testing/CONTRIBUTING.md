@@ -1,153 +1,48 @@
-Contributing
-============
+## How To Contribute
 
-Thank you for your interest in contributing to AssertJ!
+We are always very happy to have contributions, whether for trivial cleanups or big new features.
+We want to have high quality, well documented codes for each programming language, as well as the surrounding [ecosystem](https://github.com/apache/rocketmq-externals) of integration tools that people use with RocketMQ.
 
-We appreciate your effort and to make sure that your pull request is easy to review, we ask you to note the following guidelines including legal contributor agreement:
+Nor is code the only way to contribute to the project. We strongly value documentation, integration with other project, and gladly accept improvements for these aspects.
 
-* Use JDK 17 or newer to build the project.
-* Use **[AssertJ code Eclipse formatting preferences](src/ide-support/assertj-eclipse-formatter.xml)** (for IntelliJ IDEA users, you can import it with the 'Eclipse Code Formatter' Plugin)
-* Write complete Javadocs for each assertion method and include a code example (succeeding and failing assertion(s)).
-* As we use JUnit 5, favor `package-private` visibility for both test classes and test methods.
-* Write one JUnit test class for each assertion method with the following naming convention: `<AssertClass>_<assertion>_Test`.
-* Write unit test assertions with AssertJ! Let's eat our own dog food.
-* Unit tests method naming convention is underscore-based (like Python) and not camel-case, we find it is more readable for long test names!
-* Successful assertion unit test method names should start with: `should_pass_xxx` (if you find a better test name, use your best judgement and go for it!)
-* Failing assertion unit test method names should start with: `should_fail_xxx`. (if you find a better test name, use your best judgement and go for it!)
-* Put `GIVEN` `WHEN` `THEN` steps in each test, prefer `BDDAssertions.then` over `Assertions.assertThat` for assertions in the `THEN` step. Steps can be combined or omitted if a separate step does not provide much benefit to test readability, just ensure that the WHEN step (either single or combined) contains the test target.
-* Use `AssertionUtil.expectAssertionError` for tests expecting to get an `AssertionError` - see `OptionalAssert_containsInstanceOf_Test` below for an example.
-* Use static import when it makes the code more readable.
-* If possible, add a (fun) code example in [assertj-examples](https://github.com/assertj/assertj-examples) and use it in the javadoc.
+Recommend reading:
+ * [Contributors Tech Guide](http://www.apache.org/dev/contributors)
+ * [Get involved!](http://www.apache.org/foundation/getinvolved.html)
 
-A good unit test to use as a reference is `OptionalAssert_containsInstanceOf_Test`, here's a sample below:
+## Contributing code
 
-```java
-import static org.assertj.core.api.BDDAssertions.then;
-import static org.assertj.core.util.AssertionsUtil.expectAssertionError;
-// other imports not shown for brevity
+To submit a change for inclusion, please do the following:
 
-class OptionalAssert_containsInstanceOf_Test extends BaseTest {
+#### If the change is non-trivial please include some unit tests that cover the new functionality.
+#### If you are introducing a completely new feature or API it is a good idea to start a [RIP](https://github.com/apache/rocketmq/wiki/RocketMQ-Improvement-Proposal) and get consensus on the basic design first.
+#### It is our job to follow up on patches in a timely fashion. Nag us if we aren't doing our job (sometimes we drop things).
 
-  @Test
-  void should_fail_if_optional_is_empty() {
-    // GIVEN
-    Optional<Object> actual = Optional.empty();
-    // WHEN
-    AssertionError assertionError = expectAssertionError(() -> assertThat(actual).containsInstanceOf(Object.class));
-    // THEN
-    then(assertionError).hasMessage(shouldBePresent(actual).create());
-  }
+### Squash commits
 
-  @Test
-  void should_pass_if_optional_contains_required_type() {
-    // GIVEN
-    Optional<String> optional = Optional.of("something");
-    // WHEN/THEN
-    then(optional).containsInstanceOf(String.class);
-  }
+If your have a pull request on GitHub, and updated more than once, it's better to squash all commits.
 
-}
-```
+1. Identify how many commits you made since you began: ``git log``.
+2. Squash these commits by N: ``git rebase -i HEAD~N`` .
+3. Leave "pick" tag in the first line.
+4. Change all other commits from "pick" to "fixup".
+5. Then do "force push" to overwrite remote history: ``git push -u origin ROCKETMQ-9999 --force``
+6. All your changes are now in a single commit, that would be much better for review.
 
-It's ok not to follow some rules described above if you have a good reason not to (use your best judgement).
+More details of squash can be found at [stackoverflow](https://stackoverflow.com/questions/5189560/squash-my-last-x-commits-together-using-git).
 
-[assertj-examples](https://github.com/assertj/assertj-examples) shows how to efficiently use AssertJ through fun unit test examples, it is a kind of living documentation.
+## Becoming a Committer
 
-## Rebase your PR on main (no merge!)
+We are always interested in adding new contributors. What we look for are series of contributions, good taste and ongoing interest in the project. If you are interested in becoming a committer, please let one of the existing committers know and they can help you walk through the process.
 
-We prefer integrating PR by squashing all the commits and rebase it to `main`, if your PR has diverged and needs to get the newer `main` commits, please rebase on `main` but **do not merge `main` in your PR branch** as it will prevent rebasing later on.
+Nowadays,we have several important contribution points:
+#### Wiki & JavaDoc
+#### RocketMQ SDK(C++\.Net\Php\Python\Go\Node.js)
+#### RocketMQ Connectors
 
-## Naming conventions with some examples:
+##### Prerequisite
+If you want to contribute the above listing points, you must abide our some prerequisites:
 
-Here are some of the `ThrowableAssert` assertions: `hasMessage`, `hasNoCause`, `hasMessageContaining`; for each of them we have a test class, note the naming convention:
-* `ThrowableAssert_hasMessage_Test`
-* `ThrowableAssert_hasNoCause_Test`
-* `ThrowableAssert_hasMessageContaining_Test`
-
-Let's look at `Throwables_assertHasNoCause_Test` tests method names (underscore based only):
-* `should_pass_if_actual_has_no_cause`
-* `should_fail_if_actual_is_null`
-* `should_fail_if_actual_has_a_cause`
-
-A good javadoc example taken from [`AbstractCharSequenceAssert.containsSequence`](src/main/java/org/assertj/core/api/AbstractCharSequenceAssert.java) including:
-* assertion description
-* a code example showing how to use the assertion (succeeding and failing assertion)
-* parameters description (if any)
-* exceptions description
-* since tag (e.g. `@since 3.9.0`)
-
-```java
-/**
- * Verifies that the actual {@code CharSequence} contains all the given strings <b>in the given order</b>.
- * <p>
- * Example:
- *
- * <pre><code class='java'> String book = "{ 'title':'A Game of Thrones', 'author':'George Martin'}";
- *
- * // this assertion succeeds ...
- * assertThat(book).containsSequence("{", "title", "A Game of Thrones", "}");
- *
- * // ... but this one fails as "author" must come after "A Game of Thrones"
- * assertThat(book).containsSequence("{", "author", "A Game of Thrones", "}"); </code></pre>
- *
- * @param values the Strings to look for, in order.
- * @return {@code this} assertion object.
- * @throws NullPointerException if the given values is {@code null}.
- * @throws IllegalArgumentException if the given values is empty.
- * @throws AssertionError if the actual {@code CharSequence} is {@code null}.
- * @throws AssertionError if the actual {@code CharSequence} does not contain all the given strings <b>in the given order</b>.
- * @since 2.1.0 / 3.1.0
- */
-```
-
-Note that to get a good HTML rendering for the code examples, the code should start at the same line and one space after `<pre><code class='java'>`.
-
-Good:
-```text
- * <pre><code class='java'> String book = "{ 'title':'A Game of Thrones', 'author':'George Martin'}";
-```
-
-BAD! (missing space)
-```text
- * <pre><code class='java'>String book = "{ 'title':'A Game of Thrones', 'author':'George Martin'}";
-```
-
-BAD! (not in the same line)
-```text
- * <pre><code class='java'>
- * String book = "{ 'title':'A Game of Thrones', 'author':'George Martin'}";
-```
-
-To be sure of what the javadoc actually looks, simply generate it and read it in your browser.
-
-## Binary compatibility
-
-Try to keep [binary compatibility](https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html) whenever possible. It means that you can safely:
-* Rewrite the body of methods, constructors, and initializers (like static blocks).
-* Rewrite code in the above that previously threw exceptions to no longer do so.
-* Add fields, methods, and constructors.
-* Delete elements declared private.
-* Reorder fields, methods, and constructors.
-* Move a method higher in a class hierarchy.
-* Reorder the list of direct super-interfaces in a class or interface.
-* Insert new class or interface types in a type hierarchy.
-* Add generics (since the compiler erases them).
-* Update package-private elements.
-
-Other changes could compromise binary compatibility.
-These are not automatically rejected, but we will carefully evaluate each of them to weigh all the pros and cons.
-
-## Using Gitpod
-
-To avoid setting up your local development environment, you can use [Gitpod](https://www.gitpod.io/) and develop directly in browser-based Visual Studio Code, or [JetBrains Client via JetBrains Gateway](https://www.gitpod.io/docs/ides-and-editors/jetbrains-gateway).
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/from-referrer/)
-
-## Legal stuff:
-
-Project license(s): Apache License Version 2.0
-
-As a contributor:
-* You will only submit contributions where you have authored 100% of the content.
-* You will only submit contributions to which you have the necessary rights. This means that if you are employed, you have received the necessary permissions from your employer to make the contributions.
-* Whatever content you contribute will be provided under the project license(s).
+###### Readability - API must have Javadoc, some very important methods also must have javadoc
+###### Testability - 80% above unit test coverage about main process
+###### Maintainability - Comply with our [checkstyle spec](style/rmq_checkstyle.xml), and at least 3 month update frequency
+###### Deployability - We encourage you to deploy into [maven repository](http://search.maven.org/)

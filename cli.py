@@ -185,7 +185,8 @@ def call_checkout(pid, vid, dir, patch):
         if version == "b" and patch == True:
             if dir is not None:
                 #print("dir is not None 2")
-                sp.run(['git', f'--work-tree={dir}', 'apply', '--unsafe-paths', f'--directory={dir}', test_patch_dir], cwd=repo_path)
+                sp.run(['git', f'--work-tree={dir}', 'apply', '--unsafe-paths', f'--directory={dir}', 
+                        '--ignore-space-change', '--ignore-whitespace', test_patch_dir], cwd=repo_path)
             else:
                 sp.run(['git', 'apply', test_patch_dir], cwd=repo_path,
                     stdout=sp.DEVNULL, stderr=sp.DEVNULL)
@@ -381,6 +382,9 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
         if match is None:
             pattern = r'\[ERROR\] Errors:(.*?)\[INFO\]\s+\[ERROR\] Tests run:'
             match = re.search(pattern, stdout, re.DOTALL)
+        if match is None:
+            pattern = r'Results[^\n]*\n((?s).*?)Tests run'
+            match = re.search(pattern, stdout, re.DOTALL)
         fail_part = match.group(1).strip()
         fail_part = re.sub(r'\[ERROR\]', '', fail_part).strip()
         output += (f'''
@@ -410,7 +414,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
         vid_pattern = r'(vid=)(.*)'
         out = re.search(vid_pattern, content)
         vid = out.group(2)
-        bid = vid[0]
+        bid = vid[:-1]
 
         commit_db = project_id[pid]["commit_db"]
 
@@ -451,7 +455,7 @@ def call_test(dir, test_case, test_suite):
     vid_pattern = r'(vid=)(.*)'
     out = re.search(vid_pattern, content)
     vid = out.group(2)
-    bid = vid[0]
+    bid = vid[:-1]
 
     with open("project_id.json", "r") as f:
         project_id = json.load(f)
