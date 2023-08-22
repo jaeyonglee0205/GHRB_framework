@@ -326,7 +326,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
 
     output = ""
     if not mvnw and not gradlew:
-        default = ['mvn', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '-e']
+        default = ['mvn', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '--errors']
         if command is not None:
             extra_command = command.split()
             new_command = default + extra_command
@@ -365,7 +365,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
     Modify for gradle
     '''
     stdout = run.stdout.decode()
-
+    #print(stdout)
     clean = True    ### Remove
 
     if "BUILD SUCCESS" in stdout:
@@ -378,12 +378,15 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
         clean = False   ### Remove
         pattern = r'\[ERROR\] Failures:(.*?)\[INFO\]\s+\[ERROR\] Tests run:'
         match = re.search(pattern, stdout, re.DOTALL)
+        if match is None:
+            pattern = r'\[ERROR\] Errors:(.*?)\[INFO\]\s+\[ERROR\] Tests run:'
+            match = re.search(pattern, stdout, re.DOTALL)
         fail_part = match.group(1).strip()
         fail_part = re.sub(r'\[ERROR\]', '', fail_part).strip()
         output += (f'''
 \033[1mTEST: {test_case}\033[0m
 
-\033[91mFailure info:\033[0m
+\033[91mFailure/Error info:\033[0m
     {fail_part}
 ------------------------------------------------------------------------\n''')
     

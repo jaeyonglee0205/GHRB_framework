@@ -1,24 +1,21 @@
-# use glob syntax.
-syntax: glob
-
-*.class
-*~
-*.bak
-*.off
-*.old
-.DS_Store
-
-# building
-target
-
-# Eclipse
-.classpath
-.project
-.settings
-
-# IDEA
-.idea
-*.iml
-*.ipr
-*.iws
+#Maven build result directory
 /target
+#IntelliJ project files
+/.idea
+/*.iml
+out
+#Eclipse project files
+/.settings
+/.classpath
+/.project
+#Other
+/clover.license
+/actual.txt
+/expected.txt
+#jEnv configuration
+.java-version
+/dependency-reduced-pom.xml
+/bin/
+.mvn/wrapper/maven-wrapper.jar
+# macOS specific files
+.DS_Store

@@ -130,43 +130,6 @@
       ]
     }
   },
-  "Hakky54_sslcontext-kickstart-217": {
-    "bug_id": "Hakky54_sslcontext-kickstart-217",
-    "PR_number": 217,
-    "PR_createdAt": "2022-08-30T09:09:01Z",
-    "merge_commit": "7b1807f98e7292189f39e383110212ba0f7f0b13",
-    "buggy_commits": [
-      {
-        "oid": "db2b7ca146d99f661da9cd0bcb7b837708895771",
-        "message": "Bump version.netty-handler from 4.1.79.Final to 4.1.80.Final (#216)\n\nBumps `version.netty-handler` from 4.1.79.Final to 4.1.80.Final.\r\n\r\nUpdates `netty-handler` from 4.1.79.Final to 4.1.80.Final\r\n- [Release notes](https://github.com/netty/netty/releases)\r\n- [Commits](https://github.com/netty/netty/compare/netty-4.1.79.Final...netty-4.1.80.Final)\r\n\r\nUpdates `netty-resolver-dns` from 4.1.79.Final to 4.1.80.Final\r\n- [Release notes](https://github.com/netty/netty/releases)\r\n- [Commits](https://github.com/netty/netty/compare/netty-4.1.79.Final...netty-4.1.80.Final)\r\n\r\nUpdates `netty-transport-native-epoll` from 4.1.79.Final to 4.1.80.Final\r\n- [Release notes](https://github.com/netty/netty/releases)\r\n- [Commits](https://github.com/netty/netty/compare/netty-4.1.79.Final...netty-4.1.80.Final)\r\n\r\nUpdates `netty-codec-http2` from 4.1.79.Final to 4.1.80.Final\r\n- [Release notes](https://github.com/netty/netty/releases)\r\n- [Commits](https://github.com/netty/netty/compare/netty-4.1.79.Final...netty-4.1.80.Final)\r\n\r\nUpdates `netty-transport-native-unix-common` from 4.1.79.Final to 4.1.80.Final\r\n- [Release notes](https://github.com/netty/netty/releases)\r\n- [Commits](https://github.com/netty/netty/compare/netty-4.1.79.Final...netty-4.1.80.Final)\r\n\r\nUpdates `netty-resolver-dns-native-macos` from 4.1.79.Final to 4.1.80.Final\r\n- [Release notes](https://github.com/netty/netty/releases)\r\n- [Commits](https://github.com/netty/netty/compare/netty-4.1.79.Final...netty-4.1.80.Final)\r\n\r\nUpdates `netty-buffer` from 4.1.79.Final to 4.1.80.Final\r\n- [Release notes](https://github.com/netty/netty/releases)\r\n- [Commits](https://github.com/netty/netty/compare/netty-4.1.79.Final...netty-4.1.80.Final)\r\n\r\nUpdates `netty-codec` from 4.1.79.Final to 4.1.80.Final\r\n- [Release notes](https://github.com/netty/netty/releases)\r\n- [Commits](https://github.com/netty/netty/compare/netty-4.1.79.Final...netty-4.1.80.Final)\r\n\r\nUpdates `netty-common` from 4.1.79.Final to 4.1.80.Final\r\n- [Release notes](https://github.com/netty/netty/releases)\r\n- [Commits](https://github.com/netty/netty/compare/netty-4.1.79.Final...netty-4.1.80.Final)\r\n\r\nUpdates `netty-transport` from 4.1.79.Final to 4.1.80.Final\r\n- [Release notes](https://github.com/netty/netty/releases)\r\n- [Commits](https://github.com/netty/netty/compare/netty-4.1.79.Final...netty-4.1.80.Final)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: io.netty:netty-handler\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n- dependency-name: io.netty:netty-resolver-dns\r\n  dependency-type: direct:development\r\n  update-type: version-update:semver-patch\r\n- dependency-name: io.netty:netty-transport-native-epoll\r\n  dependency-type: direct:development\r\n  update-type: version-update:semver-patch\r\n- dependency-name: io.netty:netty-codec-http2\r\n  dependency-type: direct:development\r\n  update-type: version-update:semver-patch\r\n- dependency-name: io.netty:netty-transport-native-unix-common\r\n  dependency-type: direct:development\r\n  update-type: version-update:semver-patch\r\n- dependency-name: io.netty:netty-resolver-dns-native-macos\r\n  dependency-type: direct:development\r\n  update-type: version-update:semver-patch\r\n- dependency-name: io.netty:netty-buffer\r\n  dependency-type: direct:development\r\n  update-type: version-update:semver-patch\r\n- dependency-name: io.netty:netty-codec\r\n  dependency-type: direct:development\r\n  update-type: version-update:semver-patch\r\n- dependency-name: io.netty:netty-common\r\n  dependency-type: direct:development\r\n  update-type: version-update:semver-patch\r\n- dependency-name: io.netty:netty-transport\r\n  dependency-type: direct:development\r\n  update-type: version-update:semver-patch\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>"
-      }
-    ],
-    "issue": {
-      "url": "https://github.com/Hakky54/sslcontext-kickstart/issues/196",
-      "createdAt": "2022-07-04T14:51:36Z",
-      "content": "bug_report_all/Hakky54_sslcontext-kickstart-217.json"
-    },
-    "changed_tests": [
-      "sslcontext-kickstart-for-apache4/src/test/java/nl/altindag/ssl/SSLFactoryIT.java",
-      "sslcontext-kickstart-for-apache5/src/test/java/nl/altindag/ssl/SSLFactoryIT.java",
-      "sslcontext-kickstart-for-jetty/src/test/java/nl/altindag/ssl/SSLFactoryIT.java",
-      "sslcontext-kickstart-for-netty/src/test/java/nl/altindag/ssl/SSLFactoryIT.java",
-      "sslcontext-kickstart-for-pem/src/test/java/nl/altindag/ssl/SSLFactoryIT.java",
-      "sslcontext-kickstart/src/test/java/nl/altindag/ssl/SSLFactoryIT.java",
-      "sslcontext-kickstart/src/test/java/nl/altindag/ssl/util/TrustManagerUtilsShould.java"
-    ],
-    "PR_url": "https://github.com/Hakky54/sslcontext-kickstart/pull/217",
-    "merge_commit_url": "https://github.com/Hakky54/sslcontext-kickstart/commit/7b1807f98e7292189f39e383110212ba0f7f0b13",
-    "buggy_commit": "db2b7ca146d99f661da9cd0bcb7b837708895771",
-    "execution_result": {
-      "valid_tests": [
-        ".nl.altindag.ssl.util.TrustManagerUtilsShould"
-      ],
-      "success_tests": [
-        ".nl.altindag.ssl.util.TrustManagerUtilsShould"
-      ]
-    }
-  },
   "Hakky54_sslcontext-kickstart-234": {
     "bug_id": "Hakky54_sslcontext-kickstart-234",
     "PR_number": 234,
