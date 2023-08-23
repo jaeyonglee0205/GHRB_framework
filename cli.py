@@ -338,7 +338,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path)
 
     elif mvnw:
-        default = ['./mvnw', 'test', f'-Dtest={test_case}']
+        default = ['./mvnw', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '--errors']
         if command is not None:
             extra_command = command.split()
             new_command = default + extra_command
@@ -349,7 +349,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
             run = sp.run(default,
                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path)
     elif gradlew:
-        default = ["./gradlew", "test", "--tests", f'{test_case}']
+        default = ["./gradlew", "test", "--tests", f'{test_case}', '--info', '--stacktrace']
         print("gradlew")
         if command is not None:
             if 'test' in command:
@@ -366,7 +366,8 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
     Modify for gradle
     '''
     stdout = run.stdout.decode()
-    #print(stdout)
+    stderr = run.stderr.decode()
+
     clean = True    ### Remove
 
     if "BUILD SUCCESS" in stdout:
@@ -394,6 +395,20 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
     {fail_part}
 ------------------------------------------------------------------------\n''')
     
+    elif 'There were failing tests' in stderr:
+        clean = False
+        pattern = r'Task\s+:\S+\s+FAILED\n([\s\S]*)Throwable that failed the check'
+        match = re.search(pattern, stdout, re.DOTALL)
+        if match is None:
+            pattern = r"Successfully started process 'Gradle Test Executor \d+'(.*)\n([\s\S]*)Finished generating"
+            match = re.search(pattern, stdout, re.DOTALL)
+        fail_part = match.group(1).strip()
+        output += (f'''
+\033[1mTEST: {test_case}\033[0m
+
+\033[91mFailure/Error info:\033[0m
+    {fail_part}
+------------------------------------------------------------------------\n''')
     ######################################################
     ### Updating bug_cause
 

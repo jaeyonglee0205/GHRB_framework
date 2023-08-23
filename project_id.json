@@ -206,6 +206,7 @@
     "requirements": {
       "build": "gradle",
       "wrapper": true,
+      "jdk": "17",
       "extra": {
         "command": ":retrofit:test"
       }
