@@ -450,7 +450,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
     ######################################################
     return output, test_output, stdout
 
-def call_test(dir, test_case, test_suite, log, quiet):
+def call_test(dir, test_case, test_class, test_suite, log, quiet):
     '''
     default is the current directory
     test_case -> By default all tests are executed
@@ -515,6 +515,7 @@ def call_test(dir, test_case, test_suite, log, quiet):
             
     if test_case is not None:
         found_test_case = find_test(test_case)
+        test_case = test_case.replace(":", "#")
 
         if found_test_case is None:
             #print("External test case")
@@ -524,6 +525,9 @@ def call_test(dir, test_case, test_suite, log, quiet):
             #print("Internal test case")
             content, test_output, stdout = run_test(new_env, mvnw, gradlew, test_case, path, command)
             output += content
+    elif test_class is not None:
+        content, test_output, stdout = run_test(new_env, mvnw, gradlew, test_class, path, command)
+        output += content
     elif test_suite is not None:
         #print("External test suite")
         pass
@@ -695,6 +699,9 @@ if __name__ == '__main__':
     parser_test.add_argument("-t", dest="single_test", action="store",
                              help="Only run this single test method (optional). By default all tests are executed. Format: <test_class>:<test_method>")
     
+    parser_test.add_argument("-c", dest="test_class", action="store",
+                             help="Only run this single test class (optional). Format: <test_class>")
+    
     parser_test.add_argument("-s", dest="test_suite", action="store",
                              help="The archive file name of an external test suite (optional)")
 
@@ -740,7 +747,7 @@ if __name__ == '__main__':
         output = call_compile(args.work_dir)
         print(output)
     elif args.command == "test":
-        output = call_test(args.work_dir, args.single_test, args.test_suite, args.log, args.quiet)
+        output = call_test(args.work_dir, args.single_test, args.test_class, args.test_suite, args.log, args.quiet)
         print(output)
     elif args.command == "bid":
         output = call_bid(args.project_id, args.quiet)
