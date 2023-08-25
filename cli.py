@@ -740,7 +740,7 @@ if __name__ == '__main__':
         output = call_compile(args.work_dir)
         print(output)
     elif args.command == "test":
-        output = call_test(args.work_dir, args.single_test, args.test_suite, args.quiet)
+        output = call_test(args.work_dir, args.single_test, args.test_suite, args.log, args.quiet)
         print(output)
     elif args.command == "bid":
         output = call_bid(args.project_id, args.quiet)
