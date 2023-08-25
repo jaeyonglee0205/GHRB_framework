@@ -2,109 +2,53 @@
 
 if __name__ == '__main__':
     total = '''
-    +package com.alibaba.json.bvt.issue_3700;
-+
-+import java.util.Base64;
-+
-+import com.alibaba.fastjson.JSON;
-+import com.alibaba.fastjson.JSONException;
-+import org.junit.Assert;
-+import org.junit.Test;
-+
-+public class Issue3719 {
-+    private static final String stringBeforeDecode = "ewogICAgICJzdGFvbnMiOiBbCiAgICAgewogICAgICIkcmVmIjogIi4gICJocmVmIi97VA==";
-+    private static final String stringAfterDecode = "{\n" +
-+            "     \"staons\": [\n" +
-+            "     {\n" +
-+            "     \"$ref\": \".  \"href\"/{T";
-+    private static final String stringAfterDecode2 = "{\n" +
-+            "     \"staons\": [\n" +
-+            "     {\n" +
-+            "     \"$ref\": \".  \"href\"/{";
-+    private static final String stringAfterDecode3 = "{\n" +
-+            "     \"staons\": [\n" +
-+            "     {\n" +
-+            "     \"$ref\": \".  \"href\"/";
-+    private static final String stringAfterDecode4 = "{\n" +
-+            "     \"staons\": [\n" +
-+            "     {\n" +
-+            "     \"$ref\": \".  \"href\"";
-+    private static final String stringAfterDecode5 = "{\n" +
-+            "     \"staons\": [\n" +
-+            "     {\n" +
-+            "     \"$ref\": \".  \"href";
-+    private static final String stringAfterDecode6 = "{\n" +
-+            "     \"staons\": [\n" +
-+            "     {\n" +
-+            "     \"$ref\": \".  \"";
-+    private static final String stringAfterDecode7 = "{\n" +
-+            "     \"staons\": [\n" +
-+            "     {\n" +
-+            "     \"$ref\": \". \"";
-+    private static final String stringAfterDecode8 = "{\n" +
-+            "     \"staons\": [\n" +
-+            "     {\n" +
-+            "     \"$ref\": \".\"";
-+    public static String btoa(String base64) {
-+        return new String(Base64.getDecoder().decode(base64));
-+    }
-+
-+    @Test
-+    public void test_str_equal() {
-+        Assert.assertEquals(stringAfterDecode, btoa(stringBeforeDecode));
-+    }
-+
-+    @Test(expected = JSONException.class)
-+    public void test_for_issue_wrong_case1() {
-+        JSON.parse(stringAfterDecode);
-+    }
-+
-+    @Test(expected = JSONException.class)
-+    public void test_for_issue_wrong_case2() {
-+        JSON.parse(stringAfterDecode2);
-+    }
-+
-+    @Test(expected = JSONException.class)
-+    public void test_for_issue_wrong_case3() {
-+        JSON.parse(stringAfterDecode3);
-+    }
-+
-+    @Test(expected = JSONException.class)
-+    public void test_for_issue_wrong_case4() {
-+        JSON.parse(stringAfterDecode4);
-+    }
-+
-+    @Test(expected = JSONException.class)
-+    public void test_for_issue_wrong_case5() {
-+        JSON.parse(stringAfterDecode5);
-+    }
-+
-+    @Test(expected = JSONException.class)
-+    public void test_for_issue_wrong_case6() {
-+        JSON.parse(stringAfterDecode6);
-+    }
-+    @Test(expected = JSONException.class)
-+    public void test_for_issue_wrong_case7() {
-+        JSON.parse(stringAfterDecode7);
-+    }
-+    @Test(expected = JSONException.class)
-+    public void test_for_issue_wrong_case8() {
-+        JSON.parse(stringAfterDecode8);
-+    }
-+}
-\ No newline at end of file
+@@ -59,7 +59,7 @@ public class ServerHttpAgentTest {
+         Assert.assertNull(encode);
+         Assert.assertEquals("namespace1", namespace);
+         Assert.assertEquals("namespace1", tenant);
++        Assert.assertEquals("custom-aaa_8080_nacos_serverlist_namespace1", name);
+         
+     }
+     
+@@ -172,7 +172,7 @@ public class ClientWorkerTest {
+         agent1.setAccessible(false);
+         
+         Assert.assertTrue(clientWorker.isHealthServer());
++        Assert.assertEquals(null, clientWorker.getAgentName());
+     }
+     
+ }
+@@ -36,7 +36,7 @@ public class ServerListManagerTest {
+             Assert.fail();
+         } catch (NacosException e) {
+             Assert.assertEquals(
++                    "fail to get NACOS-server serverlist! env:custom-localhost_0_nacos_serverlist, not connnect url:http://localhost:0/nacos/serverlist",
+                     e.getErrMsg());
+         }
+         mgr.shutdown();
+
     '''
 
     found = '''
-    ogICAgICJzdGFvbnMiOiBbCiAgICAgewogICAgICIkcmVmIjog
-    eturn new String(Base64.getDecoder().decode(base64)
-    ss)
-+ public void test_for_issue_wrong_case6() {
-+
+Assert.assertNull(encode);
+Assert.assertEquals("namespace1", namespace);
+Assert.assertEquals("names
+agent1.setAccessible(false);
+Assert.assertTrue(cli
+sert.fail();
+} catch (NacosException e) {
+Assert.assertEqua
+ to get NACOS-server serverlist! env:custom-localhost_0_nacos_serverlist, not connnect url:http://localhost:0/nacos/serverlist",
+e.getErrMsg());
+}
+mgr
     '''
 
     longest = '''
-    ogICAgICJzdGFvbnMiOiBbCiAgICAgewogICAgICIkcmVmIjog
+     to get NACOS-server serverlist! env:custom-localhost_0_nacos_serverlist, not connnect url:http://localhost:0/nacos/serverlist",
+e.getErrMsg());
+}
+mgr
     '''
 
     total = total.replace("\n", "")
