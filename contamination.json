@@ -40,5 +40,12 @@
         "found": 0.2945,
         "longest": 0.0476,
         "total": 1134
+    },
+    "FasterXML_jackson-core": {
+        "pr": "FasterXML_jackson-core-883",
+        "date": "2022-12-29T13:55:28Z",
+        "found": 0.0697,
+        "longest": 0.0251,
+        "total": 2152
     }
 }

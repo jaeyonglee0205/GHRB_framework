@@ -3,48 +3,71 @@
 if __name__ == '__main__':
     total = '''
 
-@@ -2900,6 +2900,28 @@ public class IndentationCheckTest extends AbstractModuleTestSupport {
-                 expected);
+@@ -719,4 +719,48 @@ public class BasicParserFilteringTest extends BaseTest
+         );
+         assertEquals(a2q("[{'empty_array':[]}]"), readAndWrite(JSON_F, p));
      }
- 
-+    @Test
-+    public void testIndentationLongConcatenatedString() throws Exception {
-+        final DefaultConfiguration checkConfig = createModuleConfig(IndentationCheck.class);
-+        checkConfig.addProperty("tabWidth", "4");
 +
-+        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
-+
-+        verifyWarns(checkConfig, getPath("InputIndentationLongConcatenatedString.java"),
-+                expected);
++    public void testExcludeObjectAtTheBeginningOfArray() throws Exception {
++        JsonParser p0 = JSON_F.createParser(a2q(
++                "{'parent':[{'exclude':false},{'include':true}]}"));
++        JsonParser p = new FilteringParserDelegate(p0,
++                new NameMatchFilter(new String[] { "include" } ),
++                Inclusion.INCLUDE_ALL_AND_PATH,
++                false // multipleMatches
++        );
++        assertEquals(a2q("{'parent':[{'include':true}]}"), readAndWrite(JSON_F, p));
 +    }
 +
-+    @Test
-+    public void testIndentationLineBreakVariableDeclaration()
-+            throws Exception {
-+        final DefaultConfiguration checkConfig = createModuleConfig(IndentationCheck.class);
-+        checkConfig.addProperty("tabWidth", "4");
-+
-+        final String fileName = getPath("InputIndentationLineBreakVariableDeclaration.java");
-+        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
-+        verifyWarns(checkConfig, fileName, expected);
++    public void testExcludeObjectAtTheEndOfArray() throws Exception {
++        JsonParser p0 = JSON_F.createParser(a2q(
++                "{'parent':[{'include':true},{'exclude':false}]}"));
++        JsonParser p = new FilteringParserDelegate(p0,
++                new NameMatchFilter(new String[] { "include" } ),
++                Inclusion.INCLUDE_ALL_AND_PATH,
++                false // multipleMatches
++        );
++        assertEquals(a2q("{'parent':[{'include':true}]}"), readAndWrite(JSON_F, p));
 +    }
 +
-     private static final class IndentAudit implements AuditListener {
- 
-         private final IndentComment[] comments;
++    public void testExcludeObjectInMiddleOfArray() throws Exception {
++        JsonParser p0 = JSON_F.createParser(a2q(
++                "{'parent':[{'include-1':1},{'skip':0},{'include-2':2}]}"));
++        JsonParser p = new FilteringParserDelegate(p0,
++                new NameMatchFilter(new String[]{"include-1", "include-2"}),
++                Inclusion.INCLUDE_ALL_AND_PATH,
++                true // multipleMatches
++        );
++        assertEquals(a2q("{'parent':[{'include-1':1},{'include-2':2}]}"), readAndWrite(JSON_F, p));
++    }
++
++    public void testExcludeLastArrayInsideArray() throws Exception {
++        JsonParser p0 = JSON_F.createParser(a2q(
++                "['skipped', [], ['skipped']]"));
++        JsonParser p = new FilteringParserDelegate(p0,
++                INCLUDE_EMPTY_IF_NOT_FILTERED,
++                Inclusion.INCLUDE_ALL_AND_PATH,
++                true // multipleMatches
++        );
++        assertEquals(a2q("[[]]"), readAndWrite(JSON_F, p));
++    }
+ }
 
     '''
 
     found = '''
-ublic class IndentationCheckTest extends AbstractM
-final DefaultConfiguration checkConfig = createModuleConfig(IndentationCheck.class);
-final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
-final DefaultConfiguration checkConfig = createModuleConfig(IndentationCheck.class);
-final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
+public class BasicParserFilteringTest extends Base
+nclude':true}]}"), readAndWrite(JSON_F, p));
++ }
++
+nclude':true}]}"), readAndWrite(JSON_F, p));
++ }
++
+
     '''
 
     longest = '''
-ublic class IndentationCheckTest extends AbstractM
+public class BasicParserFilteringTest extends Base
     '''
 
     total = total.replace("\n", "")
