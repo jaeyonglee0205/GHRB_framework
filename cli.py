@@ -137,17 +137,17 @@ def call_checkout(pid, vid, dir, patch):
     
     ### Updating bug_cause
 
-    with open("bug_cause.json", "r") as f:
-        try:
-            bug_cause = json.load(f)
-        except:
-             bug_cause = defaultdict(str)
+    # with open("bug_cause.json", "r") as f:
+    #     try:
+    #         bug_cause = json.load(f)
+    #     except:
+    #          bug_cause = defaultdict(str)
 
     
-    bug_cause[report_id] = ""
+    # bug_cause[report_id] = ""
 
-    with open("bug_cause.json", "w") as f:
-        json.dump(bug_cause, f, indent=2)
+    # with open("bug_cause.json", "w") as f:
+    #     json.dump(bug_cause, f, indent=2)
 
     ### Delete this part
     
@@ -370,12 +370,14 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
 
     clean = True    ### Remove
 
+    test_output = False
     if "BUILD SUCCESS" in stdout:
         output += (f'''
 \033[1mTEST: {test_case}\033[0m 
 
 \033[92mTest Success\033[0m
 ------------------------------------------------------------------------\n''')
+        test_output = True
     elif "There are test failures" in stdout:
         clean = False   ### Remove
         pattern = r'\[ERROR\] Failures:(.*?)\[INFO\]\s+\[ERROR\] Tests run:'
@@ -394,7 +396,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
 \033[91mFailure/Error info:\033[0m
     {fail_part}
 ------------------------------------------------------------------------\n''')
-    
+        test_output = False
     elif 'There were failing tests' in stderr:
         clean = False
         pattern = r'Task\s+:\S+\s+FAILED\n([\s\S]*)Throwable that failed the check'
@@ -409,45 +411,46 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
 \033[91mFailure/Error info:\033[0m
     {fail_part}
 ------------------------------------------------------------------------\n''')
+        test_output = False
     ######################################################
     ### Updating bug_cause
 
-    if not clean:
-        with open("bug_cause.json", "r") as f:
-            bug_cause = json.load(f)
+    # if not clean:
+    #     with open("bug_cause.json", "r") as f:
+    #         bug_cause = json.load(f)
         
-        with open(f"{path}/.ghrb.config", "r") as f:
-            content = f.read()
+    #     with open(f"{path}/.ghrb.config", "r") as f:
+    #         content = f.read()
 
-        with open("project_id.json", "r") as f:
-            project_id = json.load(f)
+    #     with open("project_id.json", "r") as f:
+    #         project_id = json.load(f)
 
-        pid_pattern = r'(pid=)(.*)\n'
-        out = re.search(pid_pattern, content)
-        pid = out.group(2)
+    #     pid_pattern = r'(pid=)(.*)\n'
+    #     out = re.search(pid_pattern, content)
+    #     pid = out.group(2)
 
-        vid_pattern = r'(vid=)(.*)'
-        out = re.search(vid_pattern, content)
-        vid = out.group(2)
-        bid = vid[:-1]
+    #     vid_pattern = r'(vid=)(.*)'
+    #     out = re.search(vid_pattern, content)
+    #     vid = out.group(2)
+    #     bid = vid[:-1]
 
-        commit_db = project_id[pid]["commit_db"]
+    #     commit_db = project_id[pid]["commit_db"]
 
-        active_bugs = pd.read_csv(commit_db)
+    #     active_bugs = pd.read_csv(commit_db)
 
-        report_id = active_bugs.loc[active_bugs['bug_id'] == int(bid)]["report.id"].values[0]
+    #     report_id = active_bugs.loc[active_bugs['bug_id'] == int(bid)]["report.id"].values[0]
 
-        bug_cause[report_id] += fail_part
+    #     bug_cause[report_id] += fail_part
 
-        with open("bug_cause.json", "w") as f:
-            json.dump(bug_cause, f, indent=2)
+    #     with open("bug_cause.json", "w") as f:
+    #         json.dump(bug_cause, f, indent=2)
     
 
     ### Delete this part
     ######################################################
-    return output
+    return output, test_output, stdout
 
-def call_test(dir, test_case, test_suite):
+def call_test(dir, test_case, test_suite, log, quiet):
     '''
     default is the current directory
     test_case -> By default all tests are executed
@@ -514,19 +517,33 @@ def call_test(dir, test_case, test_suite):
         found_test_case = find_test(test_case)
 
         if found_test_case is None:
-            print("External test case")
-            output += run_test(new_env, mvnw, gradlew, test_case, path, command)
+            #print("External test case")
+            content, test_output, stdout = run_test(new_env, mvnw, gradlew, test_case, path, command)
+            output += content
         else:
-            print("Internal test case")
-            output += run_test(new_env, mvnw, gradlew, found_test_case, path, command)
+            #print("Internal test case")
+            content, test_output, stdout = run_test(new_env, mvnw, gradlew, test_case, path, command)
+            output += content
     elif test_suite is not None:
-        print("External test suite")
+        #print("External test suite")
         pass
     else:
-        print("Running all relevant test cases")
+        #print("Running all relevant test cases")
         for test in target_tests:
-            output += run_test(new_env, mvnw, gradlew, test, path, command)
+            content, test_output, stdout = run_test(new_env, mvnw, gradlew, test, path, command)
+            output += content
 
+    if test_output is True and quiet is True:
+        output = ""
+
+    if log is True:
+        if not os.path.isdir("log"):
+            os.mkdir("log")
+        
+        with open(f"log/{pid}_{vid}.log", "w") as f:
+            f.writelines(stdout)
+        
+        f.close()
     
     return output
 
@@ -680,6 +697,12 @@ if __name__ == '__main__':
     
     parser_test.add_argument("-s", dest="test_suite", action="store",
                              help="The archive file name of an external test suite (optional)")
+
+    parser_test.add_argument("-l", "--log", dest="log", action='store_true',
+                             help="Output a log file of the test result")
+    
+    parser_test.add_argument("-q", "--quiet", dest="quiet", action='store_true',
+                             help="Print nothing if the test passes")
     
     #   d4j-bids -p project_id [-D|-A]
 
@@ -717,7 +740,7 @@ if __name__ == '__main__':
         output = call_compile(args.work_dir)
         print(output)
     elif args.command == "test":
-        output = call_test(args.work_dir, args.single_test, args.test_suite)
+        output = call_test(args.work_dir, args.single_test, args.test_suite, args.quiet)
         print(output)
     elif args.command == "bid":
         output = call_bid(args.project_id, args.quiet)

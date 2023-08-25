@@ -2,15 +2,32 @@
 
 if __name__ == '__main__':
     total = '''
+@@ -59,7 +59,7 @@ public class ServerHttpAgentTest {
+         Assert.assertNull(encode);
+         Assert.assertEquals("namespace1", namespace);
+         Assert.assertEquals("namespace1", tenant);
++        Assert.assertEquals("custom-aaa_8080_nacos_serverlist_namespace1", name);
+         
+     }
 
-@@ -101,7 +101,7 @@ public class InvalidSdkBoundingTest extends BaseTest {
-         AndrolibResources androlibResources = new AndrolibResources();
- 
-         Map<String, String> sdkInfo = new LinkedHashMap<>();
-+        sdkInfo.put("targetSdkVersion", "VANILLAICECREAM");
- 
-         androlibResources.setSdkInfo(sdkInfo);
-         assertEquals("10000", androlibResources.checkTargetSdkVersionBounds());
+@@ -172,7 +172,7 @@ public class ClientWorkerTest {
+         agent1.setAccessible(false);
+         
+         Assert.assertTrue(clientWorker.isHealthServer());
++        Assert.assertEquals(null, clientWorker.getAgentName());
+     }
+     
+ }
+
+@@ -36,7 +36,7 @@ public class ServerListManagerTest {
+             Assert.fail();
+         } catch (NacosException e) {
+             Assert.assertEquals(
++                    "fail to get NACOS-server serverlist! env:custom-localhost_0_nacos_serverlist, not connnect url:http://localhost:0/nacos/serverlist",
+                     e.getErrMsg());
+         }
+         mgr.shutdown();
+
 
     '''
 
