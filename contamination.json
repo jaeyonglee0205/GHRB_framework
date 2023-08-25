@@ -3,12 +3,42 @@
         "pr": "alibaba_fastjson-3834",
         "date": "2021-07-10T14:31:35Z",
         "found": 0.0563,
-        "longest": 0.0198
+        "longest": 0.0198,
+        "total": 0
     },
     "alibaba_nacos": {
         "pr": "alibaba_nacos-8202",
         "date": "2022-04-19T08:25:23Z",
         "found": 0.3912,
-        "longest": 0.1713
+        "longest": 0.1713,
+        "total": 0
+    },
+    "apache_dubbo": {
+        "pr": "apache_dubbo-11179",
+        "date": "2022-12-20T15:04:09Z",
+        "found": 0.4718,
+        "longest": 0.0781,
+        "total": 2586
+    },
+    "apache_rocketmq": {
+        "pr": "apache_rocketmq-4071",
+        "date": "2022-03-30T11:22:52Z",
+        "found": 0.2544,
+        "longest": 0.1837,
+        "total": 283
+    },
+    "assertj_assertj": {
+        "pr": "assertj_assertj-2324",
+        "date": "2021-08-23T20:36:25Z", 
+        "found": 0.0418,
+        "longest": 0.0248,
+        "total": 2177
+    },
+    "checkstyle_checkstyle": {
+        "pr": "checkstyle_checkstyle-10825",
+        "date": "2021-09-26T07:20:19Z",
+        "found": 0.2945,
+        "longest": 0.0476,
+        "total": 1134
     }
 }

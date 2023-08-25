@@ -2,53 +2,49 @@
 
 if __name__ == '__main__':
     total = '''
-@@ -59,7 +59,7 @@ public class ServerHttpAgentTest {
-         Assert.assertNull(encode);
-         Assert.assertEquals("namespace1", namespace);
-         Assert.assertEquals("namespace1", tenant);
-+        Assert.assertEquals("custom-aaa_8080_nacos_serverlist_namespace1", name);
-         
+
+@@ -2900,6 +2900,28 @@ public class IndentationCheckTest extends AbstractModuleTestSupport {
+                 expected);
      }
-     
-@@ -172,7 +172,7 @@ public class ClientWorkerTest {
-         agent1.setAccessible(false);
-         
-         Assert.assertTrue(clientWorker.isHealthServer());
-+        Assert.assertEquals(null, clientWorker.getAgentName());
-     }
-     
- }
-@@ -36,7 +36,7 @@ public class ServerListManagerTest {
-             Assert.fail();
-         } catch (NacosException e) {
-             Assert.assertEquals(
-+                    "fail to get NACOS-server serverlist! env:custom-localhost_0_nacos_serverlist, not connnect url:http://localhost:0/nacos/serverlist",
-                     e.getErrMsg());
-         }
-         mgr.shutdown();
+ 
++    @Test
++    public void testIndentationLongConcatenatedString() throws Exception {
++        final DefaultConfiguration checkConfig = createModuleConfig(IndentationCheck.class);
++        checkConfig.addProperty("tabWidth", "4");
++
++        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
++
++        verifyWarns(checkConfig, getPath("InputIndentationLongConcatenatedString.java"),
++                expected);
++    }
++
++    @Test
++    public void testIndentationLineBreakVariableDeclaration()
++            throws Exception {
++        final DefaultConfiguration checkConfig = createModuleConfig(IndentationCheck.class);
++        checkConfig.addProperty("tabWidth", "4");
++
++        final String fileName = getPath("InputIndentationLineBreakVariableDeclaration.java");
++        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
++        verifyWarns(checkConfig, fileName, expected);
++    }
++
+     private static final class IndentAudit implements AuditListener {
+ 
+         private final IndentComment[] comments;
 
     '''
 
     found = '''
-Assert.assertNull(encode);
-Assert.assertEquals("namespace1", namespace);
-Assert.assertEquals("names
-agent1.setAccessible(false);
-Assert.assertTrue(cli
-sert.fail();
-} catch (NacosException e) {
-Assert.assertEqua
- to get NACOS-server serverlist! env:custom-localhost_0_nacos_serverlist, not connnect url:http://localhost:0/nacos/serverlist",
-e.getErrMsg());
-}
-mgr
+ublic class IndentationCheckTest extends AbstractM
+final DefaultConfiguration checkConfig = createModuleConfig(IndentationCheck.class);
+final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
+final DefaultConfiguration checkConfig = createModuleConfig(IndentationCheck.class);
+final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
     '''
 
     longest = '''
-     to get NACOS-server serverlist! env:custom-localhost_0_nacos_serverlist, not connnect url:http://localhost:0/nacos/serverlist",
-e.getErrMsg());
-}
-mgr
+ublic class IndentationCheckTest extends AbstractM
     '''
 
     total = total.replace("\n", "")
@@ -63,3 +59,4 @@ mgr
     longest_total = round(longest/total, 4)
     
     print(found_total, longest_total)
+    print(total)
