@@ -3,71 +3,29 @@
 if __name__ == '__main__':
     total = '''
 
-@@ -719,4 +719,48 @@ public class BasicParserFilteringTest extends BaseTest
-         );
-         assertEquals(a2q("[{'empty_array':[]}]"), readAndWrite(JSON_F, p));
-     }
-+
-+    public void testExcludeObjectAtTheBeginningOfArray() throws Exception {
-+        JsonParser p0 = JSON_F.createParser(a2q(
-+                "{'parent':[{'exclude':false},{'include':true}]}"));
-+        JsonParser p = new FilteringParserDelegate(p0,
-+                new NameMatchFilter(new String[] { "include" } ),
-+                Inclusion.INCLUDE_ALL_AND_PATH,
-+                false // multipleMatches
-+        );
-+        assertEquals(a2q("{'parent':[{'include':true}]}"), readAndWrite(JSON_F, p));
-+    }
-+
-+    public void testExcludeObjectAtTheEndOfArray() throws Exception {
-+        JsonParser p0 = JSON_F.createParser(a2q(
-+                "{'parent':[{'include':true},{'exclude':false}]}"));
-+        JsonParser p = new FilteringParserDelegate(p0,
-+                new NameMatchFilter(new String[] { "include" } ),
-+                Inclusion.INCLUDE_ALL_AND_PATH,
-+                false // multipleMatches
-+        );
-+        assertEquals(a2q("{'parent':[{'include':true}]}"), readAndWrite(JSON_F, p));
-+    }
-+
-+    public void testExcludeObjectInMiddleOfArray() throws Exception {
-+        JsonParser p0 = JSON_F.createParser(a2q(
-+                "{'parent':[{'include-1':1},{'skip':0},{'include-2':2}]}"));
-+        JsonParser p = new FilteringParserDelegate(p0,
-+                new NameMatchFilter(new String[]{"include-1", "include-2"}),
-+                Inclusion.INCLUDE_ALL_AND_PATH,
-+                true // multipleMatches
-+        );
-+        assertEquals(a2q("{'parent':[{'include-1':1},{'include-2':2}]}"), readAndWrite(JSON_F, p));
-+    }
-+
-+    public void testExcludeLastArrayInsideArray() throws Exception {
-+        JsonParser p0 = JSON_F.createParser(a2q(
-+                "['skipped', [], ['skipped']]"));
-+        JsonParser p = new FilteringParserDelegate(p0,
-+                INCLUDE_EMPTY_IF_NOT_FILTERED,
-+                Inclusion.INCLUDE_ALL_AND_PATH,
-+                true // multipleMatches
-+        );
-+        assertEquals(a2q("[[]]"), readAndWrite(JSON_F, p));
-+    }
- }
+@@ -101,7 +101,7 @@ public class InvalidSdkBoundingTest extends BaseTest {
+         AndrolibResources androlibResources = new AndrolibResources();
+ 
+         Map<String, String> sdkInfo = new LinkedHashMap<>();
++        sdkInfo.put("targetSdkVersion", "VANILLAICECREAM");
+ 
+         androlibResources.setSdkInfo(sdkInfo);
+         assertEquals("10000", androlibResources.checkTargetSdkVersionBounds());
 
     '''
 
     found = '''
-public class BasicParserFilteringTest extends Base
-nclude':true}]}"), readAndWrite(JSON_F, p));
-+ }
-+
-nclude':true}]}"), readAndWrite(JSON_F, p));
-+ }
-+
+    {
+AndrolibResources androlibResources = new AndrolibResources();
 
+Map<String, String> sdkInfo = new LinkedHashMap<>();
+androlibResources.setSdkInfo(sdkInfo);
+assertEquals("10000", androlibResources.checkTargetSdkVersionBounds());
     '''
 
     longest = '''
-public class BasicParserFilteringTest extends Base
+{
+AndrolibResources androlibResources = new Andro
     '''
 
     total = total.replace("\n", "")
