@@ -628,6 +628,24 @@ def call_env(pid):
 
     return output
 
+def call_ptr(pid):
+
+    with open("project_id.json", "r") as f:
+        project_id = json.load(f)
+
+    if pid not in project_id.keys():
+        output = "Wrong project id"
+        return output
+    
+    with open("contamination.json", "r") as f:
+        portrait_result = json.load(f)
+
+    owner = project_id[pid]["owner"]
+    
+    output += portrait_result[f'{owner}_{pid}']
+    
+    return output
+
 
 properties_to_replace = {
     'jackson-core': {
@@ -755,6 +773,14 @@ if __name__ == '__main__':
     parser_env.add_argument("-p", dest='project_id', action="store",
                             help="The ID of the project for which the environment is returned")
     
+    #   extra--portrait
+
+    parser_portrait = subparsers.add_parser('ptr',
+                                            help="Print the collected results from dataportraits.org (oldest commit for each project)")
+    
+    parser_portrait.add_argument("-p", dest='project_id', action="store",
+                                 help="The ID of the project for which the result is returned")
+    
     args = parser.parse_args()
     #print(args)
     if args.command == "info":
@@ -777,6 +803,9 @@ if __name__ == '__main__':
         print(output)
     elif args.command == "env":
         output = call_env(args.project_id)
+        print(output)
+    elif args.command == "ptr":
+        output = call_ptr(args.project_id)
         print(output)
 
 
