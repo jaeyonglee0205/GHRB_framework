@@ -512,6 +512,13 @@ def call_test(dir, test_case, test_class, test_suite, log, quiet):
                 return test
             else:
                 return None
+    
+    def write_output (_content, _test_output, _quiet, _output):
+        if _test_output is True and _quiet is True:
+            pass
+        else:
+            _output += _content
+        return _output
             
     if test_case is not None:
         found_test_case = find_test(test_case)
@@ -520,14 +527,14 @@ def call_test(dir, test_case, test_class, test_suite, log, quiet):
         if found_test_case is None:
             #print("External test case")
             content, test_output, stdout = run_test(new_env, mvnw, gradlew, test_case, path, command)
-            output += content
+            output = write_output(content, test_output, quiet, output)
         else:
             #print("Internal test case")
             content, test_output, stdout = run_test(new_env, mvnw, gradlew, test_case, path, command)
-            output += content
+            output = write_output(content, test_output, quiet, output)
     elif test_class is not None:
         content, test_output, stdout = run_test(new_env, mvnw, gradlew, test_class, path, command)
-        output += content
+        output = write_output(content, test_output, quiet, output)
     elif test_suite is not None:
         #print("External test suite")
         pass
@@ -535,16 +542,29 @@ def call_test(dir, test_case, test_class, test_suite, log, quiet):
         #print("Running all relevant test cases")
         for test in target_tests:
             content, test_output, stdout = run_test(new_env, mvnw, gradlew, test, path, command)
-            output += content
+            output = write_output(content, test_output, quiet, output)
 
-    if test_output is True and quiet is True:
-        output = ""
+
+    # if test_output is True and quiet is True:
+    #     output = ""
+
+    marker = ""
+
+    if test_case is not None:
+        marker += "_" + test_case
+    elif test_class is not None:
+        marker += "_" + test_class
+    elif test_suite is not None:
+        marker += "_" + test_suite
+    
+    if quiet is True:
+        marker += "_quiet"
 
     if log is True:
         if not os.path.isdir("log"):
             os.mkdir("log")
         
-        with open(f"log/{pid}_{vid}.log", "w") as f:
+        with open(f"log/{pid}_{vid}{marker}.log", "w") as f:
             f.writelines(stdout)
         
         f.close()
