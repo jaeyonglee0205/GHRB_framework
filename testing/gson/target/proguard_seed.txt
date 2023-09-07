@@ -1,0 +1,6 @@
+com.google.gson.functional.EnumWithObfuscatedTest
+com.google.gson.functional.EnumWithObfuscatedTest: void setUp()
+com.google.gson.functional.EnumWithObfuscatedTest: void testEnumClassWithObfuscated()
+com.google.gson.functional.EnumWithObfuscatedTest$Gender
+com.google.gson.functional.EnumWithObfuscatedTest$Gender: com.google.gson.functional.EnumWithObfuscatedTest$Gender[] values()
+com.google.gson.functional.EnumWithObfuscatedTest$Gender: com.google.gson.functional.EnumWithObfuscatedTest$Gender valueOf(java.lang.String)

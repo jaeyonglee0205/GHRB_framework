@@ -1,0 +1,5 @@
+/root/framework/testing/extras/src/test/java/com/google/gson/typeadapters/PostConstructAdapterFactoryTest.java
+/root/framework/testing/extras/src/test/java/com/google/gson/interceptors/InterceptorTest.java
+/root/framework/testing/extras/src/test/java/com/google/gson/graph/GraphAdapterBuilderTest.java
+/root/framework/testing/extras/src/test/java/com/google/gson/typeadapters/RuntimeTypeAdapterFactoryTest.java
+/root/framework/testing/extras/src/test/java/com/google/gson/typeadapters/UtcDateTypeAdapterTest.java

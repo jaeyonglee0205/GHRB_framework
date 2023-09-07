@@ -1,0 +1,16 @@
+diff --git a/javaparser-core-testing/src/test/java/com/github/javaparser/ast/type/TypeTest.java b/javaparser-core-testing/src/test/java/com/github/javaparser/ast/type/TypeTest.java
+index 5ee18bb..2e8a1ab 100644
+--- a/javaparser-core-testing/src/test/java/com/github/javaparser/ast/type/TypeTest.java
++++ b/javaparser-core-testing/src/test/java/com/github/javaparser/ast/type/TypeTest.java
+@@ -55,9 +55,9 @@ class TypeTest {
+     void primitiveTypeArgumentLenientValidator() {
+         ParserConfiguration config = new ParserConfiguration()
+                 .setLanguageLevel(RAW);
+-        config.getPostProcessors().add(new Java5Validator() {{
++        config.getProcessors().add(() -> new Java5Validator() {{
+             remove(noPrimitiveGenericArguments);
+-        }}.postProcessor());
++        }}.processor());
+ 
+         ParseResult<VariableDeclarationExpr> result = new JavaParser(config).parse(
+                 VARIABLE_DECLARATION_EXPR, provider("List<long> x"));

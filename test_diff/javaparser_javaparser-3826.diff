@@ -1,0 +1,27 @@
+diff --git a/javaparser-core-testing/src/test/java/com/github/javaparser/modules/ModuleDeclarationTest.java b/javaparser-core-testing/src/test/java/com/github/javaparser/modules/ModuleDeclarationTest.java
+index 11218e0..a7064ac 100644
+--- a/javaparser-core-testing/src/test/java/com/github/javaparser/modules/ModuleDeclarationTest.java
++++ b/javaparser-core-testing/src/test/java/com/github/javaparser/modules/ModuleDeclarationTest.java
+@@ -238,4 +238,22 @@ class ModuleDeclarationTest {
+                 "    exports foo.bar.x to other.foo, other.bar;\n" +
+                 "}\n", moduleDeclaration.toString());
+     }
++    
++    @Test
++    void testModifierRequire() {
++        ModuleDeclaration moduleDeclaration = new CompilationUnit()
++                .setModule("com.laamella.base")
++                .addDirective("requires transitive java.desktop;");
++        ModuleRequiresDirective moduleRequiresStmt = moduleDeclaration.getDirectives().get(0).asModuleRequiresStmt();
++        assertTrue(moduleRequiresStmt.isTransitive());
++    }
++    
++    @Test
++    void testModifierStatic() {
++        ModuleDeclaration moduleDeclaration = new CompilationUnit()
++                .setModule("com.laamella.base")
++                .addDirective("requires static java.desktop;");
++        ModuleRequiresDirective moduleRequiresStmt = moduleDeclaration.getDirectives().get(0).asModuleRequiresStmt();
++        assertTrue(moduleRequiresStmt.isStatic());
++    }
+ }
