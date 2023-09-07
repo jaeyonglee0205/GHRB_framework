@@ -147,5 +147,13 @@
             "command": ":retrofit:test"
 
         }
+    },
+    "javaparser": {
+        "build": "maven",
+        "wrapper": true,
+        "jdk": "11",
+        "extra": {
+            "command": "-DskipTests=javaparser-core,javaparser-core-testing,javaparser-core-testing-bdd"
+        }
     }
   }

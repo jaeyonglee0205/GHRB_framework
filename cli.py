@@ -301,7 +301,7 @@ def call_compile(dir):
     new_env, mvnw, gradlew = find_env(pid)
 
     path = repo_path if dir is None else dir
-
+    print(path)
     if pid == "jackson-core" or pid == "jackson-databind":
         fix_build_env(pid, path)
 

@@ -1,8 +1,0 @@
-/root/framework/testing/extras/src/main/java/com/google/gson/interceptors/Intercept.java
-/root/framework/testing/extras/src/main/java/com/google/gson/interceptors/InterceptorFactory.java
-/root/framework/testing/extras/src/main/java/com/google/gson/graph/GraphAdapterBuilder.java
-/root/framework/testing/extras/src/main/java/com/google/gson/typeadapters/RuntimeTypeAdapterFactory.java
-/root/framework/testing/extras/src/main/java/com/google/gson/extras/examples/rawcollections/RawCollectionsExample.java
-/root/framework/testing/extras/src/main/java/com/google/gson/interceptors/JsonPostDeserializer.java
-/root/framework/testing/extras/src/main/java/com/google/gson/typeadapters/PostConstructAdapterFactory.java
-/root/framework/testing/extras/src/main/java/com/google/gson/typeadapters/UtcDateTypeAdapter.java

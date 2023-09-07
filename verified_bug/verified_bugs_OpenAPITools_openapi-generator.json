@@ -336,37 +336,6 @@
       ]
     }
   },
-  "OpenAPITools_openapi-generator-14634": {
-    "bug_id": "OpenAPITools_openapi-generator-14634",
-    "PR_number": 14634,
-    "PR_createdAt": "2023-02-06T18:20:33Z",
-    "merge_commit": "f455ac166c4ecc8ae7fce0005beacd9640f56acf",
-    "buggy_commits": [
-      {
-        "oid": "e00d8d564ab3d615eca15d09a03b03817d067320",
-        "message": "[BUG] [Kotlin Client] Template: isUniqueItems rather than uniqueItems (#14677)"
-      }
-    ],
-    "issue": {
-      "url": "https://github.com/OpenAPITools/openapi-generator/issues/14633",
-      "createdAt": "2023-02-06T18:16:00Z",
-      "content": "bug_report_all/OpenAPITools_openapi-generator-14634.json"
-    },
-    "changed_tests": [
-      "modules/openapi-generator/src/test/java/org/openapitools/codegen/templating/handlebars/StringHelpersTest.java"
-    ],
-    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/14634",
-    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/f455ac166c4ecc8ae7fce0005beacd9640f56acf",
-    "buggy_commit": "e00d8d564ab3d615eca15d09a03b03817d067320",
-    "execution_result": {
-      "valid_tests": [
-        ".org.openapitools.codegen.templating.handlebars.StringHelpersTest.java"
-      ],
-      "success_tests": [
-        ".org.openapitools.codegen.templating.handlebars.StringHelpersTest.java"
-      ]
-    }
-  },
   "OpenAPITools_openapi-generator-14733": {
     "bug_id": "OpenAPITools_openapi-generator-14733",
     "PR_number": 14733,

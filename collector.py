@@ -122,11 +122,11 @@ def remove_test_diff ():
     bug_dict = defaultdict(int)
     
     for diff in os.listdir("test_diff/"):
-        bug_dict[diff.split("_")[-2]] += 1
-        
+        bug_dict[diff.split("_")[-2] + "_" + diff.split("_")[-1].split("-")[0]] += 1
+
         name = diff.replace(".diff", "")
         if name in all_bug:
-            # sp.run(["rm", "-rf", f"test_diff/{name}.diff"])
+            #sp.run(["rm", "-rf", f"test_diff/{name}.diff"])
             i += 1
     print(bug_dict)
     print(i)

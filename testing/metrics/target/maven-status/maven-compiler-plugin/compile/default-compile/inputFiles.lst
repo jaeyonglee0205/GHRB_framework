@@ -1,6 +1,0 @@
-/root/framework/testing/metrics/src/main/java/com/google/gson/metrics/SerializationBenchmark.java
-/root/framework/testing/metrics/src/main/java/com/google/gson/metrics/BagOfPrimitivesDeserializationBenchmark.java
-/root/framework/testing/metrics/src/main/java/com/google/gson/metrics/BagOfPrimitives.java
-/root/framework/testing/metrics/src/main/java/com/google/gson/metrics/ParseBenchmark.java
-/root/framework/testing/metrics/src/main/java/com/google/gson/metrics/CollectionsDeserializationBenchmark.java
-/root/framework/testing/metrics/src/main/java/com/google/gson/metrics/NonUploadingCaliperRunner.java
