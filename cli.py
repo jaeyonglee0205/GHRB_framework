@@ -186,7 +186,7 @@ def call_checkout(pid, vid, dir, patch):
             if dir is not None:
                 #print("dir is not None 2")
                 sp.run(['git', f'--work-tree={dir}', 'apply', '--unsafe-paths', f'--directory={dir}', 
-                        '--ignore-space-change', '--ignore-whitespace', test_patch_dir], cwd=repo_path)
+                        '--ignore-space-change', '--ignore-whitespace', '--whitespace=fix', test_patch_dir], cwd=repo_path)
             else:
                 sp.run(['git', 'apply', test_patch_dir], cwd=repo_path,
                     stdout=sp.DEVNULL, stderr=sp.DEVNULL)
