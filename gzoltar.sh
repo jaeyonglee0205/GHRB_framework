@@ -1,33 +1,49 @@
 CDIR=$(pwd)
 
-for PID in $(defects4j pids); do
-for BID in $(cut -f1 -d',' "$D4J_HOME/framework/projects/$PID/commit-db"); do
+for PID in $(./cli.py pid -q); do
+for BID in $(cut -f1 -d',' "/root/framework/commit_db/${PID}_bugs"); do
 
 BUGDIR="${PID}_${BID}"
 echo ${BUGDIR}
 
+mkdir "${CDIR}/${PID}_${BID}"
+
 cd "${CDIR}/${PID}_${BID}"
 
-if [ -f "./sfl/txt/matrix.txt" ]; then
-        echo ${BUGDIR} already done!
-        continue
-fi
+# if [ -f "./sfl/txt/matrix.txt" ]; then
+#         echo ${BUGDIR} already done!
+#         continue
+# fi
 
-if [[ $PID != "Closure" ]]; then
-        echo "Closure has been skipped for now."
-        continue
-fi
+# git clean -df
+# defects4j compile
+# LOGFILE="gzlog.txt"
+# echo "" > ${LOGFILE}
 
-git clean -df
-defects4j compile
-LOGFILE="gzlog.txt"
-echo "" > ${LOGFILE}
+# mvn dependency:build-classpath -DincludeScope=test -Dmdep.outputFile=/root/framework/testing/cp.txt
+# mvn help:evaluate -Dexpression=project.build.testOutputDirectory -q -DforceStdout -DoutputDirectory=.         /root/framework/testing/target/test-classes
+# mvn help:evaluate -Dexpression=project.build.directory -q -DforceStdout                                       /root/framework/testing/target
+# mvn help:evaluate -Dexpression=project.build.outputDirectory -q -DforceStdout                                 /root/framework/testing/target/classes
+
+# cp.compile: /root/defects4j/framework/bin/gson_1_buggy/target/classes
+# Running ant (export.cp.compile)
+
+# cp.test:  /root/defects4j/framework/projects/Gson/lib/junit/junit/3.8.2/junit-3.8.2.jar:
+#           /root/defects4j/framework/bin/gson_1_buggy/target/classes:/root/defects4j/framework/bin/gson_1_buggy/target/test-classes:
+#           /root/defects4j/framework/projects/lib/junit-4.11.jar:/root/defects4j/framework/projects/Gson/lib/com/google/code/findbugs/jsr305/3.0.0/jsr305-3.0.0.jar:
+#           /root/defects4j/framework/projects/Gson/lib/junit/junit/4.12/junit-4.12.jar:/root/defects4j/framework/projects/Gson/lib/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar
+
+
+# dir.bin.classes: target/classes
+
+
+# dir.bin.tests:   target/test-classes
 
 # Collect metadata
-test_classpath=$(defects4j export -p cp.test)
-src_classes_dir=$(defects4j export -p dir.bin.classes)
+test_classpath=$(mvn dependency:build-classpath -DincludeScope=test "-Dmdep.outputFile=${pwd}/cp.txt" | cat "cp.txt")
+src_classes_dir=$(mvn help:evaluate -Dexpression=project.build.outputDirectory -q -DforceStdout)
 src_classes_dir="$CDIR/$BUGDIR/$src_classes_dir"
-test_classes_dir=$(defects4j export -p dir.bin.tests)
+test_classes_dir=$(mvn help:evaluate -Dexpression=project.build.testOutputDirectory -q -DforceStdout)
 test_classes_dir="$CDIR/$BUGDIR/$test_classes_dir"
 
 echo "$PID-${BID}b's classpath: $test_classpath" >&2

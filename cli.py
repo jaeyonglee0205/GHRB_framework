@@ -455,6 +455,7 @@ def call_test(dir, test_case, test_class, test_suite, log, quiet):
     default is the current directory
     test_case -> By default all tests are executed
     test_suite -> The archive file name of an external test suite. 
+    test_class
     '''
     output = ""
 
