@@ -598,9 +598,12 @@ def call_bid(pid, quiet):
     
     return output
 
-def call_pid():
+def call_pid(quiet):
 
-    output = '''
+    if quiet:
+        output = ""
+    else:
+        output = '''
     Owner:\t\tProject ID
     ----------------------------------------
 ''' 
@@ -609,7 +612,10 @@ def call_pid():
     
     for pid in project_id.keys():
         project_name = project_id[pid]["owner"]
-        output += f"    {project_name}:\t\t{pid}\n"
+        if quiet:
+            output += f"{pid}"
+        else:
+            output += f"    {project_name}:\t\t{pid}\n"
     
     return output
 
@@ -765,6 +771,9 @@ if __name__ == '__main__':
     parser_pid = subparsers.add_parser('pid',
                                        help="Print the list of available project IDs")
     
+    parser_pid.add_argument("-q", "--quiet", dest="quiet", action="store_true",
+                            help="Print only the Project IDs")
+    
     #   d4j-env
 
     parser_env = subparsers.add_parser('env',
@@ -799,7 +808,7 @@ if __name__ == '__main__':
         output = call_bid(args.project_id, args.quiet)
         print(output)
     elif args.command == "pid":
-        output = call_pid()
+        output = call_pid(args.quiet)
         print(output)
     elif args.command == "env":
         output = call_env(args.project_id)
