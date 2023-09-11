@@ -368,6 +368,9 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
     stdout = run.stdout.decode()
     stderr = run.stderr.decode()
 
+    # print(stdout)
+    # print(stderr)
+
     clean = True    ### Remove
 
     test_output = False
@@ -614,7 +617,7 @@ def call_pid(quiet):
     for pid in project_id.keys():
         project_name = project_id[pid]["owner"]
         if quiet:
-            output += f"{pid}"
+            output += f"{pid}\n"
         else:
             output += f"    {project_name}:\t\t{pid}\n"
     
