@@ -33,7 +33,39 @@ cd "${CDIR}/${PID}_${BID}"
 #           /root/defects4j/framework/projects/lib/junit-4.11.jar:/root/defects4j/framework/projects/Gson/lib/com/google/code/findbugs/jsr305/3.0.0/jsr305-3.0.0.jar:
 #           /root/defects4j/framework/projects/Gson/lib/junit/junit/4.12/junit-4.12.jar:/root/defects4j/framework/projects/Gson/lib/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar
 
+# cp.test: /root/defects4j/framework/bin/time27/build/classes:
+#          /root/defects4j/framework/bin/time27/build/tests:
+#          /root/defects4j/framework/projects/lib/junit-4.11.jar:
+#          /root/defects4j/framework/bin/time27/src/test/java
 
+
+# /root/defects4j/framework/projects/Jsoup/lib/junit/junit/4.12/junit-4.12.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/com/google/code/gson/gson/2.7/gson-2.7.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-server/9.2.28.v20190418/jetty-server-9.2.28.v20190418.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-http/9.2.28.v20190418/jetty-http-9.2.28.v20190418.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-util/9.2.28.v20190418/jetty-util-9.2.28.v20190418.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-io/9.2.28.v20190418/jetty-io-9.2.28.v20190418.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-servlet/9.2.28.v20190418/jetty-servlet-9.2.28.v20190418.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-security/9.2.28.v20190418/jetty-security-9.2.28.v20190418.jar:
+# /root/defects4j/framework/bin/jsoup93/target/classes:
+# /root/defects4j/framework/bin/jsoup93/target/test-classes:
+# /root/defects4j/framework/projects/lib/junit-4.11.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/commons-lang/commons-lang/2.4/commons-lang-2.4.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/junit/junit/4.5/junit-4.5.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-http/9.2.22.v20170606/jetty-http-9.2.22.v20170606.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-http/9.2.26.v20180806/jetty-http-9.2.26.v20180806.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-io/9.2.22.v20170606/jetty-io-9.2.22.v20170606.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-io/9.2.26.v20180806/jetty-io-9.2.26.v20180806.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-security/9.2.22.v20170606/jetty-security-9.2.22.v20170606.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-security/9.2.26.v20180806/jetty-security-9.2.26.v20180806.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-server/9.2.22.v20170606/jetty-server-9.2.22.v20170606.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-server/9.2.26.v20180806/jetty-server-9.2.26.v20180806.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-servlet/9.2.22.v20170606/jetty-servlet-9.2.22.v20170606.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-servlet/9.2.26.v20180806/jetty-servlet-9.2.26.v20180806.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-util/9.2.22.v20170606/jetty-util-9.2.22.v20170606.jar:
+# /root/defects4j/framework/projects/Jsoup/lib/org/eclipse/jetty/jetty-util/9.2.26.v20180806/jetty-util-9.2.26.v20180806.jar
 # dir.bin.classes: target/classes
 
 

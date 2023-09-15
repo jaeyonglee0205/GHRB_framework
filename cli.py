@@ -5,6 +5,7 @@ import json
 from os import path
 from collections import defaultdict
 from tqdm import tqdm
+import glob
 
 #from util import config, fix_build_env
 import re
@@ -301,7 +302,7 @@ def call_compile(dir):
     new_env, mvnw, gradlew = find_env(pid)
 
     path = repo_path if dir is None else dir
-    print(path)
+    #print(path)
     if pid == "jackson-core" or pid == "jackson-databind":
         fix_build_env(pid, path)
 
@@ -350,7 +351,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path)
     elif gradlew:
         default = ["./gradlew", "test", "--tests", f'{test_case}', '--info', '--stacktrace']
-        print("gradlew")
+        #print("gradlew")
         if command is not None:
             if 'test' in command:
                 new_command = ["./gradlew", command, '--tests', f'{test_case}']
@@ -692,6 +693,125 @@ def fix_build_env(project, path):
     with open(pom_file, 'w') as f:
         f.write(content)
 
+def call_export(prop, output_file, working_dir):
+    
+    output = ""
+
+    # print(working_dir)
+    # call_compile(working_dir)
+    # print("compile done")
+    # call_test(working_dir, None, None, None, False, False)
+    # print("test done")
+
+    with open(f"{working_dir}/.ghrb.config", "r") as f:
+        content = f.read()
+
+    pid_pattern = r'(pid=)(.*)\n'
+    out = re.search(pid_pattern, content)
+    pid = out.group(2)
+
+    new_env, mvnw, gradlew = find_env(pid)
+
+    if mvnw: 
+        prefix = ["./mvnw"]
+    elif gradlew:
+        prefix = []
+    else:
+        prefix = ["mvn"]
+
+    if prop == "cp.test":
+    
+        if gradlew:
+            command = []
+        else:
+            template = ["dependency:build-classpath", f"-Dmdep.outputFile={working_dir}/cp.txt", "-q"]
+            command = prefix + template
+    
+        
+
+        run = sp.run(command, env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=working_dir)
+        
+        run = sp.run(["cat", f"{working_dir}/cp.txt"], stdout=sp.PIPE, stderr=sp.PIPE, cwd=working_dir)
+
+        output += run.stdout.decode()
+
+        if gradlew:
+            command = []
+        else:
+            template = ["help:evaluate", "-Dexpression=project.build.outputDirectory", "-q", "-DforceStdout"]
+            command = prefix + template
+        
+        run = sp.run(command,
+                     env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=working_dir)
+        
+        output += ":" + run.stdout.decode()
+
+        if gradlew:
+            command = []
+        else:
+            template = ["help:evaluate", "-Dexpression=project.build.testOutputDirectory", "-q", "-DforceStdout"]
+            command = prefix + template
+
+        run = sp.run(command,
+                     env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=working_dir)
+        output += ":" + run.stdout.decode()
+
+        output += ":" + '/root/framework/junit-4.13.2.jar'
+
+    
+    elif prop == "dir.bin.classes":
+
+        if gradlew:
+            command = []
+        else:
+            template = ["help:evaluate", "-Dexpression=project.build.outputDirectory", "-q", "-DforceStdout"]
+            command = prefix + template
+        
+        run = sp.run(command,
+                     env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=working_dir)
+        output += run.stdout.decode()
+
+    elif prop == "dir.bin.tests":
+
+        if gradlew:
+            command = []
+        else:
+            template = ["help:evaluate", "-Dexpression=project.build.testOutputDirectory", "-q", "-DforceStdout"]
+            command = prefix + template
+
+        run = sp.run(command,
+                     env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=working_dir)
+        output += run.stdout.decode()
+
+    elif prop == "test-classes":
+
+        # test_working_dir = working_dir + '/target/classes/org'
+        # #print(working_dir)
+        # #files = glob.glob(working_dir, recursive=True)
+        # for root, dirs, files in os.walk(test_working_dir):
+        #     for file in files:
+        #         if file.endswith(".class"):
+        #             new_file = file.replace(".class", "") + "\n"
+        #             add = root.replace(f"{working_dir}/target/classes/", "") + '/'
+        #             total = (add + new_file).replace("/", ".")
+        #             output += total
+                    
+        #             #output = ''
+        
+        test_working_dir = working_dir + '/target/test-classes/com'
+
+        for root, dirs, files in os.walk(test_working_dir):
+            for file in files:
+                if file.endswith(".class"):
+                    new_file = file.replace(".class", "") + "\n"
+                    add = root.replace(f"{working_dir}/target/test-classes/", "") + '/'
+                    total = (add + new_file).replace("/", ".")
+                    output += total
+                    
+                    #output = ''
+        with open(f"{working_dir}/test-classes.txt", "w") as f:
+            f.write(output)
+    return output
 
 if __name__ == '__main__':
 
@@ -793,6 +913,20 @@ if __name__ == '__main__':
     
     parser_portrait.add_argument("-p", dest='project_id', action="store",
                                  help="The ID of the project for which the result is returned")
+
+    #   d4j-export
+
+    parser_export = subparsers.add_parser('export',
+                                          help="Export version-specific properties")
+    
+    parser_export.add_argument("-p", dest='property', action="store",
+                               help="Export the values of this property")
+    
+    parser_export.add_argument("-o", dest='output_file', action="store",
+                               help="Write output to this file")
+    
+    parser_export.add_argument("-w", dest='working_dir', action="store",
+                               help="The working directory of the checked-out project version")
     
     args = parser.parse_args()
     #print(args)
@@ -820,6 +954,8 @@ if __name__ == '__main__':
     elif args.command == "ptr":
         output = call_ptr(args.project_id)
         print(output)
-
+    elif args.command == "export":
+        output = call_export(args.property, args.output_file, args.working_dir)
+        print(output)
 
     
