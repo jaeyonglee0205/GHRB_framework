@@ -127,37 +127,6 @@
       ]
     }
   },
-  "apache_rocketmq-4978": {
-    "bug_id": "apache_rocketmq-4978",
-    "PR_number": 4978,
-    "PR_createdAt": "2022-09-02T08:01:15Z",
-    "merge_commit": "b2f30272c85ac422aa6b119452b2de92b9b85dda",
-    "buggy_commits": [
-      {
-        "oid": "b89a4009cf49f79bc19055ffbe55d6756b6e88fc",
-        "message": "fix wrong log warning (#4984)\n\n* fix log warning\r\n\r\n* Polish log text on network I/O error\r\n\r\nCo-authored-by: Zhanhui Li <lizhanhui@apache.org>"
-      }
-    ],
-    "issue": {
-      "url": "https://github.com/apache/rocketmq/issues/4977",
-      "createdAt": "2022-09-02T08:01:02Z",
-      "content": "bug_report_all/apache_rocketmq-4978.json"
-    },
-    "changed_tests": [
-      "broker/src/test/java/org/apache/rocketmq/broker/BrokerOuterAPITest.java"
-    ],
-    "PR_url": "https://github.com/apache/rocketmq/pull/4978",
-    "merge_commit_url": "https://github.com/apache/rocketmq/commit/b2f30272c85ac422aa6b119452b2de92b9b85dda",
-    "buggy_commit": "b89a4009cf49f79bc19055ffbe55d6756b6e88fc",
-    "execution_result": {
-      "valid_tests": [
-        ".org.apache.rocketmq.broker.BrokerOuterAPITest.java"
-      ],
-      "success_tests": [
-        ".org.apache.rocketmq.broker.BrokerOuterAPITest.java"
-      ]
-    }
-  },
   "apache_rocketmq-5286": {
     "bug_id": "apache_rocketmq-5286",
     "PR_number": 5286,
@@ -186,39 +155,6 @@
       ],
       "success_tests": [
         ".org.apache.rocketmq.remoting.netty.NettyClientConfigTest.java"
-      ]
-    }
-  },
-  "apache_rocketmq-5475": {
-    "bug_id": "apache_rocketmq-5475",
-    "PR_number": 5475,
-    "PR_createdAt": "2022-11-07T08:14:00Z",
-    "merge_commit": "ee37e3a55fe21e0720cb10291bea65392626c775",
-    "buggy_commits": [
-      {
-        "oid": "0da68ce2d9f3c9dd8f00b6ac88d34a5003d1984f",
-        "message": "update com.alibaba:fastjson 1.2.69_noneautotype to 1.2.83 (#5547)"
-      }
-    ],
-    "issue": {
-      "url": "https://github.com/apache/rocketmq/issues/5471",
-      "createdAt": "2022-11-07T02:41:42Z",
-      "content": "bug_report_all/apache_rocketmq-5475.json"
-    },
-    "changed_tests": [
-      "store/src/test/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHATest.java",
-      "test/src/test/java/org/apache/rocketmq/test/autoswitchrole/AutoSwitchRoleBase.java",
-      "test/src/test/java/org/apache/rocketmq/test/autoswitchrole/AutoSwitchRoleIntegrationTest.java"
-    ],
-    "PR_url": "https://github.com/apache/rocketmq/pull/5475",
-    "merge_commit_url": "https://github.com/apache/rocketmq/commit/ee37e3a55fe21e0720cb10291bea65392626c775",
-    "buggy_commit": "0da68ce2d9f3c9dd8f00b6ac88d34a5003d1984f",
-    "execution_result": {
-      "valid_tests": [
-        ".org.apache.rocketmq.store.ha.autoswitch.AutoSwitchHATest.java"
-      ],
-      "success_tests": [
-        ".org.apache.rocketmq.store.ha.autoswitch.AutoSwitchHATest.java"
       ]
     }
   },

@@ -327,46 +327,6 @@
       ]
     }
   },
-  "google_gson-2397": {
-    "bug_id": "google_gson-2397",
-    "PR_number": 2397,
-    "PR_createdAt": "2023-05-27T00:53:18Z",
-    "merge_commit": "43396e45fd1f03e408e0e83b168a72a0f3e0b84e",
-    "buggy_commits": [
-      {
-        "oid": "4c65a82871ec92e0550d8d313e10bbfb621d0f39",
-        "message": "Remove accidental invisible characters from Troubleshooting Guide (#2395)\n\nAccidentally contained U+200C (Zero Width Non-Joiner) followed by U+200B (Zero Width Space)"
-      }
-    ],
-    "issue": {
-      "url": "https://github.com/google/gson/issues/1945",
-      "createdAt": "2021-08-31T08:48:49Z",
-      "content": "bug_report_all/google_gson-2397.json"
-    },
-    "changed_tests": [
-      "shrinker-test/src/main/java/com/example/ClassWithNamedFields.java",
-      "shrinker-test/src/main/java/com/example/ClassWithSerializedName.java",
-      "shrinker-test/src/main/java/com/example/ClassWithVersionAnnotations.java",
-      "shrinker-test/src/main/java/com/example/DefaultConstructorMain.java",
-      "shrinker-test/src/main/java/com/example/EnumClass.java",
-      "shrinker-test/src/main/java/com/example/EnumClassWithSerializedName.java",
-      "shrinker-test/src/main/java/com/example/GenericClasses.java",
-      "shrinker-test/src/main/java/com/example/Main.java",
-      "shrinker-test/src/main/java/com/example/TestExecutor.java",
-      "shrinker-test/src/test/java/com/google/gson/it/ShrinkingIT.java"
-    ],
-    "PR_url": "https://github.com/google/gson/pull/2397",
-    "merge_commit_url": "https://github.com/google/gson/commit/43396e45fd1f03e408e0e83b168a72a0f3e0b84e",
-    "buggy_commit": "4c65a82871ec92e0550d8d313e10bbfb621d0f39",
-    "execution_result": {
-      "valid_tests": [
-        ".com.google.gson.reflect.TypeTokenTest"
-      ],
-      "success_tests": [
-        ".com.google.gson.reflect.TypeTokenTest"
-      ]
-    }
-  },
   "google_gson-2410": {
     "bug_id": "google_gson-2410",
     "PR_number": 2410,
