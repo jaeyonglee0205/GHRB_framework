@@ -34,7 +34,7 @@ def call_info(pid, bid):
     '''
     bug_id, revision.id.buggy, revision.id.fixed, report.id, report.url
     '''
-    with open("root/framework/data/project_id.json", "r") as f:
+    with open("/root/framework/data/project_id.json", "r") as f:
         project_id = json.load(f)
     
     if pid not in project_id.keys():
@@ -67,7 +67,7 @@ def call_info(pid, bid):
         with open(f"verified_bug/verified_bugs_{owner}_{pid}.json", "r") as f:
             extra_info = json.load(f)
 
-        with open(f"root/framework/data/bug_cause.json", "r") as f:
+        with open(f"/root/framework/data/bug_cause.json", "r") as f:
             bug_cause = json.load(f)
         
         
@@ -105,7 +105,7 @@ def call_info(pid, bid):
     return output
 
 def call_checkout(pid, vid, dir, patch):
-    with open("root/framework/data/project_id.json", "r") as f:
+    with open("/root/framework/data/project_id.json", "r") as f:
         project_id = json.load(f)
 
     if pid not in project_id.keys():
@@ -211,7 +211,7 @@ def call_checkout(pid, vid, dir, patch):
     return output
 
 def find_env (pid):
-    with open("root/framework/data/project_id.json", "r") as f:
+    with open("/root/framework/data/project_id.json", "r") as f:
         project_id = json.load(f)
 
     if pid not in project_id.keys():
@@ -294,7 +294,7 @@ def call_compile(dir):
     # out = re.search(vid_pattern, content)
     # vid = out.group(2)
 
-    with open("root/framework/data/project_id.json", "r") as f:
+    with open("/root/framework/data/project_id.json", "r") as f:
         project_id = json.load(f)
 
     if pid not in project_id.keys():
@@ -430,7 +430,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
     #     with open(f"{path}/.ghrb.config", "r") as f:
     #         content = f.read()
 
-    #     with open("root/framework/data/project_id.json", "r") as f:
+    #     with open("/root/framework/data/project_id.json", "r") as f:
     #         project_id = json.load(f)
 
     #     pid_pattern = r'(pid=)(.*)\n'
@@ -484,7 +484,7 @@ def call_test(dir, test_case, test_class, test_suite, log, quiet):
     vid = out.group(2)
     bid = vid[:-1]
 
-    with open("root/framework/data/project_id.json", "r") as f:
+    with open("/root/framework/data/project_id.json", "r") as f:
         project_id = json.load(f)
 
     if pid not in project_id.keys():
@@ -582,7 +582,7 @@ def call_test(dir, test_case, test_class, test_suite, log, quiet):
 
 
 def call_bid(pid, quiet):
-    with open("root/framework/data/project_id.json", "r") as f:
+    with open("/root/framework/data/project_id.json", "r") as f:
         project_id = json.load(f)
 
     if pid not in project_id.keys():
@@ -616,7 +616,7 @@ def call_pid(quiet):
     Owner:\t\tProject ID
     ----------------------------------------
 ''' 
-    with open("root/framework/data/project_id.json", "r") as f:
+    with open("/root/framework/data/project_id.json", "r") as f:
         project_id = json.load(f)
     
     for pid in project_id.keys():
@@ -630,7 +630,7 @@ def call_pid(quiet):
 
 def call_env(pid):
     
-    with open("root/framework/data/project_id.json", "r") as f:
+    with open("/root/framework/data/project_id.json", "r") as f:
         project_id = json.load(f)
     
     if pid not in project_id.keys():
@@ -645,7 +645,7 @@ def call_env(pid):
 
 def call_ptr(pid):
 
-    with open("root/framework/data/project_id.json", "r") as f:
+    with open("/root/framework/data/project_id.json", "r") as f:
         project_id = json.load(f)
 
     if pid not in project_id.keys():
