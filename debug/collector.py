@@ -28,7 +28,7 @@ def project_id_collector():
         number_of_bugs = len(active_bug_list)
         commit_db = f"commit_db/{project_id}_bugs.csv"
 
-        with open("requirements.json", 'r') as f:
+        with open("root/framework/data/requirements.json", 'r') as f:
             requirements = json.load(f)
 
         repo_path = None
@@ -45,7 +45,7 @@ def project_id_collector():
         project_map[project_id]['requirements'] = requirements[project_id]
 
     
-    with open('project_id.json', 'w') as f:
+    with open('root/framework/data/project_id.json', 'w') as f:
         json.dump(project_map, f, indent=2)
 
 def commit_db_collector():
@@ -73,7 +73,7 @@ def commit_db_collector():
 def find_og_collector():
     total_list = set()
     filtered = []
-    with open('og_mapping.json', 'r') as f:
+    with open('root/framework/data/og_mapping.json', 'r') as f:
         og_mapping = json.load(f)
     
     for key, value in og_mapping.items():
@@ -121,7 +121,7 @@ def remove_test_diff ():
     i = 0
     bug_dict = defaultdict(int)
     
-    for diff in os.listdir("data/test_diff/"):
+    for diff in os.listdir("root/framework/data/test_diff/"):
         bug_dict[diff.split("_")[-2] + "_" + diff.split("_")[-1].split("-")[0]] += 1
 
         name = diff.replace(".diff", "")
