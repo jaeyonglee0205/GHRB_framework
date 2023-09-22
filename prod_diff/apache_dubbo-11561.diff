@@ -1,0 +1,214 @@
+diff --git a/dubbo-common/pom.xml b/dubbo-common/pom.xml
+index b21501091..a49cb3071 100644
+--- a/dubbo-common/pom.xml
++++ b/dubbo-common/pom.xml
+@@ -41,6 +41,7 @@
+             <groupId>commons-logging</groupId>
+             <artifactId>commons-logging</artifactId>
+         </dependency>
++
+         <dependency>
+             <groupId>log4j</groupId>
+             <artifactId>log4j</artifactId>
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/utils/SerializeSecurityConfigurator.java b/dubbo-common/src/main/java/org/apache/dubbo/common/utils/SerializeSecurityConfigurator.java
+index d6f71b518..a02584f0b 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/utils/SerializeSecurityConfigurator.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/utils/SerializeSecurityConfigurator.java
+@@ -16,6 +16,14 @@
+  */
+ package org.apache.dubbo.common.utils;
+ 
++import org.apache.dubbo.common.constants.CommonConstants;
++import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
++import org.apache.dubbo.common.logger.LoggerFactory;
++import org.apache.dubbo.config.ApplicationConfig;
++import org.apache.dubbo.rpc.model.FrameworkModel;
++import org.apache.dubbo.rpc.model.ModuleModel;
++import org.apache.dubbo.rpc.model.ScopeClassLoaderListener;
++
+ import java.io.IOException;
+ import java.lang.reflect.Field;
+ import java.lang.reflect.GenericArrayType;
+@@ -32,14 +40,6 @@ import java.util.Optional;
+ import java.util.Set;
+ import java.util.stream.Collectors;
+ 
+-import org.apache.dubbo.common.constants.CommonConstants;
+-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+-import org.apache.dubbo.common.logger.LoggerFactory;
+-import org.apache.dubbo.config.ApplicationConfig;
+-import org.apache.dubbo.rpc.model.FrameworkModel;
+-import org.apache.dubbo.rpc.model.ModuleModel;
+-import org.apache.dubbo.rpc.model.ScopeClassLoaderListener;
+-
+ import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST;
+ import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST;
+ import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL;
+@@ -185,8 +185,9 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
+             return;
+         }
+ 
+-        Set<Class<?>> markedClass = new HashSet<>();
++        Set<Type> markedClass = new HashSet<>();
+         markedClass.add(clazz);
++        checkClass(markedClass, clazz);
+ 
+         addToAllow(clazz.getName());
+ 
+@@ -221,10 +222,17 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
+         }
+     }
+ 
+-    private void checkType(Set<Class<?>> markedClass, Type type) {
++    private void checkType(Set<Type> markedClass, Type type) {
+         if (type instanceof Class) {
+             checkClass(markedClass, (Class<?>) type);
+-        } else if (type instanceof ParameterizedType) {
++            return;
++        }
++
++        if (!markedClass.add(type)) {
++            return;
++        }
++
++        if (type instanceof ParameterizedType) {
+             ParameterizedType parameterizedType = (ParameterizedType) type;
+             checkClass(markedClass, (Class<?>) parameterizedType.getRawType());
+             for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
+@@ -249,13 +257,11 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
+         }
+     }
+ 
+-    private void checkClass(Set<Class<?>> markedClass, Class<?> clazz) {
+-        if (markedClass.contains(clazz)) {
++    private void checkClass(Set<Type> markedClass, Class<?> clazz) {
++        if (!markedClass.add(clazz)) {
+             return;
+         }
+ 
+-        markedClass.add(clazz);
+-
+         addToAllow(clazz.getName());
+ 
+         Class<?>[] interfaces = clazz.getInterfaces();
+diff --git a/dubbo-common/src/test/java/com/service/DemoService4.java b/dubbo-common/src/test/java/com/service/DemoService4.java
+new file mode 100644
+index 000000000..3df4506ce
+--- /dev/null
++++ b/dubbo-common/src/test/java/com/service/DemoService4.java
+@@ -0,0 +1,27 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package com.service;
++
++public abstract class DemoService4<T, R, Param extends DemoService5<T, R, Param>> {
++    public DemoService4() {
++    }
++
++    public DemoService5<T, R, Param> getWrapper() {
++        return null;
++    }
++
++}
+diff --git a/dubbo-common/src/test/java/com/service/DemoService5.java b/dubbo-common/src/test/java/com/service/DemoService5.java
+new file mode 100644
+index 000000000..00b56f7e9
+--- /dev/null
++++ b/dubbo-common/src/test/java/com/service/DemoService5.java
+@@ -0,0 +1,20 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package com.service;
++
++public abstract class DemoService5<T, R, Children extends DemoService5<T, R, Children>> {
++}
+diff --git a/dubbo-common/src/test/java/org/apache/dubbo/common/utils/SerializeSecurityConfiguratorTest.java b/dubbo-common/src/test/java/org/apache/dubbo/common/utils/SerializeSecurityConfiguratorTest.java
+index df527cc89..05e131c08 100644
+--- a/dubbo-common/src/test/java/org/apache/dubbo/common/utils/SerializeSecurityConfiguratorTest.java
++++ b/dubbo-common/src/test/java/org/apache/dubbo/common/utils/SerializeSecurityConfiguratorTest.java
+@@ -16,24 +16,25 @@
+  */
+ package org.apache.dubbo.common.utils;
+ 
+-import java.util.HashSet;
+-import java.util.LinkedList;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.Set;
+-import java.util.Vector;
+-
+ import org.apache.dubbo.common.constants.CommonConstants;
+ import org.apache.dubbo.config.ApplicationConfig;
+ import org.apache.dubbo.rpc.model.ApplicationModel;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+ import org.apache.dubbo.rpc.model.ModuleModel;
+-import org.junit.jupiter.api.Assertions;
+-import org.junit.jupiter.api.Test;
+ 
+ import com.service.DemoService1;
+ import com.service.DemoService2;
++import com.service.DemoService4;
+ import com.service.deep1.deep2.deep3.DemoService3;
++import org.junit.jupiter.api.Assertions;
++import org.junit.jupiter.api.Test;
++
++import java.util.HashSet;
++import java.util.LinkedList;
++import java.util.List;
++import java.util.Map;
++import java.util.Set;
++import java.util.Vector;
+ 
+ import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST;
+ import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST;
+@@ -252,6 +253,22 @@ class SerializeSecurityConfiguratorTest {
+ 
+     }
+ 
++    @Test
++    void testGeneric() {
++        FrameworkModel frameworkModel = new FrameworkModel();
++        ApplicationModel applicationModel = frameworkModel.newApplication();
++        ModuleModel moduleModel = applicationModel.newModule();
++
++        SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
++
++        SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
++        serializeSecurityConfigurator.onAddClassLoader(moduleModel, Thread.currentThread().getContextClassLoader());
++
++        serializeSecurityConfigurator.registerInterface(DemoService4.class);
++        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService4"));
++
++        frameworkModel.destroy();
++    }
+     @Test
+     void testRegister1() {
+         FrameworkModel frameworkModel = new FrameworkModel();

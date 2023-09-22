@@ -1,0 +1,81 @@
+diff --git a/modules/openapi-generator/src/main/resources/go/api_test.mustache b/modules/openapi-generator/src/main/resources/go/api_test.mustache
+index 87a1f6c844f..79caa6213ea 100644
+--- a/modules/openapi-generator/src/main/resources/go/api_test.mustache
++++ b/modules/openapi-generator/src/main/resources/go/api_test.mustache
+@@ -39,10 +39,12 @@ func Test_{{packageName}}_{{classname}}Service(t *testing.T) {
+ 		var {{paramName}} {{{dataType}}}
+ 		{{/pathParams}}
+ 
+-		resp, httpRes, err := apiClient.{{classname}}.{{operationId}}(context.Background(){{#pathParams}}, {{paramName}}{{/pathParams}}).Execute()
++		{{#returnType}}resp, {{/returnType}}httpRes, err := apiClient.{{classname}}.{{operationId}}(context.Background(){{#pathParams}}, {{paramName}}{{/pathParams}}).Execute()
+ 
+ 		require.Nil(t, err)
++		{{#returnType}}
+ 		require.NotNil(t, resp)
++		{{/returnType}}
+ 		assert.Equal(t, 200, httpRes.StatusCode)
+ 
+ 	})
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/go/GoClientCodegenTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/go/GoClientCodegenTest.java
+index 55706dc106e..7969d716f4d 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/go/GoClientCodegenTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/go/GoClientCodegenTest.java
+@@ -261,4 +261,29 @@ public class GoClientCodegenTest {
+         TestUtils.assertFileContains(Paths.get(output + "/api_pet.go"),
+                 "newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)");
+     }
++
++    @Test
++    public void verifyApiTestWithNullResponse() throws IOException {
++        File output = Files.createTempDirectory("test").toFile();
++        output.deleteOnExit();
++
++        final CodegenConfigurator configurator = new CodegenConfigurator()
++                .setGeneratorName("go")
++                .setGitUserId("OpenAPITools")
++                .setGitRepoId("openapi-generator")
++                .setInputSpec("src/test/resources/3_0/go/petstore-with-no-response-body.yaml")
++                .setOutputDir(output.getAbsolutePath().replace("\\", "/"));
++
++        DefaultGenerator generator = new DefaultGenerator();
++        List<File> files = generator.opts(configurator.toClientOptInput()).generate();
++        files.forEach(File::deleteOnExit);
++
++        TestUtils.assertFileExists(Paths.get(output + "/test/api_pet_test.go"));
++        TestUtils.assertFileNotContains(Paths.get(output + "/test/api_pet_test.go"),
++                "require.NotNil(t, resp)");
++        TestUtils.assertFileNotContains(Paths.get(output + "/test/api_pet_test.go"),
++                "resp, httpRes, err := apiClient.PetApi.PetDelete(context.Background()).Execute()");
++        TestUtils.assertFileContains(Paths.get(output + "/test/api_pet_test.go"),
++                "httpRes, err := apiClient.PetApi.PetDelete(context.Background()).Execute()");
++    }
+ }
+diff --git a/modules/openapi-generator/src/test/resources/3_0/go/petstore-with-no-response-body.yaml b/modules/openapi-generator/src/test/resources/3_0/go/petstore-with-no-response-body.yaml
+new file mode 100644
+index 00000000000..e40a5e3a349
+--- /dev/null
++++ b/modules/openapi-generator/src/test/resources/3_0/go/petstore-with-no-response-body.yaml
+@@ -0,0 +1,22 @@
++openapi: 3.0.0
++info:
++  description: >-
++    This spec is mainly for testing Petstore server and contains fake endpoints,
++    models. Please do not use this for any other purpose. Special characters: "
++    \
++  version: 1.0.0
++  title: OpenAPI Petstore
++  license:
++    name: Apache-2.0
++    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
++tags:
++  - name: pet
++    description: Everything about your Pets
++paths:
++  /pet:
++    delete:
++      tags:
++        - pet
++      responses:
++        '204':
++          description: OK
+\ No newline at end of file

@@ -1,0 +1,346 @@
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/IllegalTypeCheck.java b/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/IllegalTypeCheck.java
+index 81819783b..f8ae785b5 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/IllegalTypeCheck.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/IllegalTypeCheck.java
+@@ -111,7 +111,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
+  * <li>
+  * Property {@code memberModifiers} - Control whether to check only methods and fields with any
+  * of the specified modifiers.
+- * This property does not affect method calls nor method references.
++ * This property does not affect method calls nor method references nor record components.
+  * Type is {@code java.lang.String[]}.
+  * Validation type is {@code tokenTypesSet}.
+  * Default value is {@code ""}.
+@@ -380,7 +380,7 @@ public final class IllegalTypeCheck extends AbstractCheck {
+     private final Set<String> ignoredMethodNames = new HashSet<>();
+     /**
+      * Control whether to check only methods and fields with any of the specified modifiers.
+-     * This property does not affect method calls nor method references.
++     * This property does not affect method calls nor method references nor record components.
+      */
+     private List<Integer> memberModifiers = Collections.emptyList();
+ 
+@@ -473,9 +473,11 @@ public final class IllegalTypeCheck extends AbstractCheck {
+             case TokenTypes.VARIABLE_DEF:
+             case TokenTypes.ANNOTATION_FIELD_DEF:
+             case TokenTypes.PATTERN_VARIABLE_DEF:
+-            case TokenTypes.RECORD_COMPONENT_DEF:
+                 visitVariableDef(ast);
+                 break;
++            case TokenTypes.RECORD_COMPONENT_DEF:
++                checkClassName(ast);
++                break;
+             case TokenTypes.PARAMETER_DEF:
+                 visitParameterDef(ast);
+                 break;
+@@ -852,7 +854,7 @@ public final class IllegalTypeCheck extends AbstractCheck {
+     /**
+      * Setter to control whether to check only methods and fields with any of
+      * the specified modifiers.
+-     * This property does not affect method calls nor method references.
++     * This property does not affect method calls nor method references nor record components.
+      *
+      * @param modifiers String contains modifiers.
+      */
+diff --git a/src/main/resources/com/puppycrawl/tools/checkstyle/meta/checks/coding/IllegalTypeCheck.xml b/src/main/resources/com/puppycrawl/tools/checkstyle/meta/checks/coding/IllegalTypeCheck.xml
+index 05b9e707d..51a2ab355 100644
+--- a/src/main/resources/com/puppycrawl/tools/checkstyle/meta/checks/coding/IllegalTypeCheck.xml
++++ b/src/main/resources/com/puppycrawl/tools/checkstyle/meta/checks/coding/IllegalTypeCheck.xml
+@@ -80,7 +80,7 @@
+                       validation-type="tokenTypesSet">
+                <description>Control whether to check only methods and fields with any
+  of the specified modifiers.
+- This property does not affect method calls nor method references.</description>
++ This property does not affect method calls nor method references nor record components.</description>
+             </property>
+             <property default-value="ANNOTATION_FIELD_DEF,CLASS_DEF,INTERFACE_DEF,METHOD_CALL,METHOD_DEF,METHOD_REF,PARAMETER_DEF,VARIABLE_DEF,PATTERN_VARIABLE_DEF,RECORD_DEF,RECORD_COMPONENT_DEF"
+                       name="tokens"
+diff --git a/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersDefault.java b/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersDefault.java
+new file mode 100644
+index 000000000..dd50d3344
+--- /dev/null
++++ b/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersDefault.java
+@@ -0,0 +1,63 @@
++/*
++IllegalType
++validateAbstractClassNames = (default)false
++illegalClassNames = (default)HashMap, HashSet, LinkedHashMap, LinkedHashSet, TreeMap, TreeSet, \
++                    java.util.HashMap, java.util.HashSet, java.util.LinkedHashMap, \
++                    java.util.LinkedHashSet, java.util.TreeMap, java.util.TreeSet
++legalAbstractClassNames = (default)
++ignoredMethodNames = (default)getEnvironment, getInitialContext
++illegalAbstractClassNameFormat = (default)^(.*[.])?Abstract.*$
++memberModifiers = (default)
++tokens = (default)ANNOTATION_FIELD_DEF, CLASS_DEF, INTERFACE_DEF, METHOD_CALL, METHOD_DEF, \
++         METHOD_REF, PARAMETER_DEF, VARIABLE_DEF, PATTERN_VARIABLE_DEF, RECORD_DEF, \
++         RECORD_COMPONENT_DEF
++
++
++*/
++
++//non-compiled with javac: Compilable with Java14
++package com.puppycrawl.tools.checkstyle.checks.coding.illegaltype;
++
++import java.util.*;
++
++public class InputIllegalTypeRecordsWithMemberModifiersDefault
++{
++
++    public record IdentifiersPair(
++        UUID productId, // ok
++        String identifier // ok
++    )
++    {
++
++    }
++
++    public class IdentifiersPairEquivalent {
++        private final UUID productId; // ok
++        private final String identifier; // ok
++
++        public IdentifiersPairEquivalent(UUID productId, String identifier) {
++            this.productId = productId;
++            this.identifier = identifier;
++        }
++    }
++
++    public record IdentifiersPair2(
++        HashSet x, // violation
++        String identifier // ok
++    )
++    {
++
++    }
++
++    public class IdentifiersPairEquivalent2 {
++        private final HashSet x; // violation
++        private final String identifier; // ok
++
++        public IdentifiersPairEquivalent2(Set x, String identifier) { // ok
++            this.x = (HashSet) x; // ok
++            this.identifier = identifier;
++        }
++    }
++
++}
++
+diff --git a/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersFinal.java b/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersFinal.java
+new file mode 100644
+index 000000000..227c84555
+--- /dev/null
++++ b/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersFinal.java
+@@ -0,0 +1,62 @@
++/*
++IllegalType
++validateAbstractClassNames = (default)false
++illegalClassNames = (default)HashMap, HashSet, LinkedHashMap, LinkedHashSet, TreeMap, TreeSet, \
++                    java.util.HashMap, java.util.HashSet, java.util.LinkedHashMap, \
++                    java.util.LinkedHashSet, java.util.TreeMap, java.util.TreeSet
++legalAbstractClassNames = (default)
++ignoredMethodNames = (default)getEnvironment, getInitialContext
++illegalAbstractClassNameFormat = (default)^(.*[.])?Abstract.*$
++memberModifiers = FINAL
++tokens = (default)ANNOTATION_FIELD_DEF, CLASS_DEF, INTERFACE_DEF, METHOD_CALL, METHOD_DEF, \
++         METHOD_REF, PARAMETER_DEF, VARIABLE_DEF, PATTERN_VARIABLE_DEF, RECORD_DEF, \
++         RECORD_COMPONENT_DEF
++
++
++*/
++
++//non-compiled with javac: Compilable with Java14
++package com.puppycrawl.tools.checkstyle.checks.coding.illegaltype;
++
++import java.util.*;
++
++public class InputIllegalTypeRecordsWithMemberModifiersFinal
++{
++
++    public record IdentifiersPair(
++        UUID productId, // ok
++        String identifier // ok
++    )
++    {
++
++    }
++
++    public class IdentifiersPairEquivalent {
++        private final UUID productId; // ok
++        private final String identifier; // ok
++
++        public IdentifiersPairEquivalent(UUID productId, String identifier) {
++            this.productId = productId;
++            this.identifier = identifier;
++        }
++    }
++
++    public record IdentifiersPair2(
++        HashSet x, // violation
++        String identifier // ok
++    )
++    {
++
++    }
++
++    public class IdentifiersPairEquivalent2 {
++        private final HashSet x; // violation
++        private final String identifier; // ok
++
++        public IdentifiersPairEquivalent2(Set x, String identifier) { // ok
++            this.x = (HashSet) x; // ok
++            this.identifier = identifier;
++        }
++    }
++
++}
+diff --git a/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersPrivateFinal.java b/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersPrivateFinal.java
+new file mode 100644
+index 000000000..d76607337
+--- /dev/null
++++ b/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersPrivateFinal.java
+@@ -0,0 +1,62 @@
++/*
++IllegalType
++validateAbstractClassNames = (default)false
++illegalClassNames = (default)HashMap, HashSet, LinkedHashMap, LinkedHashSet, TreeMap, TreeSet, \
++                    java.util.HashMap, java.util.HashSet, java.util.LinkedHashMap, \
++                    java.util.LinkedHashSet, java.util.TreeMap, java.util.TreeSet
++legalAbstractClassNames = (default)
++ignoredMethodNames = (default)getEnvironment, getInitialContext
++illegalAbstractClassNameFormat = (default)^(.*[.])?Abstract.*$
++memberModifiers = LITERAL_PRIVATE, FINAL
++tokens = (default)ANNOTATION_FIELD_DEF, CLASS_DEF, INTERFACE_DEF, METHOD_CALL, METHOD_DEF, \
++         METHOD_REF, PARAMETER_DEF, VARIABLE_DEF, PATTERN_VARIABLE_DEF, RECORD_DEF, \
++         RECORD_COMPONENT_DEF
++
++
++*/
++
++//non-compiled with javac: Compilable with Java14
++package com.puppycrawl.tools.checkstyle.checks.coding.illegaltype;
++
++import java.util.*;
++
++public class InputIllegalTypeRecordsWithMemberModifiersPrivateFinal
++{
++
++    public record IdentifiersPair(
++        UUID productId, // ok
++        String identifier // ok
++    )
++    {
++
++    }
++
++    public class IdentifiersPairEquivalent {
++        private final UUID productId; // ok
++        private final String identifier; // ok
++
++        public IdentifiersPairEquivalent(UUID productId, String identifier) {
++            this.productId = productId;
++            this.identifier = identifier;
++        }
++    }
++
++    public record IdentifiersPair2(
++        HashSet x, // violation
++        String identifier // ok
++    )
++    {
++
++    }
++
++    public class IdentifiersPairEquivalent2 {
++        private final HashSet x; // violation
++        private final String identifier; // ok
++
++        public IdentifiersPairEquivalent2(Set x, String identifier) { // ok
++            this.x = (HashSet) x; // ok
++            this.identifier = identifier;
++        }
++    }
++
++}
+diff --git a/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersPublicProtectedStatic.java b/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersPublicProtectedStatic.java
+new file mode 100644
+index 000000000..d1149e881
+--- /dev/null
++++ b/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersPublicProtectedStatic.java
+@@ -0,0 +1,63 @@
++/*
++IllegalType
++validateAbstractClassNames = (default)false
++illegalClassNames = (default)HashMap, HashSet, LinkedHashMap, LinkedHashSet, TreeMap, TreeSet, \
++                    java.util.HashMap, java.util.HashSet, java.util.LinkedHashMap, \
++                    java.util.LinkedHashSet, java.util.TreeMap, java.util.TreeSet
++legalAbstractClassNames = (default)
++ignoredMethodNames = (default)getEnvironment, getInitialContext
++illegalAbstractClassNameFormat = (default)^(.*[.])?Abstract.*$
++memberModifiers = LITERAL_PUBLIC, LITERAL_PROTECTED, LITERAL_STATIC
++tokens = (default)ANNOTATION_FIELD_DEF, CLASS_DEF, INTERFACE_DEF, METHOD_CALL, METHOD_DEF, \
++         METHOD_REF, PARAMETER_DEF, VARIABLE_DEF, PATTERN_VARIABLE_DEF, RECORD_DEF, \
++         RECORD_COMPONENT_DEF
++
++
++*/
++
++//non-compiled with javac: Compilable with Java14
++package com.puppycrawl.tools.checkstyle.checks.coding.illegaltype;
++
++import java.util.*;
++
++public class InputIllegalTypeRecordsWithMemberModifiersPublicProtectedStatic
++{
++
++    public record IdentifiersPair(
++        UUID productId, // ok
++        String identifier // ok
++    )
++    {
++
++    }
++
++    public class IdentifiersPairEquivalent {
++        private final UUID productId; // ok
++        private final String identifier; // ok
++
++        public IdentifiersPairEquivalent(UUID productId, String identifier) {
++            this.productId = productId;
++            this.identifier = identifier;
++        }
++    }
++
++    public record IdentifiersPair2(
++        HashSet x, // violation
++        String identifier // ok
++    )
++    {
++
++    }
++
++    public class IdentifiersPairEquivalent2 {
++        private final HashSet x; // ok
++        private final String identifier; // ok
++
++        public IdentifiersPairEquivalent2(Set x, String identifier) { // ok
++            this.x = (HashSet) x; // ok
++            this.identifier = identifier;
++        }
++    }
++
++}
++
+diff --git a/src/xdocs/config_coding.xml b/src/xdocs/config_coding.xml
+index 59e953847..b12789af2 100644
+--- a/src/xdocs/config_coding.xml
++++ b/src/xdocs/config_coding.xml
+@@ -3166,7 +3166,9 @@ public void myTest() {
+               <td>memberModifiers</td>
+               <td>
+                 Control whether to check only methods and fields with any of the specified
+-                modifiers. This property does not affect method calls nor method references.
++                modifiers.
++                This property does not affect method calls nor method references nor
++                record components.
+               </td>
+               <td>subset of tokens
+                 <a href="apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html">TokenTypes</a>

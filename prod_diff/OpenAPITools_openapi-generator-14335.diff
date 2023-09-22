@@ -1,0 +1,247 @@
+diff --git a/modules/openapi-generator/src/main/resources/go/model_simple.mustache b/modules/openapi-generator/src/main/resources/go/model_simple.mustache
+index 179a57b716b..dab19a27a0f 100644
+--- a/modules/openapi-generator/src/main/resources/go/model_simple.mustache
++++ b/modules/openapi-generator/src/main/resources/go/model_simple.mustache
+@@ -311,6 +311,7 @@ func (o {{classname}}) ToMap() (map[string]interface{}, error) {
+ 	{{/isNullable}}
+ 	{{! if argument is not nullable, don't set it if it is nil}}
+ 	{{^isNullable}}
++	{{^isReadOnly}}
+ 	{{#required}}
+ 	toSerialize["{{baseName}}"] = o.{{name}}
+ 	{{/required}}
+@@ -319,6 +320,10 @@ func (o {{classname}}) ToMap() (map[string]interface{}, error) {
+ 		toSerialize["{{baseName}}"] = o.{{name}}
+ 	}
+ 	{{/required}}
++	{{/isReadOnly}}
++	{{#isReadOnly}}
++	// skip: {{baseName}} is readOnly
++	{{/isReadOnly}}
+ 	{{/isNullable}}
+ 	{{/vars}}
+ 	{{#isAdditionalPropertiesTrue}}
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/go/GoClientCodegenTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/go/GoClientCodegenTest.java
+index 4730d010292..63e47a7d635 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/go/GoClientCodegenTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/go/GoClientCodegenTest.java
+@@ -286,4 +286,24 @@ public class GoClientCodegenTest {
+         TestUtils.assertFileContains(Paths.get(output + "/test/api_pet_test.go"),
+                 "httpRes, err := apiClient.PetApi.PetDelete(context.Background()).Execute()");
+     }
++
++    @Test
++    public void verifyReadOnlyAttributes() throws IOException {
++        File output = Files.createTempDirectory("test").toFile();
++        output.deleteOnExit();
++
++        final CodegenConfigurator configurator = new CodegenConfigurator()
++                .setGeneratorName("go")
++                .setInputSpec("src/test/resources/3_0/property-readonly.yaml")
++                .setOutputDir(output.getAbsolutePath().replace("\\", "/"));
++
++        DefaultGenerator generator = new DefaultGenerator();
++        List<File> files = generator.opts(configurator.toClientOptInput()).generate();
++        files.forEach(File::deleteOnExit);
++
++        TestUtils.assertFileExists(Paths.get(output + "/model_request.go"));
++        TestUtils.assertFileContains(Paths.get(output + "/model_request.go"),
++                "// skip: customerCode is readOnly");
++    }
++
+ }
+diff --git a/modules/openapi-generator/src/test/resources/3_0/property-readonly.yaml b/modules/openapi-generator/src/test/resources/3_0/property-readonly.yaml
+new file mode 100644
+index 00000000000..872ff299310
+--- /dev/null
++++ b/modules/openapi-generator/src/test/resources/3_0/property-readonly.yaml
+@@ -0,0 +1,44 @@
++openapi: 3.0.1
++info:
++  version: 1.0.0
++  title: Example
++  license:
++    name: MIT
++servers:
++  - url: http://api.example.xyz/v1
++paths:
++  /test:
++    post:
++      requestBody:
++        content:
++          application/json:
++            schema:
++              $ref: '#/components/schemas/Request'
++      responses:
++        '200':
++          description: responses
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/Response'
++components:
++  schemas:
++    Request:
++      type: object
++      properties:
++        customerCode:
++          type: string
++          readOnly: true
++          example: '0001'
++        firstName:
++          type: string
++          example: 'first'
++    Response:
++      type: object
++      properties:
++        customerCode:
++          type: string
++          example: '0001'
++        firstName:
++          type: string
++          example: 'first'
+diff --git a/samples/client/petstore/go/go-petstore/model_has_only_read_only.go b/samples/client/petstore/go/go-petstore/model_has_only_read_only.go
+index 0dcbaa98b27..1f4cbff9154 100644
+--- a/samples/client/petstore/go/go-petstore/model_has_only_read_only.go
++++ b/samples/client/petstore/go/go-petstore/model_has_only_read_only.go
+@@ -114,12 +114,8 @@ func (o HasOnlyReadOnly) MarshalJSON() ([]byte, error) {
+ 
+ func (o HasOnlyReadOnly) ToMap() (map[string]interface{}, error) {
+ 	toSerialize := map[string]interface{}{}
+-	if !isNil(o.Bar) {
+-		toSerialize["bar"] = o.Bar
+-	}
+-	if !isNil(o.Foo) {
+-		toSerialize["foo"] = o.Foo
+-	}
++	// skip: bar is readOnly
++	// skip: foo is readOnly
+ 	return toSerialize, nil
+ }
+ 
+diff --git a/samples/client/petstore/go/go-petstore/model_name.go b/samples/client/petstore/go/go-petstore/model_name.go
+index 03fb10edfd0..cca94e9d64b 100644
+--- a/samples/client/petstore/go/go-petstore/model_name.go
++++ b/samples/client/petstore/go/go-petstore/model_name.go
+@@ -174,15 +174,11 @@ func (o Name) MarshalJSON() ([]byte, error) {
+ func (o Name) ToMap() (map[string]interface{}, error) {
+ 	toSerialize := map[string]interface{}{}
+ 	toSerialize["name"] = o.Name
+-	if !isNil(o.SnakeCase) {
+-		toSerialize["snake_case"] = o.SnakeCase
+-	}
++	// skip: snake_case is readOnly
+ 	if !isNil(o.Property) {
+ 		toSerialize["property"] = o.Property
+ 	}
+-	if !isNil(o.Var123Number) {
+-		toSerialize["123Number"] = o.Var123Number
+-	}
++	// skip: 123Number is readOnly
+ 	return toSerialize, nil
+ }
+ 
+diff --git a/samples/client/petstore/go/go-petstore/model_read_only_first.go b/samples/client/petstore/go/go-petstore/model_read_only_first.go
+index 7d726d89fde..95ab3c11cb2 100644
+--- a/samples/client/petstore/go/go-petstore/model_read_only_first.go
++++ b/samples/client/petstore/go/go-petstore/model_read_only_first.go
+@@ -114,9 +114,7 @@ func (o ReadOnlyFirst) MarshalJSON() ([]byte, error) {
+ 
+ func (o ReadOnlyFirst) ToMap() (map[string]interface{}, error) {
+ 	toSerialize := map[string]interface{}{}
+-	if !isNil(o.Bar) {
+-		toSerialize["bar"] = o.Bar
+-	}
++	// skip: bar is readOnly
+ 	if !isNil(o.Baz) {
+ 		toSerialize["baz"] = o.Baz
+ 	}
+diff --git a/samples/openapi3/client/petstore/go/go-petstore/model_has_only_read_only.go b/samples/openapi3/client/petstore/go/go-petstore/model_has_only_read_only.go
+index 37446bd9cce..31f17906d08 100644
+--- a/samples/openapi3/client/petstore/go/go-petstore/model_has_only_read_only.go
++++ b/samples/openapi3/client/petstore/go/go-petstore/model_has_only_read_only.go
+@@ -117,12 +117,8 @@ func (o HasOnlyReadOnly) MarshalJSON() ([]byte, error) {
+ 
+ func (o HasOnlyReadOnly) ToMap() (map[string]interface{}, error) {
+ 	toSerialize := map[string]interface{}{}
+-	if !isNil(o.Bar) {
+-		toSerialize["bar"] = o.Bar
+-	}
+-	if !isNil(o.Foo) {
+-		toSerialize["foo"] = o.Foo
+-	}
++	// skip: bar is readOnly
++	// skip: foo is readOnly
+ 
+ 	for key, value := range o.AdditionalProperties {
+ 		toSerialize[key] = value
+diff --git a/samples/openapi3/client/petstore/go/go-petstore/model_name.go b/samples/openapi3/client/petstore/go/go-petstore/model_name.go
+index 22012a7d2cd..cdec0e50403 100644
+--- a/samples/openapi3/client/petstore/go/go-petstore/model_name.go
++++ b/samples/openapi3/client/petstore/go/go-petstore/model_name.go
+@@ -177,15 +177,11 @@ func (o Name) MarshalJSON() ([]byte, error) {
+ func (o Name) ToMap() (map[string]interface{}, error) {
+ 	toSerialize := map[string]interface{}{}
+ 	toSerialize["name"] = o.Name
+-	if !isNil(o.SnakeCase) {
+-		toSerialize["snake_case"] = o.SnakeCase
+-	}
++	// skip: snake_case is readOnly
+ 	if !isNil(o.Property) {
+ 		toSerialize["property"] = o.Property
+ 	}
+-	if !isNil(o.Var123Number) {
+-		toSerialize["123Number"] = o.Var123Number
+-	}
++	// skip: 123Number is readOnly
+ 
+ 	for key, value := range o.AdditionalProperties {
+ 		toSerialize[key] = value
+diff --git a/samples/openapi3/client/petstore/go/go-petstore/model_read_only_first.go b/samples/openapi3/client/petstore/go/go-petstore/model_read_only_first.go
+index 56546056ecb..93fc4b5a29f 100644
+--- a/samples/openapi3/client/petstore/go/go-petstore/model_read_only_first.go
++++ b/samples/openapi3/client/petstore/go/go-petstore/model_read_only_first.go
+@@ -117,9 +117,7 @@ func (o ReadOnlyFirst) MarshalJSON() ([]byte, error) {
+ 
+ func (o ReadOnlyFirst) ToMap() (map[string]interface{}, error) {
+ 	toSerialize := map[string]interface{}{}
+-	if !isNil(o.Bar) {
+-		toSerialize["bar"] = o.Bar
+-	}
++	// skip: bar is readOnly
+ 	if !isNil(o.Baz) {
+ 		toSerialize["baz"] = o.Baz
+ 	}
+diff --git a/samples/openapi3/client/petstore/go/go-petstore/model_read_only_with_default.go b/samples/openapi3/client/petstore/go/go-petstore/model_read_only_with_default.go
+index 3c754c02a15..9e692e9280e 100644
+--- a/samples/openapi3/client/petstore/go/go-petstore/model_read_only_with_default.go
++++ b/samples/openapi3/client/petstore/go/go-petstore/model_read_only_with_default.go
+@@ -294,24 +294,16 @@ func (o ReadOnlyWithDefault) MarshalJSON() ([]byte, error) {
+ 
+ func (o ReadOnlyWithDefault) ToMap() (map[string]interface{}, error) {
+ 	toSerialize := map[string]interface{}{}
+-	if !isNil(o.Prop1) {
+-		toSerialize["prop1"] = o.Prop1
+-	}
+-	if !isNil(o.Prop2) {
+-		toSerialize["prop2"] = o.Prop2
+-	}
++	// skip: prop1 is readOnly
++	// skip: prop2 is readOnly
+ 	if !isNil(o.Prop3) {
+ 		toSerialize["prop3"] = o.Prop3
+ 	}
+-	if !isNil(o.BoolProp1) {
+-		toSerialize["boolProp1"] = o.BoolProp1
+-	}
++	// skip: boolProp1 is readOnly
+ 	if !isNil(o.BoolProp2) {
+ 		toSerialize["boolProp2"] = o.BoolProp2
+ 	}
+-	if !isNil(o.IntProp1) {
+-		toSerialize["intProp1"] = o.IntProp1
+-	}
++	// skip: intProp1 is readOnly
+ 	if !isNil(o.IntProp2) {
+ 		toSerialize["intProp2"] = o.IntProp2
+ 	}

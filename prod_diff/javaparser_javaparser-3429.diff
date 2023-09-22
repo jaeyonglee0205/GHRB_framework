@@ -1,0 +1,314 @@
+diff --git a/javaparser-core-testing/src/test/java/com/github/javaparser/printer/lexicalpreservation/LexicalPreservingPrinterTest.java b/javaparser-core-testing/src/test/java/com/github/javaparser/printer/lexicalpreservation/LexicalPreservingPrinterTest.java
+index cc8cddbef..290b1b95f 100644
+--- a/javaparser-core-testing/src/test/java/com/github/javaparser/printer/lexicalpreservation/LexicalPreservingPrinterTest.java
++++ b/javaparser-core-testing/src/test/java/com/github/javaparser/printer/lexicalpreservation/LexicalPreservingPrinterTest.java
+@@ -21,35 +21,72 @@
+ 
+ package com.github.javaparser.printer.lexicalpreservation;
+ 
++import static com.github.javaparser.StaticJavaParser.parse;
++import static com.github.javaparser.StaticJavaParser.parseClassOrInterfaceType;
++import static com.github.javaparser.ast.Modifier.Keyword.PUBLIC;
++import static com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter.NODE_TEXT_DATA;
++import static com.github.javaparser.utils.TestUtils.assertEqualsStringIgnoringEol;
++import static com.github.javaparser.utils.Utils.SYSTEM_EOL;
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++import static org.junit.jupiter.api.Assertions.fail;
++
++import java.io.IOException;
++import java.util.Arrays;
++import java.util.List;
++import java.util.stream.Collectors;
++
++import org.junit.jupiter.api.Test;
++
+ import com.github.javaparser.GeneratedJavaParserConstants;
+ import com.github.javaparser.JavaParser;
+ import com.github.javaparser.ParserConfiguration;
+ import com.github.javaparser.StaticJavaParser;
+-import com.github.javaparser.ast.*;
+-import com.github.javaparser.ast.body.*;
++import com.github.javaparser.ast.ArrayCreationLevel;
++import com.github.javaparser.ast.CompilationUnit;
++import com.github.javaparser.ast.ImportDeclaration;
++import com.github.javaparser.ast.Modifier;
++import com.github.javaparser.ast.Node;
++import com.github.javaparser.ast.NodeList;
++import com.github.javaparser.ast.body.AnnotationDeclaration;
++import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
++import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
++import com.github.javaparser.ast.body.FieldDeclaration;
++import com.github.javaparser.ast.body.InitializerDeclaration;
++import com.github.javaparser.ast.body.MethodDeclaration;
++import com.github.javaparser.ast.body.Parameter;
++import com.github.javaparser.ast.body.VariableDeclarator;
+ import com.github.javaparser.ast.comments.LineComment;
+-import com.github.javaparser.ast.expr.*;
+-import com.github.javaparser.ast.stmt.*;
++import com.github.javaparser.ast.expr.AnnotationExpr;
++import com.github.javaparser.ast.expr.ArrayCreationExpr;
++import com.github.javaparser.ast.expr.AssignExpr;
++import com.github.javaparser.ast.expr.BinaryExpr;
++import com.github.javaparser.ast.expr.BooleanLiteralExpr;
++import com.github.javaparser.ast.expr.CharLiteralExpr;
++import com.github.javaparser.ast.expr.DoubleLiteralExpr;
++import com.github.javaparser.ast.expr.Expression;
++import com.github.javaparser.ast.expr.FieldAccessExpr;
++import com.github.javaparser.ast.expr.IntegerLiteralExpr;
++import com.github.javaparser.ast.expr.LongLiteralExpr;
++import com.github.javaparser.ast.expr.MethodCallExpr;
++import com.github.javaparser.ast.expr.NameExpr;
++import com.github.javaparser.ast.expr.SimpleName;
++import com.github.javaparser.ast.expr.StringLiteralExpr;
++import com.github.javaparser.ast.expr.TextBlockLiteralExpr;
++import com.github.javaparser.ast.expr.ThisExpr;
++import com.github.javaparser.ast.expr.VariableDeclarationExpr;
++import com.github.javaparser.ast.stmt.BlockStmt;
++import com.github.javaparser.ast.stmt.CatchClause;
++import com.github.javaparser.ast.stmt.ExpressionStmt;
++import com.github.javaparser.ast.stmt.IfStmt;
++import com.github.javaparser.ast.stmt.Statement;
++import com.github.javaparser.ast.stmt.TryStmt;
+ import com.github.javaparser.ast.type.Type;
+ import com.github.javaparser.ast.type.UnionType;
+ import com.github.javaparser.ast.type.VoidType;
+ import com.github.javaparser.ast.visitor.ModifierVisitor;
+ import com.github.javaparser.ast.visitor.Visitable;
+ import com.github.javaparser.utils.TestUtils;
+-import org.junit.jupiter.api.Test;
+-
+-import java.io.IOException;
+-import java.util.Arrays;
+-import java.util.List;
+-import java.util.stream.Collectors;
+-
+-import static com.github.javaparser.StaticJavaParser.parse;
+-import static com.github.javaparser.StaticJavaParser.parseClassOrInterfaceType;
+-import static com.github.javaparser.ast.Modifier.Keyword.PUBLIC;
+-import static com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter.NODE_TEXT_DATA;
+-import static com.github.javaparser.utils.TestUtils.assertEqualsStringIgnoringEol;
+-import static com.github.javaparser.utils.Utils.SYSTEM_EOL;
+-import static org.junit.jupiter.api.Assertions.*;
+ 
+ class LexicalPreservingPrinterTest extends AbstractLexicalPreservingTest {
+     private NodeText getTextForNode(Node node) {
+@@ -1608,5 +1645,89 @@ class LexicalPreservingPrinterTest extends AbstractLexicalPreservingTest {
+                                 "}";
+         assertTransformedToString(expectedCode, cu);
+     }
++    
++    @Test
++    void testClassOrInterfacePreservationWithFullyQualifiedName_SingleType() {
++        // Given
++        considerCode("class Test {\n" +
++                     "  java.lang.Object foo;\n" +
++                     "}");
++
++        // When
++        FieldDeclaration fooField = cu.findFirst(FieldDeclaration.class).orElseThrow(AssertionError::new);
++        // modification of the AST
++        fooField.addMarkerAnnotation("Nullable");
++
++        // Assert
++        String expectedCode =   "class Test {\n" +
++                                "  @Nullable\n" +
++                                "  java.lang.Object foo;\n" +
++                                "}";
++        assertTransformedToString(expectedCode, cu);
++
++    }
++    
++    @Test
++    void testClassOrInterfacePreservationWithFullyQualifiedName_ArrayType() {
++        // Given
++        considerCode("class Test {\n" +
++                     "  java.lang.Object[] foo;\n" +
++                     "}");
++
++        // When
++        FieldDeclaration fooField = cu.findFirst(FieldDeclaration.class).orElseThrow(AssertionError::new);
++        // modification of the AST
++        fooField.addMarkerAnnotation("Nullable");
++
++        // Assert
++        String expectedCode =   "class Test {\n" +
++                                "  @Nullable\n" +
++                                "  java.lang.Object[] foo;\n" +
++                                "}";
++        assertTransformedToString(expectedCode, cu);
++
++    }
++    
++    @Test
++    void testClassOrInterfacePreservationWithFullyQualifiedName_MultipleVariablesDeclarationWithSameType() {
++        // Given
++        considerCode("class Test {\n" +
++                     "  java.lang.Object[] foo, bar;\n" +
++                     "}");
++
++        // When
++        FieldDeclaration fooField = cu.findFirst(FieldDeclaration.class).orElseThrow(AssertionError::new);
++        // modification of the AST
++        fooField.addMarkerAnnotation("Nullable");
++
++        // Assert
++        String expectedCode =   "class Test {\n" +
++                                "  @Nullable\n" +
++                                "  java.lang.Object[] foo, bar;\n" +
++                                "}";
++        assertTransformedToString(expectedCode, cu);
++
++    }
++    
++    @Test
++    void testClassOrInterfacePreservationWithFullyQualifiedName_MultipleVariablesDeclarationwithDifferentType() {
++        // Given
++        considerCode("class Test {\n" +
++                     "  java.lang.Object foo[], bar;\n" +
++                     "}");
++
++        // When
++        FieldDeclaration fooField = cu.findFirst(FieldDeclaration.class).orElseThrow(AssertionError::new);
++        // modification of the AST
++        fooField.addMarkerAnnotation("Nullable");
++
++        // Assert
++        String expectedCode =   "class Test {\n" +
++                                "  @Nullable\n" +
++                                "  java.lang.Object foo[], bar;\n" +
++                                "}";
++        assertTransformedToString(expectedCode, cu);
++
++    }
+ 
+ }
+diff --git a/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Difference.java b/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Difference.java
+index ad535e25b..ac1311a0a 100644
+--- a/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Difference.java
++++ b/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Difference.java
+@@ -44,6 +44,7 @@ import com.github.javaparser.ast.NodeList;
+ import com.github.javaparser.ast.comments.Comment;
+ import com.github.javaparser.ast.nodeTypes.NodeWithTypeArguments;
+ import com.github.javaparser.ast.type.ArrayType;
++import com.github.javaparser.ast.type.ClassOrInterfaceType;
+ import com.github.javaparser.ast.type.Type;
+ import com.github.javaparser.printer.concretesyntaxmodel.CsmElement;
+ import com.github.javaparser.printer.concretesyntaxmodel.CsmIndent;
+@@ -514,6 +515,15 @@ public class Difference {
+                 int step = getIndexToNextTokenElement((TokenTextElement) originalElement, 0);
+                 originalIndex += step;
+                 originalIndex++;
++            }  else if (originalElement.isIdentifier() && isTypeWithFullyQualifiedName(kept)) {
++                    diffIndex++;
++                    // skip all token related to node with the fully qualified name
++                    // for example:
++                    // java.lang.Object is represented in originalElement as a list of tokens "java", ".", "lang", ".", "Object".
++                    // So we have to skip 5 tokens.
++                    int step = getIndexToNextTokenElement((TokenTextElement) originalElement, kept);
++                    originalIndex += step;
++                    originalIndex++; // positioning on the next token
+             } else if ((originalElement.isIdentifier() || originalElement.isKeyword()) && isArrayType(kept)) {
+                 int tokenToSkip = getIndexToNextTokenElementInArrayType((TokenTextElement)originalElement, getArrayLevel(kept));
+                 diffIndex++;
+@@ -598,21 +608,58 @@ public class Difference {
+         return csmElem instanceof LexicalDifferenceCalculator.CsmChild &&
+                 ((LexicalDifferenceCalculator.CsmChild) csmElem).getChild() instanceof ArrayType;
+     }
++    
++    /*
++     * Returns true if the DifferenceElement is a CsmChild which represents a type with fully qualified name
++     */
++    private boolean isTypeWithFullyQualifiedName(DifferenceElement element) {
++        if (!element.isChild())
++            return false;
++        CsmChild child = (CsmChild) element.getElement();
++        if (!ClassOrInterfaceType.class.isAssignableFrom(child.getChild().getClass()))
++            return false;
++        return ((ClassOrInterfaceType) child.getChild()).getScope().isPresent();
++    }
+ 
+     /*
+      * Returns true if the DifferenceElement is a CsmChild with type arguments
+      */
+     private boolean isNodeWithTypeArguments(DifferenceElement element) {
+-        CsmElement csmElem = element.getElement();
+-        if (!CsmChild.class.isAssignableFrom(csmElem.getClass()))
++        if (!element.isChild())
+             return false;
+-        CsmChild child = (CsmChild) csmElem;
++        CsmChild child = (CsmChild) element.getElement();
+         if (!NodeWithTypeArguments.class.isAssignableFrom(child.getChild().getClass()))
+             return false;
+         Optional<NodeList<Type>> typeArgs = ((NodeWithTypeArguments) child.getChild()).getTypeArguments();
+         return typeArgs.isPresent() && typeArgs.get().size() > 0;
+     }
+ 
++    /*
++     * Try to resolve the number of token to skip in the original list to match 
++     * a ClassOrInterfaceType with a list of tokens like "java", ".", "lang", ".", "Object"
++     */
++    private int getIndexToNextTokenElement(TokenTextElement element, DifferenceElement kept) {
++        int step = 0; // number of token to skip
++        if (!isTypeWithFullyQualifiedName(kept)) return 0; // verify if the DifferenceElement is a ClassOrInterfaceType with a fully qualified name
++        CsmChild child = (CsmChild) kept.getElement();
++        // split the type fully qualified node name to an array of tokens
++        String[] parts = ((ClassOrInterfaceType) child.getChild()).getNameWithScope().split("\\.");
++        JavaToken token = element.getToken();
++        for (String part : parts) {
++            if (part.equals(token.asString())) {
++                token = token.getNextToken().get(); // get 'dot' token
++                if (!token.asString().equals(".")) break;
++                token = token.getNextToken().get(); // get the next part
++                step += 2;
++                continue;
++            }
++            // there is no match so we don't have token to skip
++            step = 0;
++            break;
++        }
++        return step;
++    }
++    
+     /*
+      * Returns the number of tokens to skip in originalElements list to synchronize it with the DiffElements list
+      * This is due to the fact that types are considered as token in the originalElements list.
+diff --git a/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/DifferenceElement.java b/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/DifferenceElement.java
+index 553b8ac40..485447a54 100644
+--- a/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/DifferenceElement.java
++++ b/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/DifferenceElement.java
+@@ -44,4 +44,8 @@ public interface DifferenceElement {
+     boolean isAdded();
+ 
+     boolean isRemoved();
++    
++    default boolean isChild() { 
++        return getElement() instanceof LexicalDifferenceCalculator.CsmChild; 
++    }
+ }
+diff --git a/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Kept.java b/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Kept.java
+index e681b52ab..5ea9a1929 100644
+--- a/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Kept.java
++++ b/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Kept.java
+@@ -80,8 +80,6 @@ public class Kept implements DifferenceElement {
+ 
+     public boolean isToken() { return element instanceof CsmToken; }
+ 
+-    public boolean isChild() { return element instanceof LexicalDifferenceCalculator.CsmChild; }
+-
+     public boolean isPrimitiveType() {
+         if (isChild()) {
+             LexicalDifferenceCalculator.CsmChild csmChild = (LexicalDifferenceCalculator.CsmChild) element;
+diff --git a/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Removed.java b/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Removed.java
+index 8400df006..0f3051c59 100644
+--- a/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Removed.java
++++ b/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Removed.java
+@@ -83,8 +83,6 @@ public class Removed implements DifferenceElement {
+ 
+     public boolean isToken() { return element instanceof CsmToken; }
+ 
+-    public boolean isChild() { return element instanceof LexicalDifferenceCalculator.CsmChild; }
+-
+     public boolean isPrimitiveType() {
+         if (isChild()) {
+             LexicalDifferenceCalculator.CsmChild csmChild = (LexicalDifferenceCalculator.CsmChild) element;

@@ -1,0 +1,352 @@
+diff --git a/javaparser-core/src/main/java/com/github/javaparser/resolution/model/typesystem/ReferenceTypeImpl.java b/javaparser-core/src/main/java/com/github/javaparser/resolution/model/typesystem/ReferenceTypeImpl.java
+index 5bc34c591..cc3abbac7 100644
+--- a/javaparser-core/src/main/java/com/github/javaparser/resolution/model/typesystem/ReferenceTypeImpl.java
++++ b/javaparser-core/src/main/java/com/github/javaparser/resolution/model/typesystem/ReferenceTypeImpl.java
+@@ -21,6 +21,11 @@
+ 
+ package com.github.javaparser.resolution.model.typesystem;
+ 
++import java.util.*;
++import java.util.function.Function;
++import java.util.stream.Collectors;
++import java.util.stream.Stream;
++
+ import com.github.javaparser.resolution.MethodUsage;
+ import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
+ import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
+@@ -34,15 +39,14 @@ import com.github.javaparser.resolution.types.ResolvedTypeTransformer;
+ import com.github.javaparser.resolution.types.ResolvedTypeVariable;
+ import com.github.javaparser.resolution.types.parametrization.ResolvedTypeParametersMap;
+ 
+-import java.util.*;
+-import java.util.function.Function;
+-import java.util.stream.Collectors;
+-
+ /**
+  * @author Federico Tomassetti
+  */
+ public class ReferenceTypeImpl extends ResolvedReferenceType {
+-	
++
++	private static final String[] ASSIGNABLE_REFERENCE_TYPE = { "java.lang.Object", "java.lang.Cloneable",
++	"java.io.Serializable" };
++
+     public static ResolvedReferenceType undeterminedParameters(ResolvedReferenceTypeDeclaration typeDeclaration) {
+         return new ReferenceTypeImpl(typeDeclaration, typeDeclaration.getTypeParameters().stream().map(
+                 ResolvedTypeVariable::new
+@@ -89,10 +93,10 @@ public class ReferenceTypeImpl extends ResolvedReferenceType {
+             if (this.isJavaLangObject()) {
+                 return true;
+             }
+-            
++
+             // Check if 'other' can be boxed to match this type
+             if (isCorrespondingBoxingType(other.describe())) return true;
+-            
++
+             // All numeric types extend Number
+             return other.isNumericType() && this.isReferenceType() && this.asReferenceType().getQualifiedName().equals(Number.class.getCanonicalName());
+         }
+@@ -137,9 +141,18 @@ public class ReferenceTypeImpl extends ResolvedReferenceType {
+         	Optional<ResolvedReferenceType> common = other.asUnionType().getCommonAncestor();
+             return common.map(ancestor -> isAssignableBy(ancestor)).orElse(false);
+         }
++        // An array can be assigned only to a variable of a compatible array type,
++        // or to a variable of type Object, Cloneable or java.io.Serializable.
++        if (other.isArray()) {
++			return isAssignableByReferenceType(getQualifiedName());
++		}
+         return false;
+     }
+ 
++    private boolean isAssignableByReferenceType(String qname) {
++    	return Stream.of(ASSIGNABLE_REFERENCE_TYPE).anyMatch(ref -> ref.equals(qname));
++    }
++
+     @Override
+     public Set<MethodUsage> getDeclaredMethods() {
+         // TODO replace variables
+@@ -195,8 +208,9 @@ public class ReferenceTypeImpl extends ResolvedReferenceType {
+     public List<ResolvedReferenceType> getAllAncestors() {
+         return getAllAncestors(ResolvedReferenceTypeDeclaration.depthFirstFunc);
+     }
+-    
+-    public List<ResolvedReferenceType> getAllAncestors(Function<ResolvedReferenceTypeDeclaration, List<ResolvedReferenceType>> traverser) {
++
++    @Override
++	public List<ResolvedReferenceType> getAllAncestors(Function<ResolvedReferenceTypeDeclaration, List<ResolvedReferenceType>> traverser) {
+         // We need to go through the inheritance line and propagate the type parameters
+ 
+         List<ResolvedReferenceType> ancestors = typeDeclaration.getAllAncestors(traverser);
+@@ -207,8 +221,9 @@ public class ReferenceTypeImpl extends ResolvedReferenceType {
+ 
+         return ancestors;
+     }
+-    
+-    public List<ResolvedReferenceType> getDirectAncestors() {
++
++    @Override
++	public List<ResolvedReferenceType> getDirectAncestors() {
+         // We need to go through the inheritance line and propagate the type parameters
+ 
+         List<ResolvedReferenceType> ancestors = typeDeclaration.getAncestors();
+@@ -234,7 +249,8 @@ public class ReferenceTypeImpl extends ResolvedReferenceType {
+         return ancestors;
+     }
+ 
+-    public ResolvedReferenceType deriveTypeParameters(ResolvedTypeParametersMap typeParametersMap) {
++    @Override
++	public ResolvedReferenceType deriveTypeParameters(ResolvedTypeParametersMap typeParametersMap) {
+         return create(typeDeclaration, typeParametersMap);
+     }
+ 
+diff --git a/javaparser-core/src/main/java/com/github/javaparser/resolution/types/ResolvedArrayType.java b/javaparser-core/src/main/java/com/github/javaparser/resolution/types/ResolvedArrayType.java
+index 46aed0721..657d4413c 100644
+--- a/javaparser-core/src/main/java/com/github/javaparser/resolution/types/ResolvedArrayType.java
++++ b/javaparser-core/src/main/java/com/github/javaparser/resolution/types/ResolvedArrayType.java
+@@ -20,10 +20,10 @@
+  */
+ package com.github.javaparser.resolution.types;
+ 
+-import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
+-
+ import java.util.Map;
+ 
++import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
++
+ /**
+  * Array Type.
+  *
+@@ -85,16 +85,31 @@ public class ResolvedArrayType implements ResolvedType {
+     }
+ 
+     @Override
+-    public boolean isAssignableBy(ResolvedType other) {
+-        if (other.isArray()) {
+-            if (baseType.isPrimitive() && other.asArrayType().getComponentType().isPrimitive()) {
+-                return baseType.equals(other.asArrayType().getComponentType());
+-            }
+-            return baseType.isAssignableBy(other.asArrayType().getComponentType());
+-        } else if (other.isNull()) {
+-            return true;
+-        }
+-        return false;
++    // https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.2
++	public boolean isAssignableBy(ResolvedType other) {
++		if (other.isNull()) {
++			return true;
++		}
++		if (other.isArray()) {
++			if (baseType.isPrimitive() && other.asArrayType().getComponentType().isPrimitive()) {
++				return baseType.equals(other.asArrayType().getComponentType());
++			}
++			// an array of Object is assignable by any array of primitive type
++			// but an array of primitive type is not assignable by an array of boxed type nor the reverse
++			if (!isJavaLangObject(baseType)
++					&& ((baseType.isPrimitive() && other.asArrayType().getComponentType().isReferenceType())
++							|| (baseType.isReferenceType() && other.asArrayType().getComponentType().isPrimitive()))) {
++				return false;
++			}
++			// An array can be assigned only to a variable of a compatible array type, or to
++			// a variable of type Object, Cloneable or java.io.Serializable.
++			return baseType.isAssignableBy(other.asArrayType().getComponentType());
++		}
++		return false;
++	}
++
++    private boolean isJavaLangObject(ResolvedType type) {
++    	return type.isReferenceType() && type.asReferenceType().isJavaLangObject();
+     }
+ 
+     @Override
+diff --git a/javaparser-symbol-solver-testing/src/test/java/com/github/javaparser/symbolsolver/resolution/types/ResolvedArrayTypeTest.java b/javaparser-symbol-solver-testing/src/test/java/com/github/javaparser/symbolsolver/resolution/types/ResolvedArrayTypeTest.java
+new file mode 100755
+index 000000000..2e7b98ec6
+--- /dev/null
++++ b/javaparser-symbol-solver-testing/src/test/java/com/github/javaparser/symbolsolver/resolution/types/ResolvedArrayTypeTest.java
+@@ -0,0 +1,185 @@
++/*
++ * Copyright (C) 2015-2016 Federico Tomassetti
++ * Copyright (C) 2017-2023 The JavaParser Team.
++ *
++ * This file is part of JavaParser.
++ *
++ * JavaParser can be used either under the terms of
++ * a) the GNU Lesser General Public License as published by
++ *     the Free Software Foundation, either version 3 of the License, or
++ *     (at your option) any later version.
++ * b) the terms of the Apache License
++ *
++ * You should have received a copy of both licenses in LICENCE.LGPL and
++ * LICENCE.APACHE. Please refer to those files for details.
++ *
++ * JavaParser is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU Lesser General Public License for more details.
++ */
++
++package com.github.javaparser.symbolsolver.resolution.types;
++
++import static org.junit.jupiter.api.Assertions.assertFalse;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++import java.util.Arrays;
++import java.util.stream.Collectors;
++
++import org.junit.jupiter.api.Test;
++
++import com.github.javaparser.JavaParserAdapter;
++import com.github.javaparser.ast.body.FieldDeclaration;
++import com.github.javaparser.resolution.model.typesystem.NullType;
++import com.github.javaparser.resolution.types.ResolvedArrayType;
++import com.github.javaparser.resolution.types.ResolvedPrimitiveType;
++import com.github.javaparser.resolution.types.ResolvedType;
++import com.github.javaparser.symbolsolver.resolution.AbstractResolutionTest;
++
++class ResolvedArrayTypeTest extends AbstractResolutionTest {
++
++	JavaParserAdapter parser = JavaParserAdapter.of(createParserWithResolver(defaultTypeSolver()));
++
++	ResolvedType rByte = getType("class A {java.lang.Byte x;}");
++	ResolvedType rShort = getType("class A {java.lang.Short x;}");
++	ResolvedType rChar = getType("class A {java.lang.Character x;}");
++	ResolvedType rInteger = getType("class A {java.lang.Integer x;}");
++	ResolvedType rLong = getType("class A {java.lang.Long x;}");
++	ResolvedType rFloat = getType("class A {java.lang.Float x;}");
++	ResolvedType rDouble = getType("class A {java.lang.Double x;}");
++	ResolvedType rString = getType("class A {java.lang.String x;}");
++	ResolvedType rCharSequence = getType("class A {java.lang.CharSequence x;}");
++	ResolvedType rObject = getType("class A {java.lang.Object x;}");
++	ResolvedType rCloneable = getType("class A {java.lang.Cloneable x;}");
++	ResolvedType rSerializable = getType("class A {java.io.Serializable x;}");
++	ResolvedType rArrayList = getType("class A {java.util.ArrayList x;}");
++
++	@Test
++	// An array of primitive type can be assigned another array of primitive type
++	// if primitive type are the same.
++	void isAssignablePrimitiveType() {
++		assertTrue(array(ResolvedPrimitiveType.DOUBLE).isAssignableBy(array(ResolvedPrimitiveType.DOUBLE)));
++		assertTrue(array(ResolvedPrimitiveType.FLOAT).isAssignableBy(array(ResolvedPrimitiveType.FLOAT)));
++		assertTrue(array(ResolvedPrimitiveType.LONG).isAssignableBy(array(ResolvedPrimitiveType.LONG)));
++		assertTrue(array(ResolvedPrimitiveType.INT).isAssignableBy(array(ResolvedPrimitiveType.INT)));
++		assertTrue(array(ResolvedPrimitiveType.BYTE).isAssignableBy(array(ResolvedPrimitiveType.BYTE)));
++		assertTrue(array(ResolvedPrimitiveType.SHORT).isAssignableBy(array(ResolvedPrimitiveType.SHORT)));
++		assertTrue(array(ResolvedPrimitiveType.CHAR).isAssignableBy(array(ResolvedPrimitiveType.CHAR)));
++	}
++
++	@Test
++	void isNotAssignablePrimitiveType() {
++		assertFalse(isAssignableBy(array(ResolvedPrimitiveType.DOUBLE),
++				arrays(ResolvedPrimitiveType.FLOAT, ResolvedPrimitiveType.LONG, ResolvedPrimitiveType.INT,
++						ResolvedPrimitiveType.BYTE, ResolvedPrimitiveType.SHORT, ResolvedPrimitiveType.CHAR)));
++		assertFalse(isAssignableBy(array(ResolvedPrimitiveType.FLOAT),
++				arrays(ResolvedPrimitiveType.DOUBLE, ResolvedPrimitiveType.LONG, ResolvedPrimitiveType.INT,
++						ResolvedPrimitiveType.BYTE, ResolvedPrimitiveType.SHORT, ResolvedPrimitiveType.CHAR)));
++		assertFalse(isAssignableBy(array(ResolvedPrimitiveType.LONG),
++				arrays(ResolvedPrimitiveType.DOUBLE, ResolvedPrimitiveType.FLOAT, ResolvedPrimitiveType.INT,
++						ResolvedPrimitiveType.BYTE, ResolvedPrimitiveType.SHORT, ResolvedPrimitiveType.CHAR)));
++		assertFalse(isAssignableBy(array(ResolvedPrimitiveType.INT),
++				arrays(ResolvedPrimitiveType.DOUBLE, ResolvedPrimitiveType.FLOAT, ResolvedPrimitiveType.LONG,
++						ResolvedPrimitiveType.BYTE, ResolvedPrimitiveType.SHORT, ResolvedPrimitiveType.CHAR)));
++		assertFalse(isAssignableBy(array(ResolvedPrimitiveType.BYTE),
++				arrays(ResolvedPrimitiveType.DOUBLE, ResolvedPrimitiveType.FLOAT, ResolvedPrimitiveType.LONG,
++						ResolvedPrimitiveType.INT, ResolvedPrimitiveType.SHORT, ResolvedPrimitiveType.CHAR)));
++		assertFalse(isAssignableBy(array(ResolvedPrimitiveType.SHORT),
++				arrays(ResolvedPrimitiveType.DOUBLE, ResolvedPrimitiveType.FLOAT, ResolvedPrimitiveType.LONG,
++						ResolvedPrimitiveType.INT, ResolvedPrimitiveType.BYTE, ResolvedPrimitiveType.CHAR)));
++		assertFalse(isAssignableBy(array(ResolvedPrimitiveType.CHAR),
++				arrays(ResolvedPrimitiveType.DOUBLE, ResolvedPrimitiveType.FLOAT, ResolvedPrimitiveType.LONG,
++						ResolvedPrimitiveType.INT, ResolvedPrimitiveType.BYTE, ResolvedPrimitiveType.SHORT)));
++	}
++
++	@Test
++	void isNotAssignablePrimitiveTypeAndBoxedType() {
++		assertFalse(array(ResolvedPrimitiveType.DOUBLE).isAssignableBy(array(rDouble)));
++		assertFalse(array(ResolvedPrimitiveType.FLOAT).isAssignableBy(array(rFloat)));
++		assertFalse(array(ResolvedPrimitiveType.LONG).isAssignableBy(array(rLong)));
++		assertFalse(array(ResolvedPrimitiveType.INT).isAssignableBy(array(rInteger)));
++		assertFalse(array(ResolvedPrimitiveType.BYTE).isAssignableBy(array(rByte)));
++		assertFalse(array(ResolvedPrimitiveType.SHORT).isAssignableBy(array(rShort)));
++		assertFalse(array(ResolvedPrimitiveType.CHAR).isAssignableBy(array(rChar)));
++	}
++
++	@Test
++	void isAssignableWithNullType() {
++		assertTrue(array(ResolvedPrimitiveType.DOUBLE).isAssignableBy(NullType.INSTANCE));
++		assertTrue(array(ResolvedPrimitiveType.FLOAT).isAssignableBy(NullType.INSTANCE));
++		assertTrue(array(ResolvedPrimitiveType.LONG).isAssignableBy(NullType.INSTANCE));
++		assertTrue(array(ResolvedPrimitiveType.INT).isAssignableBy(NullType.INSTANCE));
++		assertTrue(array(ResolvedPrimitiveType.BYTE).isAssignableBy(NullType.INSTANCE));
++		assertTrue(array(ResolvedPrimitiveType.SHORT).isAssignableBy(NullType.INSTANCE));
++		assertTrue(array(ResolvedPrimitiveType.CHAR).isAssignableBy(NullType.INSTANCE));
++	}
++
++	@Test
++	// An array can be assigned only to a variable of a compatible array type, or to
++	// a variable of type Object, Cloneable or java.io.Serializable.
++	void isAssignableWithObject() {
++		assertTrue(rObject.isAssignableBy(array(ResolvedPrimitiveType.DOUBLE)));
++		assertTrue(rObject.isAssignableBy(array(ResolvedPrimitiveType.FLOAT)));
++		assertTrue(rObject.isAssignableBy(array(ResolvedPrimitiveType.LONG)));
++		assertTrue(rObject.isAssignableBy(array(ResolvedPrimitiveType.INT)));
++		assertTrue(rObject.isAssignableBy(array(ResolvedPrimitiveType.BYTE)));
++		assertTrue(rObject.isAssignableBy(array(ResolvedPrimitiveType.SHORT)));
++		assertTrue(rObject.isAssignableBy(array(ResolvedPrimitiveType.CHAR)));
++		assertTrue(rObject.isAssignableBy(array(rString)));
++	}
++
++	@Test
++	void isAssignableWithCloneable() {
++		assertTrue(rCloneable.isAssignableBy(array(ResolvedPrimitiveType.DOUBLE)));
++		assertTrue(rCloneable.isAssignableBy(array(ResolvedPrimitiveType.FLOAT)));
++		assertTrue(rCloneable.isAssignableBy(array(ResolvedPrimitiveType.LONG)));
++		assertTrue(rCloneable.isAssignableBy(array(ResolvedPrimitiveType.INT)));
++		assertTrue(rCloneable.isAssignableBy(array(ResolvedPrimitiveType.BYTE)));
++		assertTrue(rCloneable.isAssignableBy(array(ResolvedPrimitiveType.SHORT)));
++		assertTrue(rCloneable.isAssignableBy(array(ResolvedPrimitiveType.CHAR)));
++		assertTrue(rCloneable.isAssignableBy(array(rString)));
++	}
++
++	@Test
++	void isAssignableWithSerializable() {
++		assertTrue(rSerializable.isAssignableBy(array(ResolvedPrimitiveType.DOUBLE)));
++		assertTrue(rSerializable.isAssignableBy(array(ResolvedPrimitiveType.FLOAT)));
++		assertTrue(rSerializable.isAssignableBy(array(ResolvedPrimitiveType.LONG)));
++		assertTrue(rSerializable.isAssignableBy(array(ResolvedPrimitiveType.INT)));
++		assertTrue(rSerializable.isAssignableBy(array(ResolvedPrimitiveType.BYTE)));
++		assertTrue(rSerializable.isAssignableBy(array(ResolvedPrimitiveType.SHORT)));
++		assertTrue(rSerializable.isAssignableBy(array(ResolvedPrimitiveType.CHAR)));
++		assertTrue(rSerializable.isAssignableBy(array(rString)));
++	}
++
++	@Test
++	void isAssignableWithReference() {
++		assertTrue(array(rCharSequence).isAssignableBy(array(rString)));
++	}
++
++	@Test
++	void isNotAssignableWithreference() {
++		assertFalse(array(rString).isAssignableBy(array(rCharSequence)));
++		// An array of primitive type cannot be assigned to a Boxed type variable,
++		// because Boxed type is a class type other than Object
++		assertFalse(array(ResolvedPrimitiveType.LONG).isAssignableBy(rLong));
++	}
++
++	private boolean isAssignableBy(ResolvedType type, ResolvedType... types) {
++		return Arrays.stream(types).anyMatch(t -> type.isAssignableBy(t));
++	}
++
++	private ResolvedArrayType[] arrays(ResolvedType... types) {
++		return Arrays.stream(types).map(t -> array(t)).collect(Collectors.toList()).toArray(new ResolvedArrayType[] {});
++	}
++
++	private ResolvedArrayType array(ResolvedType type) {
++		return new ResolvedArrayType(type);
++	}
++
++	private ResolvedType getType(String code) {
++		return parser.parse(code).findFirst(FieldDeclaration.class).get().resolve().getType();
++	}
++
++}

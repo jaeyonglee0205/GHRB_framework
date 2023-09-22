@@ -1,0 +1,474 @@
+diff --git a/changes/en-us/develop.md b/changes/en-us/develop.md
+index c019266f..6e6827ef 100644
+--- a/changes/en-us/develop.md
++++ b/changes/en-us/develop.md
+@@ -9,6 +9,38 @@ Add changes here for all PR submitted to the develop branch.
+ - [[#xxx](https://github.com/seata/seata/pull/xxx)] fix xxx
+ 
+ ### optimize:
++- [[#4774](https://github.com/seata/seata/pull/4774)] optimize mysql8 dependencies for seataio/seata-server image
++- [[#4790](https://github.com/seata/seata/pull/4790)] Add a github action to publish Seata to OSSRH
++- [[#4765](https://github.com/seata/seata/pull/4765)] mysql 8.0.29 not should be hold for connection
++- [[#4750](https://github.com/seata/seata/pull/4750)] optimize unBranchLock romove xid
++- [[#4797](https://github.com/seata/seata/pull/4797)] optimize the github actions
++- [[#4800](https://github.com/seata/seata/pull/4800)] Add NOTICE as Apache License V2
++- [[#4681](https://github.com/seata/seata/pull/4681)] optimize the check lock during global transaction
++- [[#4761](https://github.com/seata/seata/pull/4761)] use hget replace hmget because only one field
++- [[#4414](https://github.com/seata/seata/pull/4414)] exclude log4j dependencies
++- [[#4836](https://github.com/seata/seata/pull/4836)] optimize BaseTransactionalExecutor#buildLockKey(TableRecords rowsIncludingPK) method more readable
++- [[#4865](https://github.com/seata/seata/pull/4865)] fix some security vulnerabilities in GGEditor
++- [[#4590](https://github.com/seata/seata/pull/4590)] auto degrade enable to dynamic configure
++- [[#4490](https://github.com/seata/seata/pull/4490)] tccfence log table delete by index
++- [[#4911](https://github.com/seata/seata/pull/4911)] add license checker workflow
++- [[#4917](https://github.com/seata/seata/pull/4917)] upgrade package-lock.json fix vulnerabilities
++- [[#4924](https://github.com/seata/seata/pull/4924)] optimize pom dependencies
++- [[#4932](https://github.com/seata/seata/pull/4932)] extract the default values for some properties
++- [[#4925](https://github.com/seata/seata/pull/4925)] optimize java doc warning
++- [[#4921](https://github.com/seata/seata/pull/4921)] fix some vulnerabilities in console and upgrade skywalking-eyes
++- [[#4936](https://github.com/seata/seata/pull/4936)] optimize read of storage configuration
++- [[#4946](https://github.com/seata/seata/pull/4946)] pass the sqlexception to client when get lock
++- [[#4962](https://github.com/seata/seata/pull/4962)] optimize build and fix the base image
++- [[#4974](https://github.com/seata/seata/pull/4974)] optimize cancel the limit on the number of globalStatus queries in Redis mode
++- [[#4981](https://github.com/seata/seata/pull/4981)] optimize tcc fence record not exists errMessage
++- [[#4985](https://github.com/seata/seata/pull/4985)] fix undo_log id repeat
++- [[#4995](https://github.com/seata/seata/pull/4995)] fix mysql InsertOnDuplicateUpdate duplicate pk condition in after image query sql
++- [[#5047](https://github.com/seata/seata/pull/5047)] remove useless code
++- [[#5051](https://github.com/seata/seata/pull/5051)] undo log dirty throw BranchRollbackFailed_Unretriable
++- [[#5075](https://github.com/seata/seata/pull/5075)] intercept the InsertOnDuplicateUpdate statement which has no primary key and unique index value
++- [[#5104](https://github.com/seata/seata/pull/5104)] remove the druid dependency in ConnectionProxy
++- [[#5120](https://github.com/seata/seata/pull/5120)] unify the format of configuration items in yml files
++- [[#5124](https://github.com/seata/seata/pull/5124)] support oracle on delete tccfence logs
+ - [[#5115](https://github.com/seata/seata/pull/5115)] compatible with the `spring-boot:3.x`
+ 
+ ### test:
+diff --git a/changes/zh-cn/develop.md b/changes/zh-cn/develop.md
+index f4cbecca..65933891 100644
+--- a/changes/zh-cn/develop.md
++++ b/changes/zh-cn/develop.md
+@@ -9,8 +9,44 @@
+ - [[#xxx](https://github.com/seata/seata/pull/xxx)] 修复 xxx
+ 
+ ### optimize：
++- [[#4681](https://github.com/seata/seata/pull/4681)] 优化竞争锁过程
++- [[#4774](https://github.com/seata/seata/pull/4774)] 优化 seataio/seata-server 镜像中的 mysql8 依赖
++- [[#4750](https://github.com/seata/seata/pull/4750)] 优化AT分支释放全局锁不使用xid
++- [[#4790](https://github.com/seata/seata/pull/4790)] 添加一个 github action，用于自动发布Seata到OSSRH
++- [[#4765](https://github.com/seata/seata/pull/4765)] mysql8.0.29版本及以上XA模式不持connection至二阶段
++- [[#4797](https://github.com/seata/seata/pull/4797)] 优化所有github actions脚本
++- [[#4800](https://github.com/seata/seata/pull/4800)] 按照 Apache 协议规范，添加 NOTICE 文件
++- [[#4761](https://github.com/seata/seata/pull/4761)] 使用 hget 代替 RedisLocker 中的 hmget, 因为只有一个 field
++- [[#4414](https://github.com/seata/seata/pull/4414)] 移除log4j依赖
++- [[#4836](https://github.com/seata/seata/pull/4836)] 优化 BaseTransactionalExecutor#buildLockKey(TableRecords rowsIncludingPK) 方法可读性
++- [[#4865](https://github.com/seata/seata/pull/4865)] 修复 Saga 可视化设计器 GGEditor 安全漏洞
++- [[#4590](https://github.com/seata/seata/pull/4590)] 自动降级支持开关支持动态配置
++- [[#4490](https://github.com/seata/seata/pull/4490)] tccfence 记录表优化成按索引删除
++- [[#4911](https://github.com/seata/seata/pull/4911)] 添加 header 和license 检测
++- [[#4917](https://github.com/seata/seata/pull/4917)] 升级 package-lock.json 修复漏洞
++- [[#4924](https://github.com/seata/seata/pull/4924)] 优化 pom 依赖
++- [[#4932](https://github.com/seata/seata/pull/4932)] 抽取部分配置的默认值
++- [[#4925](https://github.com/seata/seata/pull/4925)] 优化 javadoc 注释
++- [[#4921](https://github.com/seata/seata/pull/4921)] 修复控制台模块安全漏洞和升级 skywalking-eyes 版本
++- [[#4936](https://github.com/seata/seata/pull/4936)] 优化存储配置的读取
++- [[#4946](https://github.com/seata/seata/pull/4946)] 将获取锁时遇到的sql异常传递给客户端
++- [[#4962](https://github.com/seata/seata/pull/4962)] 优化构建配置，并修正docker镜像的基础镜像
++- [[#4974](https://github.com/seata/seata/pull/4974)] 取消redis模式下,查询globalStatus条数的限制
++- [[#4981](https://github.com/seata/seata/pull/4981)] 优化当tcc栅栏记录查不到时的错误提示
++- [[#4995](https://github.com/seata/seata/pull/4995)] 修复mysql InsertOnDuplicateUpdate后置镜像查询SQL中重复的主键查询条件
++- [[#5047](https://github.com/seata/seata/pull/5047)] 移除无用代码
++- [[#5051](https://github.com/seata/seata/pull/5051)] 回滚时undolog产生脏写需要抛出不再重试(BranchRollbackFailed_Unretriable)的异常
++- [[#5075](https://github.com/seata/seata/pull/5075)] 拦截没有主键及唯一索引值的insert on duplicate update语句
++- [[#5104](https://github.com/seata/seata/pull/5104)] ConnectionProxy脱离对druid的依赖
++- [[#5120](https://github.com/seata/seata/pull/5120)] 统一yml文件中的配置项格式
++- [[#5124](https://github.com/seata/seata/pull/5124)] 支持oracle删除tccfence记录表
+ - [[#5115](https://github.com/seata/seata/pull/5115)] 兼容 `spring-boot:3.x`
+ 
++### test：
++- [[#4411](https://github.com/seata/seata/pull/4411)] 测试Oracle数据库AT模式下类型支持
++- [[#4794](https://github.com/seata/seata/pull/4794)] 重构代码，尝试修复单元测试 `DataSourceProxyTest.getResourceIdTest()`
++- [[#5101](https://github.com/seata/seata/pull/5101)] 修复zk注册和配置中心报ClassNotFoundException的问题 `DataSourceProxyTest.getResourceIdTest()`
++
+ ### test:
+ - [[#xxx](https://github.com/seata/seata/pull/xxx)] 增加 xxx 测试
+ 
+diff --git a/script/client/spring/application.yml b/script/client/spring/application.yml
+index 8ee2b526..6f8f59ce 100755
+--- a/script/client/spring/application.yml
++++ b/script/client/spring/application.yml
+@@ -83,36 +83,36 @@ seata:
+       apollo-meta: http://192.168.1.204:8801
+       app-id: seata-server
+       namespace: application
+-      apollo-accesskey-secret: ""
++      apollo-accesskey-secret:
+     etcd3:
+       server-addr: http://localhost:2379
+     nacos:
+-      namespace: ""
++      namespace:
+       server-addr: 127.0.0.1:8848
+       group: SEATA_GROUP
+-      username: ""
+-      password: ""
+-      context-path: ""
++      username:
++      password:
++      context-path:
+       ##if use MSE Nacos with auth, mutex with username/password attribute
+-      #access-key: ""
+-      #secret-key: ""
++      #access-key:
++      #secret-key:
+       data-id: seata.properties
+     zk:
+       server-addr: 127.0.0.1:2181
+       session-timeout: 6000
+       connect-timeout: 2000
+-      username: ""
+-      password: ""
++      username:
++      password:
+       node-path: /seata/seata.properties
+     custom:
+-      name: ""
++      name:
+   registry:
+     type: file
+     file:
+       name: file.conf
+     consul:
+       server-addr: 127.0.0.1:8500
+-      acl-token: ""
++      acl-token:
+     etcd3:
+       server-addr: http://localhost:2379
+     eureka:
+@@ -122,19 +122,19 @@ seata:
+       application: seata-server
+       server-addr: 127.0.0.1:8848
+       group : "SEATA_GROUP"
+-      namespace: ""
+-      username: ""
+-      password: ""
+-      context-path: ""
++      namespace:
++      username:
++      password:
++      context-path:
+       ##if use MSE Nacos with auth, mutex with username/password attribute
+-      #access-key: ""
+-      #secret-key: ""
++      #access-key:
++      #secret-key:
+       ##if use Nacos naming meta-data for SLB service registry, specify nacos address pattern rules here
+-      #slbPattern = ""
++      #slbPattern =
+     redis:
+       server-addr: localhost:6379
+       db: 0
+-      password: ""
++      password:
+       timeout: 0
+     sofa:
+       server-addr: 127.0.0.1:9603
+@@ -147,10 +147,10 @@ seata:
+       server-addr: 127.0.0.1:2181
+       session-timeout: 6000
+       connect-timeout: 2000
+-      username: ""
+-      password: ""
++      username:
++      password:
+     custom:
+-      name: ""
++      name:
+   log:
+     exception-rate: 100
+   tcc:
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigApolloProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigApolloProperties.java
+index e1a569ca..4b42e6ef 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigApolloProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigApolloProperties.java
+@@ -29,7 +29,7 @@ public class ConfigApolloProperties {
+     private String appId = "seata-server";
+     private String apolloMeta;
+     private String namespace = "application";
+-    private String apolloAccessKeySecret = "";
++    private String apolloAccessKeySecret;
+     private String apolloConfigService;
+     private String cluster;
+ 
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigConsulProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigConsulProperties.java
+index effd8db1..876ac475 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigConsulProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigConsulProperties.java
+@@ -28,7 +28,7 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.CONFIG_CONSUL_
+ public class ConfigConsulProperties {
+     private String serverAddr;
+     private String key = "seata.properties";
+-    private String aclToken = "";
++    private String aclToken;
+ 
+     public String getServerAddr() {
+         return serverAddr;
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigCustomProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigCustomProperties.java
+index eff9649c..915cdcf8 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigCustomProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigCustomProperties.java
+@@ -26,7 +26,7 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.CONFIG_CUSTOM_
+ @Component
+ @ConfigurationProperties(prefix = CONFIG_CUSTOM_PREFIX)
+ public class ConfigCustomProperties {
+-    private String name = "";
++    private String name;
+ 
+     public String getName() {
+         return name;
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigNacosProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigNacosProperties.java
+index 5680f658..06c46252 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigNacosProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigNacosProperties.java
+@@ -27,14 +27,14 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.CONFIG_NACOS_P
+ @ConfigurationProperties(prefix = CONFIG_NACOS_PREFIX)
+ public class ConfigNacosProperties {
+     private String serverAddr;
+-    private String namespace = "";
++    private String namespace;
+     private String group = "SEATA_GROUP";
+-    private String username = "";
+-    private String password = "";
+-    private String accessKey = "";
+-    private String secretKey = "";
++    private String username;
++    private String password;
++    private String accessKey;
++    private String secretKey;
+     private String dataId = "seata.properties";
+-    private String contextPath = "";
++    private String contextPath;
+ 
+     public String getServerAddr() {
+         return serverAddr;
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigZooKeeperProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigZooKeeperProperties.java
+index 12a70c0c..897f97eb 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigZooKeeperProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigZooKeeperProperties.java
+@@ -29,8 +29,8 @@ public class ConfigZooKeeperProperties {
+     private String serverAddr;
+     private long sessionTimeout = 6000L;
+     private long connectTimeout = 2000L;
+-    private String username = "";
+-    private String password = "";
++    private String username;
++    private String password;
+     private String nodePath = "/seata/seata.properties";
+ 
+     public String getServerAddr() {
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryConsulProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryConsulProperties.java
+index a597cdf4..35ef0949 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryConsulProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryConsulProperties.java
+@@ -28,7 +28,7 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.REGISTRY_CONSU
+ public class RegistryConsulProperties {
+     private String cluster = "default";
+     private String serverAddr = "127.0.0.1:8500";
+-    private String aclToken = "";
++    private String aclToken;
+ 
+     public String getCluster() {
+         return cluster;
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryCustomProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryCustomProperties.java
+index 4f503a80..a9d9182b 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryCustomProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryCustomProperties.java
+@@ -26,7 +26,7 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.REGISTRY_CUSTO
+ @Component
+ @ConfigurationProperties(prefix = REGISTRY_CUSTOM_PREFIX)
+ public class RegistryCustomProperties {
+-    private String name = "";
++    private String name;
+ 
+     public String getName() {
+         return name;
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryNacosProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryNacosProperties.java
+index aec1910d..1d881b7f 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryNacosProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryNacosProperties.java
+@@ -27,16 +27,16 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.REGISTRY_NACOS
+ @ConfigurationProperties(prefix = REGISTRY_NACOS_PREFIX)
+ public class RegistryNacosProperties {
+     private String serverAddr = "localhost:8848";
+-    private String namespace = "";
++    private String namespace;
+     private String group = "SEATA_GROUP";
+     private String cluster = "default";
+-    private String username = "";
+-    private String password = "";
+-    private String accessKey = "";
+-    private String secretKey = "";
++    private String username;
++    private String password;
++    private String accessKey;
++    private String secretKey;
+     private String application = "seata-server";
+-    private String slbPattern = "";
+-    private String contextPath = "";
++    private String slbPattern;
++    private String contextPath;
+ 
+     public String getServerAddr() {
+         return serverAddr;
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryRedisProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryRedisProperties.java
+index 03cacad8..33f4ad78 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryRedisProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryRedisProperties.java
+@@ -28,7 +28,7 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.REGISTRY_REDIS
+ public class RegistryRedisProperties {
+     private String serverAddr = "localhost:6379";
+     private int db = 0;
+-    private String password = "";
++    private String password;
+     private String cluster = "default";
+     private int timeout = 0;
+ 
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryZooKeeperProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryZooKeeperProperties.java
+index b96d2587..dcb0c407 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryZooKeeperProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/registry/RegistryZooKeeperProperties.java
+@@ -30,8 +30,8 @@ public class RegistryZooKeeperProperties {
+     private String serverAddr = "127.0.0.1:2181";
+     private long sessionTimeout = 6000L;
+     private long connectTimeout = 2000L;
+-    private String username = "";
+-    private String password = "";
++    private String username;
++    private String password;
+ 
+     public String getCluster() {
+         return cluster;
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/test/java/io/seata/spring/boot/autoconfigure/CorePropertiesTest.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/test/java/io/seata/spring/boot/autoconfigure/CorePropertiesTest.java
+index 210a7783..3d5de566 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/test/java/io/seata/spring/boot/autoconfigure/CorePropertiesTest.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/test/java/io/seata/spring/boot/autoconfigure/CorePropertiesTest.java
+@@ -105,11 +105,11 @@ public class CorePropertiesTest {
+     @Test
+     public void testRegistryNacosProperties() {
+         assertEquals("localhost:8848", context.getBean(RegistryNacosProperties.class).getServerAddr());
+-        assertEquals("", context.getBean(RegistryNacosProperties.class).getNamespace());
++        assertEquals(null, context.getBean(RegistryNacosProperties.class).getNamespace());
+         assertEquals("SEATA_GROUP", context.getBean(RegistryNacosProperties.class).getGroup());
+         assertEquals("default", context.getBean(RegistryNacosProperties.class).getCluster());
+-        assertEquals("", context.getBean(RegistryNacosProperties.class).getUsername());
+-        assertEquals("", context.getBean(RegistryNacosProperties.class).getPassword());
++        assertEquals(null, context.getBean(RegistryNacosProperties.class).getUsername());
++        assertEquals(null, context.getBean(RegistryNacosProperties.class).getPassword());
+         assertEquals("seata-server", context.getBean(RegistryNacosProperties.class).getApplication());
+     }
+ 
+@@ -123,7 +123,7 @@ public class CorePropertiesTest {
+     public void testRegistryRedisProperties() {
+         assertEquals("localhost:6379", context.getBean(RegistryRedisProperties.class).getServerAddr());
+         assertEquals(0, context.getBean(RegistryRedisProperties.class).getDb());
+-        assertEquals("", context.getBean(RegistryRedisProperties.class).getPassword());
++        assertEquals(null, context.getBean(RegistryRedisProperties.class).getPassword());
+         assertEquals("default", context.getBean(RegistryRedisProperties.class).getCluster());
+         assertEquals(0, context.getBean(RegistryRedisProperties.class).getTimeout());
+     }
+@@ -149,7 +149,7 @@ public class CorePropertiesTest {
+ 
+     @Test
+     public void testRegistryCustomProperties() {
+-        assertEquals("", context.getBean(RegistryCustomProperties.class).getName());
++        assertEquals(null, context.getBean(RegistryCustomProperties.class).getName());
+     }
+ 
+ 
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/main/java/io/seata/spring/boot/autoconfigure/properties/server/store/StoreProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/main/java/io/seata/spring/boot/autoconfigure/properties/server/store/StoreProperties.java
+index 11de509c..19000a12 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/main/java/io/seata/spring/boot/autoconfigure/properties/server/store/StoreProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/main/java/io/seata/spring/boot/autoconfigure/properties/server/store/StoreProperties.java
+@@ -33,7 +33,7 @@ public class StoreProperties {
+      */
+     private String mode = "file";
+ 
+-    private String publicKey = "";
++    private String publicKey;
+ 
+     public String getMode() {
+         return mode;
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/main/java/io/seata/spring/boot/autoconfigure/properties/server/store/StoreRedisProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/main/java/io/seata/spring/boot/autoconfigure/properties/server/store/StoreRedisProperties.java
+index d7d28e11..d695699a 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/main/java/io/seata/spring/boot/autoconfigure/properties/server/store/StoreRedisProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/main/java/io/seata/spring/boot/autoconfigure/properties/server/store/StoreRedisProperties.java
+@@ -32,7 +32,7 @@ public class StoreRedisProperties {
+      * single, sentinel
+      */
+     private String mode = "single";
+-    private String password = null;
++    private String password;
+     private Integer maxConn = 10;
+     private Integer minConn = 1;
+     private Integer database = 0;
+@@ -133,11 +133,11 @@ public class StoreRedisProperties {
+     @Component
+     @ConfigurationProperties(prefix = STORE_REDIS_SENTINEL_PREFIX)
+     public static class Sentinel {
+-        private String masterName = "";
++        private String masterName;
+         /**
+          * such as "10.28.235.65:26379,10.28.235.65:26380,10.28.235.65:26381"
+          */
+-        private String sentinelHosts = "";
++        private String sentinelHosts;
+ 
+         public String getMasterName() {
+             return masterName;
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/test/java/io/seata/spring/boot/autoconfigure/ServerPropertiesTest.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/test/java/io/seata/spring/boot/autoconfigure/ServerPropertiesTest.java
+index 8bddb7ac..043babc6 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/test/java/io/seata/spring/boot/autoconfigure/ServerPropertiesTest.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/test/java/io/seata/spring/boot/autoconfigure/ServerPropertiesTest.java
+@@ -95,7 +95,7 @@ public class ServerPropertiesTest {
+ 
+     @Test
+     public void testStoreRedisPropertiesSentinel() {
+-        assertEquals(context.getBean(StoreRedisProperties.Sentinel.class).getSentinelHosts(), "");
++        assertEquals(context.getBean(StoreRedisProperties.Sentinel.class).getSentinelHosts(), null);
+     }
+ 
+     @AfterAll
+diff --git a/server/src/main/resources/application.example.yml b/server/src/main/resources/application.example.yml
+index d8f5f1f2..f42f934f 100644
+--- a/server/src/main/resources/application.example.yml
++++ b/server/src/main/resources/application.example.yml
+@@ -42,8 +42,8 @@ seata:
+       password:
+       context-path:
+       ##if use MSE Nacos with auth, mutex with username/password attribute
+-      #access-key: ""
+-      #secret-key: ""
++      #access-key:
++      #secret-key:
+       data-id: seataServer.properties
+     consul:
+       server-addr: 127.0.0.1:8500
+@@ -80,8 +80,8 @@ seata:
+       password:
+       context-path:
+       ##if use MSE Nacos with auth, mutex with username/password attribute
+-      #access-key: ""
+-      #secret-key: ""
++      #access-key:
++      #secret-key:
+     eureka:
+       service-url: http://localhost:8761/eureka
+       application: default
+@@ -97,8 +97,8 @@ seata:
+       server-addr: 127.0.0.1:2181
+       session-timeout: 6000
+       connect-timeout: 2000
+-      username: ""
+-      password: ""
++      username:
++      password:
+     consul:
+       cluster: default
+       server-addr: 127.0.0.1:8500

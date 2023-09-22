@@ -67,12 +67,16 @@ def call_info(pid, bid):
         with open(f"verified_bug/verified_bugs_{owner}_{pid}.json", "r") as f:
             extra_info = json.load(f)
 
+        with open(f"data/bug_cause.json", "r") as f:
+            bug_cause = json.load(f)
+        
+        
         for b_id in bid:
             revision_id_fixed = active_bugs.loc[active_bugs['bug_id'] == int(b_id)]["revision.id.fixed"].values[0]
             revision_id_buggy = active_bugs.loc[active_bugs['bug_id'] == int(b_id)]["revision.id.buggy"].values[0]
             report_id = active_bugs.loc[active_bugs['bug_id'] == int(b_id)]["report.id"].values[0]
             report_url = active_bugs.loc[active_bugs['bug_id'] == int(b_id)]["report.url"].values[0]
-            
+            root_cause = bug_cause[report_id]
             output += (f'''
     Summary for Bug: {pid}-{b_id}
     ------------------------------------------
@@ -92,7 +96,7 @@ def call_info(pid, bid):
         {revision_id_buggy}
     ------------------------------------------
         Root cause in triggering tests:
-        ???????
+        {root_cause}
     ------------------------------------------
         List of modified sources:
     ''')
@@ -122,7 +126,7 @@ def call_checkout(pid, vid, dir, patch):
     abs_path = os.getcwd()
     report_id = active_bugs.loc[active_bugs['bug_id'] == int(bid)]["report.id"].values[0]
 
-    test_patch_dir = os.path.abspath(os.path.join('./test_diff/', f'{report_id}.diff'))
+    test_patch_dir = os.path.abspath(os.path.join('./data/test_diff/', f'{report_id}.diff'))
 
     if version == "b":
         #buggy version
@@ -770,6 +774,9 @@ def call_export(prop, output_file, working_dir):
         run = sp.run(command,
                      env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=working_dir)
         output += run.stdout.decode()
+        # new = run.stdout.decode().split("/")
+        # new[3] = new[3] + "/gson"
+        # output += "/".join(new)
 
     elif prop == "dir.bin.tests":
 
@@ -782,21 +789,24 @@ def call_export(prop, output_file, working_dir):
         run = sp.run(command,
                      env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=working_dir)
         output += run.stdout.decode()
+        # new = run.stdout.decode().split("/")
+        # new[3] = new[3] + "/gson"
+        # output += "/".join(new)
 
     elif prop == "test-classes":
 
-        # test_working_dir = working_dir + '/target/classes/org'
-        # #print(working_dir)
-        # #files = glob.glob(working_dir, recursive=True)
-        # for root, dirs, files in os.walk(test_working_dir):
-        #     for file in files:
-        #         if file.endswith(".class"):
-        #             new_file = file.replace(".class", "") + "\n"
-        #             add = root.replace(f"{working_dir}/target/classes/", "") + '/'
-        #             total = (add + new_file).replace("/", ".")
-        #             output += total
+        test_working_dir = working_dir + '/target/classes/com'
+        #print(working_dir)
+        #files = glob.glob(working_dir, recursive=True)
+        for root, dirs, files in os.walk(test_working_dir):
+            for file in files:
+                if file.endswith(".class"):
+                    new_file = file.replace(".class", "") + "\n"
+                    add = root.replace(f"{working_dir}/target/classes/", "") + '/'
+                    total = (add + new_file).replace("/", ".")
+                    output += total
                     
-        #             #output = ''
+                    #output = ''
         
         test_working_dir = working_dir + '/target/test-classes/com'
 

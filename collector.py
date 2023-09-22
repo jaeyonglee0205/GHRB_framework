@@ -121,7 +121,7 @@ def remove_test_diff ():
     i = 0
     bug_dict = defaultdict(int)
     
-    for diff in os.listdir("test_diff/"):
+    for diff in os.listdir("data/test_diff/"):
         bug_dict[diff.split("_")[-2] + "_" + diff.split("_")[-1].split("-")[0]] += 1
 
         name = diff.replace(".diff", "")

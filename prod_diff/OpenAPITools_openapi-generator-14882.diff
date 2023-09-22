@@ -1,0 +1,248 @@
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java
+index 40ff3a93ad7..aad7d5946d5 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java
+@@ -3764,6 +3764,18 @@ public class DefaultCodegen implements CodegenConfig {
+             return cpc;
+         }
+ 
++        Schema original = null;
++        // check if it's allOf (only 1 sub schema) with default/nullable/etc set in the top level
++        if (ModelUtils.isAllOf(p) && p.getAllOf().size() == 1 &&  ModelUtils.hasCommonAttributesDefined(p) ) {
++            if (p.getAllOf().get(0) instanceof Schema) {
++                original = p;
++                p = (Schema) p.getAllOf().get(0);
++            } else {
++                LOGGER.error("Unknown type in allOf schema. Please report the issue via openapi-generator's Github issue tracker.");
++            }
++
++        }
++
+         CodegenProperty property = CodegenModelFactory.newInstance(CodegenModelType.PROPERTY);
+         if (p.equals(trueSchema)) {
+             property.setIsBooleanSchemaTrue(true);
+@@ -3957,6 +3969,25 @@ public class DefaultCodegen implements CodegenConfig {
+             property.isModel = (ModelUtils.isComposedSchema(referencedSchema) || ModelUtils.isObjectSchema(referencedSchema)) && ModelUtils.isModel(referencedSchema);
+         }
+ 
++        // restore original schema with default value, nullable, readonly etc
++        if (original != null) {
++            p = original;
++            // evaluate common attributes defined in the top level
++            if (p.getNullable() != null) {
++                property.isNullable = p.getNullable();
++            } else if (p.getExtensions() != null && p.getExtensions().containsKey("x-nullable")) {
++                property.isNullable = (Boolean) p.getExtensions().get("x-nullable");
++            }
++
++            if (p.getReadOnly() != null) {
++                property.isReadOnly = p.getReadOnly();
++            }
++
++            if (p.getWriteOnly() != null) {
++                property.isWriteOnly = p.getWriteOnly();
++            }
++        }
++
+         // set the default value
+         property.defaultValue = toDefaultValue(property, p);
+         property.defaultValueWithParam = toDefaultValueWithParam(name, p);
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/utils/ModelUtils.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/utils/ModelUtils.java
+index 11c08308542..580e53121e5 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/utils/ModelUtils.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/utils/ModelUtils.java
+@@ -1852,4 +1852,55 @@ public class ModelUtils {
+ 
+         return new SemVer(version);
+     }
++
++    /**
++     * Returns true if the schema contains allOf but
++     * no properties/oneOf/anyOf defined.
++     *
++     * @param schema the schema
++     * @return true if the schema contains allOf but no properties/oneOf/anyOf defined.
++     */
++    public static boolean isAllOf(Schema schema) {
++        if (hasAllOf(schema) && (schema.getProperties() == null || schema.getProperties().isEmpty()) &&
++                (schema.getOneOf() == null || schema.getOneOf().isEmpty()) &&
++                (schema.getAnyOf() == null || schema.getAnyOf().isEmpty())) {
++            return true;
++        }
++
++        return false;
++    }
++
++    /**
++     * Returns true if the schema contains allOf and may or may not have
++     * properties/oneOf/anyOf defined.
++     *
++     * @param schema the schema
++     * @return true if allOf is not empty
++     */
++    public static boolean hasAllOf(Schema schema) {
++        if (schema.getAllOf() != null && !schema.getAllOf().isEmpty()) {
++            return true;
++        }
++
++        return false;
++    }
++
++    /**
++     * Returns true if any of the common attributes of the schema (e.g. readOnly, default, maximum, etc) is defined.
++     *
++     * @param schema the schema
++     * @return true if allOf is not empty
++     */
++    public static boolean hasCommonAttributesDefined(Schema schema) {
++        if (schema.getNullable() != null || schema.getDefault() != null ||
++                schema.getMinimum() != null || schema.getMinimum() != null ||
++                schema.getExclusiveMaximum() != null || schema.getExclusiveMinimum() != null ||
++                schema.getMinLength() != null || schema.getMaxLength() != null ||
++                schema.getMinItems() != null || schema.getMaxItems() != null ||
++                schema.getReadOnly() != null || schema.getWriteOnly() != null) {
++            return true;
++        }
++
++        return false;
++    }
+ }
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java
+index 9308bb14df3..383924cb627 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java
+@@ -4294,6 +4294,31 @@ public class DefaultCodegenTest {
+         Assert.assertFalse(referencedEnumSchemaProperty.isPrimitiveType);
+     }
+ 
++    @Test
++    public void testAllOfDefaultEnumType() {
++        // test allOf with a single sub-schema and default value set in the top level
++        final OpenAPI openAPI = TestUtils.parseFlattenSpec("src/test/resources/3_0/issue-5676-enums.yaml");
++        final DefaultCodegen codegen = new DefaultCodegen();
++        codegen.setOpenAPI(openAPI);
++        String modelName = "EnumPatternObject";
++
++        Schema schemaWithReferencedEnum = openAPI.getComponents().getSchemas().get(modelName);
++        CodegenModel modelWithReferencedSchema = codegen.fromModel(modelName, schemaWithReferencedEnum);
++        CodegenProperty defaultEnumSchemaProperty = modelWithReferencedSchema.vars.get(4);
++
++        Assert.assertNotNull(schemaWithReferencedEnum);
++        Assert.assertTrue(modelWithReferencedSchema.hasEnums);
++        Assert.assertEquals(defaultEnumSchemaProperty.getName(), "defaultMinusnumberMinusenum");
++        Assert.assertFalse(defaultEnumSchemaProperty.isEnum);
++        Assert.assertTrue(defaultEnumSchemaProperty.getIsEnumOrRef());
++        Assert.assertTrue(defaultEnumSchemaProperty.isEnumRef);
++        Assert.assertFalse(defaultEnumSchemaProperty.isInnerEnum);
++        Assert.assertFalse(defaultEnumSchemaProperty.isString);
++        Assert.assertFalse(defaultEnumSchemaProperty.isContainer);
++        Assert.assertFalse(defaultEnumSchemaProperty.isPrimitiveType);
++        Assert.assertEquals(defaultEnumSchemaProperty.defaultValue, "2");
++    }
++
+     @Test
+     public void testInlineEnumType() {
+         final OpenAPI openAPI = TestUtils.parseFlattenSpec("src/test/resources/3_0/issue-5676-enums.yaml");
+diff --git a/modules/openapi-generator/src/test/resources/3_0/issue-5676-enums.yaml b/modules/openapi-generator/src/test/resources/3_0/issue-5676-enums.yaml
+index 23cdfdc053b..cbfa2e6000e 100644
+--- a/modules/openapi-generator/src/test/resources/3_0/issue-5676-enums.yaml
++++ b/modules/openapi-generator/src/test/resources/3_0/issue-5676-enums.yaml
+@@ -211,3 +211,8 @@ components:
+           nullable: true
+           allOf:
+             - $ref: "#/components/schemas/NumberEnum"
++        default-number-enum:
++          default: 2
++          allOf:
++            - $ref: "#/components/schemas/NumberEnum"
++
+diff --git a/samples/client/petstore/typescript-fetch/builds/enum/apis/DefaultApi.ts b/samples/client/petstore/typescript-fetch/builds/enum/apis/DefaultApi.ts
+index ee616abdf8f..fa1d5875027 100644
+--- a/samples/client/petstore/typescript-fetch/builds/enum/apis/DefaultApi.ts
++++ b/samples/client/petstore/typescript-fetch/builds/enum/apis/DefaultApi.ts
+@@ -33,9 +33,9 @@ import {
+ 
+ export interface FakeEnumRequestGetInlineRequest {
+     stringEnum?: FakeEnumRequestGetInlineStringEnumEnum;
+-    nullableStringEnum?: string | null;
++    nullableStringEnum?: FakeEnumRequestGetInlineNullableStringEnumEnum;
+     numberEnum?: FakeEnumRequestGetInlineNumberEnumEnum;
+-    nullableNumberEnum?: number | null;
++    nullableNumberEnum?: FakeEnumRequestGetInlineNullableNumberEnumEnum;
+ }
+ 
+ export interface FakeEnumRequestGetRefRequest {
+@@ -203,6 +203,15 @@ export const FakeEnumRequestGetInlineStringEnumEnum = {
+     Three: 'three'
+ } as const;
+ export type FakeEnumRequestGetInlineStringEnumEnum = typeof FakeEnumRequestGetInlineStringEnumEnum[keyof typeof FakeEnumRequestGetInlineStringEnumEnum];
++/**
++ * @export
++ */
++export const FakeEnumRequestGetInlineNullableStringEnumEnum = {
++    One: 'one',
++    Two: 'two',
++    Three: 'three'
++} as const;
++export type FakeEnumRequestGetInlineNullableStringEnumEnum = typeof FakeEnumRequestGetInlineNullableStringEnumEnum[keyof typeof FakeEnumRequestGetInlineNullableStringEnumEnum];
+ /**
+  * @export
+  */
+@@ -212,3 +221,12 @@ export const FakeEnumRequestGetInlineNumberEnumEnum = {
+     NUMBER_3: 3
+ } as const;
+ export type FakeEnumRequestGetInlineNumberEnumEnum = typeof FakeEnumRequestGetInlineNumberEnumEnum[keyof typeof FakeEnumRequestGetInlineNumberEnumEnum];
++/**
++ * @export
++ */
++export const FakeEnumRequestGetInlineNullableNumberEnumEnum = {
++    NUMBER_1: 1,
++    NUMBER_2: 2,
++    NUMBER_3: 3
++} as const;
++export type FakeEnumRequestGetInlineNullableNumberEnumEnum = typeof FakeEnumRequestGetInlineNullableNumberEnumEnum[keyof typeof FakeEnumRequestGetInlineNullableNumberEnumEnum];
+diff --git a/samples/client/petstore/typescript-fetch/builds/with-string-enums/apis/DefaultApi.ts b/samples/client/petstore/typescript-fetch/builds/with-string-enums/apis/DefaultApi.ts
+index 53db124d121..a6f4fa649ac 100644
+--- a/samples/client/petstore/typescript-fetch/builds/with-string-enums/apis/DefaultApi.ts
++++ b/samples/client/petstore/typescript-fetch/builds/with-string-enums/apis/DefaultApi.ts
+@@ -33,9 +33,9 @@ import {
+ 
+ export interface FakeEnumRequestGetInlineRequest {
+     stringEnum?: FakeEnumRequestGetInlineStringEnumEnum;
+-    nullableStringEnum?: string | null;
++    nullableStringEnum?: FakeEnumRequestGetInlineNullableStringEnumEnum;
+     numberEnum?: FakeEnumRequestGetInlineNumberEnumEnum;
+-    nullableNumberEnum?: number | null;
++    nullableNumberEnum?: FakeEnumRequestGetInlineNullableNumberEnumEnum;
+ }
+ 
+ export interface FakeEnumRequestGetRefRequest {
+@@ -203,6 +203,15 @@ export enum FakeEnumRequestGetInlineStringEnumEnum {
+     Two = 'two',
+     Three = 'three'
+ }
++/**
++  * @export
++  * @enum {string}
++  */
++export enum FakeEnumRequestGetInlineNullableStringEnumEnum {
++    One = 'one',
++    Two = 'two',
++    Three = 'three'
++}
+ /**
+   * @export
+   * @enum {string}
+@@ -212,3 +221,12 @@ export enum FakeEnumRequestGetInlineNumberEnumEnum {
+     NUMBER_2 = 2,
+     NUMBER_3 = 3
+ }
++/**
++  * @export
++  * @enum {string}
++  */
++export enum FakeEnumRequestGetInlineNullableNumberEnumEnum {
++    NUMBER_1 = 1,
++    NUMBER_2 = 2,
++    NUMBER_3 = 3
++}

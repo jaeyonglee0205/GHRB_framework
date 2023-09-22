@@ -1,0 +1,558 @@
+diff --git a/modules/openapi-generator/src/main/resources/JavaSpring/formParams.mustache b/modules/openapi-generator/src/main/resources/JavaSpring/formParams.mustache
+index 3c72cdc246a..a9e71f73c15 100644
+--- a/modules/openapi-generator/src/main/resources/JavaSpring/formParams.mustache
++++ b/modules/openapi-generator/src/main/resources/JavaSpring/formParams.mustache
+@@ -1 +1 @@
+-{{#isFormParam}}{{^isFile}}{{>paramDoc}}{{#useBeanValidation}} @Valid{{/useBeanValidation}} {{#isModel}}@RequestPart{{/isModel}}{{^isModel}}@RequestParam{{/isModel}}(value = "{{baseName}}"{{#required}}, required = true{{/required}}{{^required}}, required = false{{/required}}){{>dateTimeParam}} {{{dataType}}} {{paramName}}{{/isFile}}{{#isFile}}{{>paramDoc}} @RequestPart(value = "{{baseName}}"{{#required}}, required = true{{/required}}{{^required}}, required = false{{/required}}) {{#isArray}}List<{{/isArray}}{{#reactive}}Flux<Part>{{/reactive}}{{^reactive}}MultipartFile{{/reactive}}{{#isArray}}>{{/isArray}} {{paramName}}{{/isFile}}{{/isFormParam}}
+\ No newline at end of file
++{{#isFormParam}}{{^isFile}}{{>paramDoc}}{{#useBeanValidation}} @Valid{{/useBeanValidation}} {{#isModel}}@RequestPart{{/isModel}}{{^isModel}}{{#isArray}}@RequestPart{{/isArray}}{{^isArray}}@RequestParam{{/isArray}}{{/isModel}}(value = "{{baseName}}"{{#required}}, required = true{{/required}}{{^required}}, required = false{{/required}}){{>dateTimeParam}} {{{dataType}}} {{paramName}}{{/isFile}}{{#isFile}}{{>paramDoc}} @RequestPart(value = "{{baseName}}"{{#required}}, required = true{{/required}}{{^required}}, required = false{{/required}}) {{#isArray}}List<{{/isArray}}{{#reactive}}Flux<Part>{{/reactive}}{{^reactive}}MultipartFile{{/reactive}}{{#isArray}}>{{/isArray}} {{paramName}}{{/isFile}}{{/isFormParam}}
+\ No newline at end of file
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/spring/SpringCodegenTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/spring/SpringCodegenTest.java
+index 872c48c03b6..6713250260f 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/spring/SpringCodegenTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/spring/SpringCodegenTest.java
+@@ -596,7 +596,7 @@ public class SpringCodegenTest {
+ 
+         // Check that api validates mixed multipart request
+         JavaFileAssert.assertThat(files.get("MultipartMixedApi.java"))
+-                .assertMethod("multipartMixed", "MultipartMixedStatus", "MultipartFile", "MultipartMixedRequestMarker")
++                .assertMethod("multipartMixed", "MultipartMixedStatus", "MultipartFile", "MultipartMixedRequestMarker", "List<MultipartMixedStatus>")
+                 .hasParameter("status").withType("MultipartMixedStatus")
+                 .assertParameterAnnotations()
+                 .containsWithName("Valid")
+@@ -609,7 +609,11 @@ public class SpringCodegenTest {
+                 .toParameter().toMethod()
+                 .hasParameter("marker").withType("MultipartMixedRequestMarker")
+                 .assertParameterAnnotations()
+-                .containsWithNameAndAttributes("RequestPart", ImmutableMap.of("value", "\"marker\"", "required", "false"));
++                .containsWithNameAndAttributes("RequestPart", ImmutableMap.of("value", "\"marker\"", "required", "false"))
++                .toParameter().toMethod()
++                .hasParameter("statusArray").withType("List<MultipartMixedStatus>")
++                .assertParameterAnnotations()
++                .containsWithNameAndAttributes("RequestPart", ImmutableMap.of("value", "\"statusArray\"", "required", "false"));
+     }
+ 
+     @Test
+diff --git a/modules/openapi-generator/src/test/resources/3_0/form-multipart-binary-array.yaml b/modules/openapi-generator/src/test/resources/3_0/form-multipart-binary-array.yaml
+index ad6893a6aa4..96432202560 100644
+--- a/modules/openapi-generator/src/test/resources/3_0/form-multipart-binary-array.yaml
++++ b/modules/openapi-generator/src/test/resources/3_0/form-multipart-binary-array.yaml
+@@ -70,6 +70,10 @@ paths:
+                   description: "a file"
+                   type: string
+                   format: binary
++                statusArray:
++                  type: array
++                  items:
++                    $ref: '#/components/schemas/MultipartMixedStatus'
+       responses:
+         '204':
+           description: Successful operation
+@@ -82,4 +86,4 @@ components:
+         - ALLOWED
+         - IN_PROGRESS
+         - REJECTED
+-      example: REJECTED
+\ No newline at end of file
++      example: REJECTED
+diff --git a/samples/client/others/csharp-netcore-complex-files/docs/MultipartApi.md b/samples/client/others/csharp-netcore-complex-files/docs/MultipartApi.md
+index eccfa790342..093cbf5a0ac 100644
+--- a/samples/client/others/csharp-netcore-complex-files/docs/MultipartApi.md
++++ b/samples/client/others/csharp-netcore-complex-files/docs/MultipartApi.md
+@@ -95,7 +95,7 @@ No authorization required
+ 
+ <a name="multipartmixed"></a>
+ # **MultipartMixed**
+-> void MultipartMixed (MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = null)
++> void MultipartMixed (MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = null, List<MultipartMixedStatus> statusArray = null)
+ 
+ 
+ 
+@@ -121,10 +121,11 @@ namespace Example
+             var status = (MultipartMixedStatus) "ALLOWED";  // MultipartMixedStatus | 
+             var file = new System.IO.MemoryStream(System.IO.File.ReadAllBytes("/path/to/file.txt"));  // System.IO.Stream | a file
+             var marker = new MultipartMixedRequestMarker(); // MultipartMixedRequestMarker |  (optional) 
++            var statusArray = new List<MultipartMixedStatus>(); // List<MultipartMixedStatus> |  (optional) 
+ 
+             try
+             {
+-                apiInstance.MultipartMixed(status, file, marker);
++                apiInstance.MultipartMixed(status, file, marker, statusArray);
+             }
+             catch (ApiException  e)
+             {
+@@ -143,7 +144,7 @@ This returns an ApiResponse object which contains the response data, status code
+ ```csharp
+ try
+ {
+-    apiInstance.MultipartMixedWithHttpInfo(status, file, marker);
++    apiInstance.MultipartMixedWithHttpInfo(status, file, marker, statusArray);
+ }
+ catch (ApiException e)
+ {
+@@ -160,6 +161,7 @@ catch (ApiException e)
+ | **status** | **MultipartMixedStatus** |  |  |
+ | **file** | **System.IO.Stream****System.IO.Stream** | a file |  |
+ | **marker** | [**MultipartMixedRequestMarker**](MultipartMixedRequestMarker.md) |  | [optional]  |
++| **statusArray** | [**List&lt;MultipartMixedStatus&gt;**](MultipartMixedStatus.md) |  | [optional]  |
+ 
+ ### Return type
+ 
+diff --git a/samples/client/others/csharp-netcore-complex-files/docs/MultipartMixedRequest.md b/samples/client/others/csharp-netcore-complex-files/docs/MultipartMixedRequest.md
+index f99207cd27c..d00f722a354 100644
+--- a/samples/client/others/csharp-netcore-complex-files/docs/MultipartMixedRequest.md
++++ b/samples/client/others/csharp-netcore-complex-files/docs/MultipartMixedRequest.md
+@@ -7,6 +7,7 @@ Name | Type | Description | Notes
+ **Status** | **MultipartMixedStatus** |  | 
+ **Marker** | [**MultipartMixedRequestMarker**](MultipartMixedRequestMarker.md) |  | [optional] 
+ **File** | **System.IO.Stream** | a file | 
++**StatusArray** | [**List&lt;MultipartMixedStatus&gt;**](MultipartMixedStatus.md) |  | [optional] 
+ 
+ [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+ 
+diff --git a/samples/client/others/csharp-netcore-complex-files/src/Org.OpenAPITools/Api/MultipartApi.cs b/samples/client/others/csharp-netcore-complex-files/src/Org.OpenAPITools/Api/MultipartApi.cs
+index a15b1e7c119..6ab39ceb685 100644
+--- a/samples/client/others/csharp-netcore-complex-files/src/Org.OpenAPITools/Api/MultipartApi.cs
++++ b/samples/client/others/csharp-netcore-complex-files/src/Org.OpenAPITools/Api/MultipartApi.cs
+@@ -59,9 +59,10 @@ namespace Org.OpenAPITools.Api
+         /// <param name="status"></param>
+         /// <param name="file">a file</param>
+         /// <param name="marker"> (optional)</param>
++        /// <param name="statusArray"> (optional)</param>
+         /// <param name="operationIndex">Index associated with the operation.</param>
+         /// <returns></returns>
+-        void MultipartMixed(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), int operationIndex = 0);
++        void MultipartMixed(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), List<MultipartMixedStatus> statusArray = default(List<MultipartMixedStatus>), int operationIndex = 0);
+ 
+         /// <summary>
+         /// 
+@@ -73,9 +74,10 @@ namespace Org.OpenAPITools.Api
+         /// <param name="status"></param>
+         /// <param name="file">a file</param>
+         /// <param name="marker"> (optional)</param>
++        /// <param name="statusArray"> (optional)</param>
+         /// <param name="operationIndex">Index associated with the operation.</param>
+         /// <returns>ApiResponse of Object(void)</returns>
+-        ApiResponse<Object> MultipartMixedWithHttpInfo(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), int operationIndex = 0);
++        ApiResponse<Object> MultipartMixedWithHttpInfo(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), List<MultipartMixedStatus> statusArray = default(List<MultipartMixedStatus>), int operationIndex = 0);
+         /// <summary>
+         /// 
+         /// </summary>
+@@ -143,10 +145,11 @@ namespace Org.OpenAPITools.Api
+         /// <param name="status"></param>
+         /// <param name="file">a file</param>
+         /// <param name="marker"> (optional)</param>
++        /// <param name="statusArray"> (optional)</param>
+         /// <param name="operationIndex">Index associated with the operation.</param>
+         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+         /// <returns>Task of void</returns>
+-        System.Threading.Tasks.Task MultipartMixedAsync(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
++        System.Threading.Tasks.Task MultipartMixedAsync(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), List<MultipartMixedStatus> statusArray = default(List<MultipartMixedStatus>), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+ 
+         /// <summary>
+         /// 
+@@ -158,10 +161,11 @@ namespace Org.OpenAPITools.Api
+         /// <param name="status"></param>
+         /// <param name="file">a file</param>
+         /// <param name="marker"> (optional)</param>
++        /// <param name="statusArray"> (optional)</param>
+         /// <param name="operationIndex">Index associated with the operation.</param>
+         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+         /// <returns>Task of ApiResponse</returns>
+-        System.Threading.Tasks.Task<ApiResponse<Object>> MultipartMixedWithHttpInfoAsync(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
++        System.Threading.Tasks.Task<ApiResponse<Object>> MultipartMixedWithHttpInfoAsync(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), List<MultipartMixedStatus> statusArray = default(List<MultipartMixedStatus>), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+         /// <summary>
+         /// 
+         /// </summary>
+@@ -456,11 +460,12 @@ namespace Org.OpenAPITools.Api
+         /// <param name="status"></param>
+         /// <param name="file">a file</param>
+         /// <param name="marker"> (optional)</param>
++        /// <param name="statusArray"> (optional)</param>
+         /// <param name="operationIndex">Index associated with the operation.</param>
+         /// <returns></returns>
+-        public void MultipartMixed(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), int operationIndex = 0)
++        public void MultipartMixed(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), List<MultipartMixedStatus> statusArray = default(List<MultipartMixedStatus>), int operationIndex = 0)
+         {
+-            MultipartMixedWithHttpInfo(status, file, marker);
++            MultipartMixedWithHttpInfo(status, file, marker, statusArray);
+         }
+ 
+         /// <summary>
+@@ -470,9 +475,10 @@ namespace Org.OpenAPITools.Api
+         /// <param name="status"></param>
+         /// <param name="file">a file</param>
+         /// <param name="marker"> (optional)</param>
++        /// <param name="statusArray"> (optional)</param>
+         /// <param name="operationIndex">Index associated with the operation.</param>
+         /// <returns>ApiResponse of Object(void)</returns>
+-        public Org.OpenAPITools.Client.ApiResponse<Object> MultipartMixedWithHttpInfo(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), int operationIndex = 0)
++        public Org.OpenAPITools.Client.ApiResponse<Object> MultipartMixedWithHttpInfo(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), List<MultipartMixedStatus> statusArray = default(List<MultipartMixedStatus>), int operationIndex = 0)
+         {
+             // verify the required parameter 'file' is set
+             if (file == null)
+@@ -508,6 +514,10 @@ namespace Org.OpenAPITools.Api
+                 localVarRequestOptions.FormParameters.Add("marker", Org.OpenAPITools.Client.ClientUtils.ParameterToString(marker)); // form parameter
+             }
+             localVarRequestOptions.FileParameters.Add("file", file);
++            if (statusArray != null)
++            {
++                localVarRequestOptions.FormParameters.Add("statusArray", Org.OpenAPITools.Client.ClientUtils.ParameterToString(statusArray)); // form parameter
++            }
+ 
+             localVarRequestOptions.Operation = "MultipartApi.MultipartMixed";
+             localVarRequestOptions.OperationIndex = operationIndex;
+@@ -534,12 +544,13 @@ namespace Org.OpenAPITools.Api
+         /// <param name="status"></param>
+         /// <param name="file">a file</param>
+         /// <param name="marker"> (optional)</param>
++        /// <param name="statusArray"> (optional)</param>
+         /// <param name="operationIndex">Index associated with the operation.</param>
+         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+         /// <returns>Task of void</returns>
+-        public async System.Threading.Tasks.Task MultipartMixedAsync(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
++        public async System.Threading.Tasks.Task MultipartMixedAsync(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), List<MultipartMixedStatus> statusArray = default(List<MultipartMixedStatus>), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+         {
+-            await MultipartMixedWithHttpInfoAsync(status, file, marker, operationIndex, cancellationToken).ConfigureAwait(false);
++            await MultipartMixedWithHttpInfoAsync(status, file, marker, statusArray, operationIndex, cancellationToken).ConfigureAwait(false);
+         }
+ 
+         /// <summary>
+@@ -549,10 +560,11 @@ namespace Org.OpenAPITools.Api
+         /// <param name="status"></param>
+         /// <param name="file">a file</param>
+         /// <param name="marker"> (optional)</param>
++        /// <param name="statusArray"> (optional)</param>
+         /// <param name="operationIndex">Index associated with the operation.</param>
+         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+         /// <returns>Task of ApiResponse</returns>
+-        public async System.Threading.Tasks.Task<Org.OpenAPITools.Client.ApiResponse<Object>> MultipartMixedWithHttpInfoAsync(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
++        public async System.Threading.Tasks.Task<Org.OpenAPITools.Client.ApiResponse<Object>> MultipartMixedWithHttpInfoAsync(MultipartMixedStatus status, System.IO.Stream file, MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), List<MultipartMixedStatus> statusArray = default(List<MultipartMixedStatus>), int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+         {
+             // verify the required parameter 'file' is set
+             if (file == null)
+@@ -589,6 +601,10 @@ namespace Org.OpenAPITools.Api
+                 localVarRequestOptions.FormParameters.Add("marker", Org.OpenAPITools.Client.ClientUtils.ParameterToString(marker)); // form parameter
+             }
+             localVarRequestOptions.FileParameters.Add("file", file);
++            if (statusArray != null)
++            {
++                localVarRequestOptions.FormParameters.Add("statusArray", Org.OpenAPITools.Client.ClientUtils.ParameterToString(statusArray)); // form parameter
++            }
+ 
+             localVarRequestOptions.Operation = "MultipartApi.MultipartMixed";
+             localVarRequestOptions.OperationIndex = operationIndex;
+diff --git a/samples/client/others/csharp-netcore-complex-files/src/Org.OpenAPITools/Model/MultipartMixedRequest.cs b/samples/client/others/csharp-netcore-complex-files/src/Org.OpenAPITools/Model/MultipartMixedRequest.cs
+index 40555d7f341..4e51e950886 100644
+--- a/samples/client/others/csharp-netcore-complex-files/src/Org.OpenAPITools/Model/MultipartMixedRequest.cs
++++ b/samples/client/others/csharp-netcore-complex-files/src/Org.OpenAPITools/Model/MultipartMixedRequest.cs
+@@ -49,7 +49,8 @@ namespace Org.OpenAPITools.Model
+         /// <param name="status">status (required).</param>
+         /// <param name="marker">marker.</param>
+         /// <param name="file">a file (required).</param>
+-        public MultipartMixedRequest(MultipartMixedStatus status = default(MultipartMixedStatus), MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), System.IO.Stream file = default(System.IO.Stream))
++        /// <param name="statusArray">statusArray.</param>
++        public MultipartMixedRequest(MultipartMixedStatus status = default(MultipartMixedStatus), MultipartMixedRequestMarker marker = default(MultipartMixedRequestMarker), System.IO.Stream file = default(System.IO.Stream), List<MultipartMixedStatus> statusArray = default(List<MultipartMixedStatus>))
+         {
+             this.Status = status;
+             // to ensure "file" is required (not null)
+@@ -59,6 +60,7 @@ namespace Org.OpenAPITools.Model
+             }
+             this.File = file;
+             this.Marker = marker;
++            this.StatusArray = statusArray;
+         }
+ 
+         /// <summary>
+@@ -74,6 +76,12 @@ namespace Org.OpenAPITools.Model
+         [DataMember(Name = "file", IsRequired = true, EmitDefaultValue = true)]
+         public System.IO.Stream File { get; set; }
+ 
++        /// <summary>
++        /// Gets or Sets StatusArray
++        /// </summary>
++        [DataMember(Name = "statusArray", EmitDefaultValue = false)]
++        public List<MultipartMixedStatus> StatusArray { get; set; }
++
+         /// <summary>
+         /// Returns the string presentation of the object
+         /// </summary>
+@@ -85,6 +93,7 @@ namespace Org.OpenAPITools.Model
+             sb.Append("  Status: ").Append(Status).Append("\n");
+             sb.Append("  Marker: ").Append(Marker).Append("\n");
+             sb.Append("  File: ").Append(File).Append("\n");
++            sb.Append("  StatusArray: ").Append(StatusArray).Append("\n");
+             sb.Append("}\n");
+             return sb.ToString();
+         }
+@@ -136,6 +145,10 @@ namespace Org.OpenAPITools.Model
+                 {
+                     hashCode = (hashCode * 59) + this.File.GetHashCode();
+                 }
++                if (this.StatusArray != null)
++                {
++                    hashCode = (hashCode * 59) + this.StatusArray.GetHashCode();
++                }
+                 return hashCode;
+             }
+         }
+diff --git a/samples/openapi3/client/petstore/spring-cloud-oas3-fakeapi/src/main/java/org/openapitools/api/FakeApi.java b/samples/openapi3/client/petstore/spring-cloud-oas3-fakeapi/src/main/java/org/openapitools/api/FakeApi.java
+index dfb6a5d63e0..fa6aa176965 100644
+--- a/samples/openapi3/client/petstore/spring-cloud-oas3-fakeapi/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/openapi3/client/petstore/spring-cloud-oas3-fakeapi/src/main/java/org/openapitools/api/FakeApi.java
+@@ -353,7 +353,7 @@ public interface FakeApi {
+         @Parameter(name = "enum_query_string", description = "Query parameter enum test (string)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @Parameter(name = "enum_query_integer", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @Parameter(name = "enum_query_double", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @Parameter(name = "enum_form_string", description = "Form parameter enum test (string)") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     );
+ 
+diff --git a/samples/openapi3/server/petstore/springboot-beanvalidation-no-nullable/src/main/java/org/openapitools/api/FakeApi.java b/samples/openapi3/server/petstore/springboot-beanvalidation-no-nullable/src/main/java/org/openapitools/api/FakeApi.java
+index b4556910a16..1974262b6f0 100644
+--- a/samples/openapi3/server/petstore/springboot-beanvalidation-no-nullable/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/openapi3/server/petstore/springboot-beanvalidation-no-nullable/src/main/java/org/openapitools/api/FakeApi.java
+@@ -403,7 +403,7 @@ public interface FakeApi {
+         @Parameter(name = "enum_query_string", description = "Query parameter enum test (string)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @Parameter(name = "enum_query_integer", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @Parameter(name = "enum_query_double", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @Parameter(name = "enum_form_string", description = "Form parameter enum test (string)") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+diff --git a/samples/openapi3/server/petstore/springboot-delegate/src/main/java/org/openapitools/api/FakeApi.java b/samples/openapi3/server/petstore/springboot-delegate/src/main/java/org/openapitools/api/FakeApi.java
+index 6158f6ae3ad..8929c22b7fa 100644
+--- a/samples/openapi3/server/petstore/springboot-delegate/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/openapi3/server/petstore/springboot-delegate/src/main/java/org/openapitools/api/FakeApi.java
+@@ -372,7 +372,7 @@ public interface FakeApi {
+         @Parameter(name = "enum_query_string", description = "Query parameter enum test (string)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @Parameter(name = "enum_query_integer", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @Parameter(name = "enum_query_double", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @Parameter(name = "enum_form_string", description = "Form parameter enum test (string)") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return getDelegate().testEnumParameters(enumHeaderStringArray, enumHeaderString, enumQueryStringArray, enumQueryString, enumQueryInteger, enumQueryDouble, enumFormStringArray, enumFormString);
+diff --git a/samples/openapi3/server/petstore/springboot-implicitHeaders/src/main/java/org/openapitools/api/FakeApi.java b/samples/openapi3/server/petstore/springboot-implicitHeaders/src/main/java/org/openapitools/api/FakeApi.java
+index fdbfca8c070..c2e322618a5 100644
+--- a/samples/openapi3/server/petstore/springboot-implicitHeaders/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/openapi3/server/petstore/springboot-implicitHeaders/src/main/java/org/openapitools/api/FakeApi.java
+@@ -403,7 +403,7 @@ public interface FakeApi {
+         @Parameter(name = "enum_query_string", description = "Query parameter enum test (string)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @Parameter(name = "enum_query_integer", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @Parameter(name = "enum_query_double", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @Parameter(name = "enum_form_string", description = "Form parameter enum test (string)") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+diff --git a/samples/openapi3/server/petstore/springboot-reactive/src/main/java/org/openapitools/api/FakeApi.java b/samples/openapi3/server/petstore/springboot-reactive/src/main/java/org/openapitools/api/FakeApi.java
+index 1de1439bbdc..3b5495cdec1 100644
+--- a/samples/openapi3/server/petstore/springboot-reactive/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/openapi3/server/petstore/springboot-reactive/src/main/java/org/openapitools/api/FakeApi.java
+@@ -385,7 +385,7 @@ public interface FakeApi {
+         @Parameter(name = "enum_query_string", description = "Query parameter enum test (string)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @Parameter(name = "enum_query_integer", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @Parameter(name = "enum_query_double", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @Parameter(name = "enum_form_string", description = "Form parameter enum test (string)") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString,
+         @Parameter(hidden = true) final ServerWebExchange exchange
+     ) {
+diff --git a/samples/openapi3/server/petstore/springboot-useoptional/src/main/java/org/openapitools/api/FakeApi.java b/samples/openapi3/server/petstore/springboot-useoptional/src/main/java/org/openapitools/api/FakeApi.java
+index 1410bd9adcc..d5a214184ed 100644
+--- a/samples/openapi3/server/petstore/springboot-useoptional/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/openapi3/server/petstore/springboot-useoptional/src/main/java/org/openapitools/api/FakeApi.java
+@@ -403,7 +403,7 @@ public interface FakeApi {
+         @Parameter(name = "enum_query_string", description = "Query parameter enum test (string)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") Optional<String> enumQueryString,
+         @Parameter(name = "enum_query_integer", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_integer", required = false) Optional<Integer> enumQueryInteger,
+         @Parameter(name = "enum_query_double", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_double", required = false) Optional<Double> enumQueryDouble,
+-        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @Parameter(name = "enum_form_string", description = "Form parameter enum test (string)") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+diff --git a/samples/server/petstore/spring-boot-defaultInterface-unhandledException/src/main/java/org/openapitools/api/FakeApi.java b/samples/server/petstore/spring-boot-defaultInterface-unhandledException/src/main/java/org/openapitools/api/FakeApi.java
+index fa18de30939..2a402c6278c 100644
+--- a/samples/server/petstore/spring-boot-defaultInterface-unhandledException/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/server/petstore/spring-boot-defaultInterface-unhandledException/src/main/java/org/openapitools/api/FakeApi.java
+@@ -354,7 +354,7 @@ public interface FakeApi {
+         @Parameter(name = "enum_query_string", description = "Query parameter enum test (string)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @Parameter(name = "enum_query_integer", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @Parameter(name = "enum_query_double", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @Parameter(name = "enum_form_string", description = "Form parameter enum test (string)") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) throws Exception;
+ 
+diff --git a/samples/server/petstore/springboot-beanvalidation-no-nullable/src/main/java/org/openapitools/api/FakeApi.java b/samples/server/petstore/springboot-beanvalidation-no-nullable/src/main/java/org/openapitools/api/FakeApi.java
+index f1bdf363a81..159ec0d51a3 100644
+--- a/samples/server/petstore/springboot-beanvalidation-no-nullable/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/server/petstore/springboot-beanvalidation-no-nullable/src/main/java/org/openapitools/api/FakeApi.java
+@@ -395,7 +395,7 @@ public interface FakeApi {
+         @ApiParam(value = "Query parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1, -2") @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1.1, -1.2") @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @ApiParam(value = "Form parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+diff --git a/samples/server/petstore/springboot-beanvalidation/src/main/java/org/openapitools/api/FakeApi.java b/samples/server/petstore/springboot-beanvalidation/src/main/java/org/openapitools/api/FakeApi.java
+index f1bdf363a81..159ec0d51a3 100644
+--- a/samples/server/petstore/springboot-beanvalidation/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/server/petstore/springboot-beanvalidation/src/main/java/org/openapitools/api/FakeApi.java
+@@ -395,7 +395,7 @@ public interface FakeApi {
+         @ApiParam(value = "Query parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1, -2") @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1.1, -1.2") @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @ApiParam(value = "Form parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+diff --git a/samples/server/petstore/springboot-delegate-j8/src/main/java/org/openapitools/api/FakeApi.java b/samples/server/petstore/springboot-delegate-j8/src/main/java/org/openapitools/api/FakeApi.java
+index a2d0eb80dfb..80d0a6c081f 100644
+--- a/samples/server/petstore/springboot-delegate-j8/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/server/petstore/springboot-delegate-j8/src/main/java/org/openapitools/api/FakeApi.java
+@@ -364,7 +364,7 @@ public interface FakeApi {
+         @ApiParam(value = "Query parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1, -2") @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1.1, -1.2") @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @ApiParam(value = "Form parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return getDelegate().testEnumParameters(enumHeaderStringArray, enumHeaderString, enumQueryStringArray, enumQueryString, enumQueryInteger, enumQueryDouble, enumFormStringArray, enumFormString);
+diff --git a/samples/server/petstore/springboot-delegate/src/main/java/org/openapitools/api/FakeApi.java b/samples/server/petstore/springboot-delegate/src/main/java/org/openapitools/api/FakeApi.java
+index a2d0eb80dfb..80d0a6c081f 100644
+--- a/samples/server/petstore/springboot-delegate/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/server/petstore/springboot-delegate/src/main/java/org/openapitools/api/FakeApi.java
+@@ -364,7 +364,7 @@ public interface FakeApi {
+         @ApiParam(value = "Query parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1, -2") @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1.1, -1.2") @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @ApiParam(value = "Form parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return getDelegate().testEnumParameters(enumHeaderStringArray, enumHeaderString, enumQueryStringArray, enumQueryString, enumQueryInteger, enumQueryDouble, enumFormStringArray, enumFormString);
+diff --git a/samples/server/petstore/springboot-implicitHeaders/src/main/java/org/openapitools/api/FakeApi.java b/samples/server/petstore/springboot-implicitHeaders/src/main/java/org/openapitools/api/FakeApi.java
+index 0126531c3b8..f3452301af0 100644
+--- a/samples/server/petstore/springboot-implicitHeaders/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/server/petstore/springboot-implicitHeaders/src/main/java/org/openapitools/api/FakeApi.java
+@@ -395,7 +395,7 @@ public interface FakeApi {
+         @ApiParam(value = "Query parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1, -2") @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1.1, -1.2") @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @ApiParam(value = "Form parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+diff --git a/samples/server/petstore/springboot-reactive/src/main/java/org/openapitools/api/FakeApi.java b/samples/server/petstore/springboot-reactive/src/main/java/org/openapitools/api/FakeApi.java
+index f6501130e36..36e27aa8880 100644
+--- a/samples/server/petstore/springboot-reactive/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/server/petstore/springboot-reactive/src/main/java/org/openapitools/api/FakeApi.java
+@@ -378,7 +378,7 @@ public interface FakeApi {
+         @ApiParam(value = "Query parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1, -2") @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1.1, -1.2") @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @ApiParam(value = "Form parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString,
+         @ApiIgnore final ServerWebExchange exchange
+     ) {
+diff --git a/samples/server/petstore/springboot-spring-pageable-delegatePattern-without-j8/src/main/java/org/openapitools/api/FakeApi.java b/samples/server/petstore/springboot-spring-pageable-delegatePattern-without-j8/src/main/java/org/openapitools/api/FakeApi.java
+index e1cfb57d602..434a8e23849 100644
+--- a/samples/server/petstore/springboot-spring-pageable-delegatePattern-without-j8/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/server/petstore/springboot-spring-pageable-delegatePattern-without-j8/src/main/java/org/openapitools/api/FakeApi.java
+@@ -364,7 +364,7 @@ public interface FakeApi {
+         @ApiParam(value = "Query parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1, -2") @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1.1, -1.2") @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @ApiParam(value = "Form parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return getDelegate().testEnumParameters(enumHeaderStringArray, enumHeaderString, enumQueryStringArray, enumQueryString, enumQueryInteger, enumQueryDouble, enumFormStringArray, enumFormString);
+diff --git a/samples/server/petstore/springboot-spring-pageable-delegatePattern/src/main/java/org/openapitools/api/FakeApi.java b/samples/server/petstore/springboot-spring-pageable-delegatePattern/src/main/java/org/openapitools/api/FakeApi.java
+index e1cfb57d602..434a8e23849 100644
+--- a/samples/server/petstore/springboot-spring-pageable-delegatePattern/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/server/petstore/springboot-spring-pageable-delegatePattern/src/main/java/org/openapitools/api/FakeApi.java
+@@ -364,7 +364,7 @@ public interface FakeApi {
+         @ApiParam(value = "Query parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1, -2") @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1.1, -1.2") @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @ApiParam(value = "Form parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return getDelegate().testEnumParameters(enumHeaderStringArray, enumHeaderString, enumQueryStringArray, enumQueryString, enumQueryInteger, enumQueryDouble, enumFormStringArray, enumFormString);
+diff --git a/samples/server/petstore/springboot-spring-pageable-without-j8/src/main/java/org/openapitools/api/FakeApi.java b/samples/server/petstore/springboot-spring-pageable-without-j8/src/main/java/org/openapitools/api/FakeApi.java
+index 6140ef834b0..75a98551312 100644
+--- a/samples/server/petstore/springboot-spring-pageable-without-j8/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/server/petstore/springboot-spring-pageable-without-j8/src/main/java/org/openapitools/api/FakeApi.java
+@@ -395,7 +395,7 @@ public interface FakeApi {
+         @ApiParam(value = "Query parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1, -2") @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1.1, -1.2") @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @ApiParam(value = "Form parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+diff --git a/samples/server/petstore/springboot-spring-pageable/src/main/java/org/openapitools/api/FakeApi.java b/samples/server/petstore/springboot-spring-pageable/src/main/java/org/openapitools/api/FakeApi.java
+index 6140ef834b0..75a98551312 100644
+--- a/samples/server/petstore/springboot-spring-pageable/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/server/petstore/springboot-spring-pageable/src/main/java/org/openapitools/api/FakeApi.java
+@@ -395,7 +395,7 @@ public interface FakeApi {
+         @ApiParam(value = "Query parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1, -2") @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1.1, -1.2") @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @ApiParam(value = "Form parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+diff --git a/samples/server/petstore/springboot-useoptional/src/main/java/org/openapitools/api/FakeApi.java b/samples/server/petstore/springboot-useoptional/src/main/java/org/openapitools/api/FakeApi.java
+index c4663cf12fd..2df9db49014 100644
+--- a/samples/server/petstore/springboot-useoptional/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/server/petstore/springboot-useoptional/src/main/java/org/openapitools/api/FakeApi.java
+@@ -395,7 +395,7 @@ public interface FakeApi {
+         @ApiParam(value = "Query parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") Optional<String> enumQueryString,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1, -2") @Valid @RequestParam(value = "enum_query_integer", required = false) Optional<Integer> enumQueryInteger,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1.1, -1.2") @Valid @RequestParam(value = "enum_query_double", required = false) Optional<Double> enumQueryDouble,
+-        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @ApiParam(value = "Form parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+diff --git a/samples/server/petstore/springboot-virtualan/src/main/java/org/openapitools/virtualan/api/FakeApi.java b/samples/server/petstore/springboot-virtualan/src/main/java/org/openapitools/virtualan/api/FakeApi.java
+index deb7ad6f8d0..dbbb5554daa 100644
+--- a/samples/server/petstore/springboot-virtualan/src/main/java/org/openapitools/virtualan/api/FakeApi.java
++++ b/samples/server/petstore/springboot-virtualan/src/main/java/org/openapitools/virtualan/api/FakeApi.java
+@@ -416,7 +416,7 @@ public interface FakeApi {
+         @Parameter(name = "enum_query_string", description = "Query parameter enum test (string)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @Parameter(name = "enum_query_integer", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @Parameter(name = "enum_query_double", description = "Query parameter enum test (double)", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @Parameter(name = "enum_form_string_array", description = "Form parameter enum test (string array)") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @Parameter(name = "enum_form_string", description = "Form parameter enum test (string)") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+diff --git a/samples/server/petstore/springboot/src/main/java/org/openapitools/api/FakeApi.java b/samples/server/petstore/springboot/src/main/java/org/openapitools/api/FakeApi.java
+index 91920d2b037..eba4801bd3d 100644
+--- a/samples/server/petstore/springboot/src/main/java/org/openapitools/api/FakeApi.java
++++ b/samples/server/petstore/springboot/src/main/java/org/openapitools/api/FakeApi.java
+@@ -395,7 +395,7 @@ public interface FakeApi {
+         @ApiParam(value = "Query parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_query_string", required = false, defaultValue = "-efg") String enumQueryString,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1, -2") @Valid @RequestParam(value = "enum_query_integer", required = false) Integer enumQueryInteger,
+         @ApiParam(value = "Query parameter enum test (double)", allowableValues = "1.1, -1.2") @Valid @RequestParam(value = "enum_query_double", required = false) Double enumQueryDouble,
+-        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestParam(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
++        @ApiParam(value = "Form parameter enum test (string array)", allowableValues = ">, $", defaultValue = "$") @Valid @RequestPart(value = "enum_form_string_array", required = false) List<String> enumFormStringArray,
+         @ApiParam(value = "Form parameter enum test (string)", allowableValues = "_abc, -efg, (xyz)", defaultValue = "-efg") @Valid @RequestParam(value = "enum_form_string", required = false) String enumFormString
+     ) {
+         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);

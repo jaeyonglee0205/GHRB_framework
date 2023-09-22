@@ -1,0 +1,2636 @@
+diff --git a/bin/configs/swift5-any-codable.yaml b/bin/configs/swift5-any-codable.yaml
+new file mode 100644
+index 00000000000..62031951b9e
+--- /dev/null
++++ b/bin/configs/swift5-any-codable.yaml
+@@ -0,0 +1,10 @@
++generatorName: swift5
++outputDir: samples/client/petstore/swift5/anycodable
++inputSpec: modules/openapi-generator/src/test/resources/3_0/any_codable.yaml
++modelNamePrefix: Prefix
++modelNameSuffix: Suffix
++additionalProperties:
++  podAuthors: ""
++  podSummary: PetstoreClient
++  projectName: PetstoreClient
++  podHomepage: https://github.com/openapitools/openapi-generator
+\ No newline at end of file
+diff --git a/docs/generators/swift5.md b/docs/generators/swift5.md
+index 72887e3b55f..474ff6b0629 100644
+--- a/docs/generators/swift5.md
++++ b/docs/generators/swift5.md
+@@ -74,6 +74,7 @@ These options may be applied as additional-properties (cli) or configOptions (pl
+ 
+ <ul class="column-ul">
+ <li>Any</li>
++<li>AnyCodable</li>
+ <li>AnyObject</li>
+ <li>Bool</li>
+ <li>Character</li>
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/Swift5ClientCodegen.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/Swift5ClientCodegen.java
+index 5bd1dfb2db0..584e7720910 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/Swift5ClientCodegen.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/Swift5ClientCodegen.java
+@@ -145,7 +145,8 @@ public class Swift5ClientCodegen extends DefaultCodegen implements CodegenConfig
+                         "URL",
+                         "AnyObject",
+                         "Any",
+-                        "Decimal")
++                        "Decimal",
++                        "AnyCodable") // from AnyCodable dependency
+         );
+         defaultIncludes = new HashSet<>(
+                 Arrays.asList(
+@@ -731,11 +732,11 @@ public class Swift5ClientCodegen extends DefaultCodegen implements CodegenConfig
+         // FIXME parameter should not be assigned. Also declare it as "final"
+         name = sanitizeName(name);
+ 
+-        if (!StringUtils.isEmpty(modelNameSuffix)) { // set model suffix
++        if (!StringUtils.isEmpty(modelNameSuffix) && !isLanguageSpecificType(name)) { // set model suffix
+             name = name + "_" + modelNameSuffix;
+         }
+ 
+-        if (!StringUtils.isEmpty(modelNamePrefix)) { // set model prefix
++        if (!StringUtils.isEmpty(modelNamePrefix) && !isLanguageSpecificType(name)) { // set model prefix
+             name = modelNamePrefix + "_" + name;
+         }
+ 
+@@ -1086,6 +1087,10 @@ public class Swift5ClientCodegen extends DefaultCodegen implements CodegenConfig
+                 LOWERCASE_FIRST_LETTER);
+     }
+ 
++    private Boolean isLanguageSpecificType(String name) {
++        return languageSpecificPrimitives.contains(name);
++    }
++
+     private String replaceSpecialCharacters(String name) {
+         for (Map.Entry<String, String> specialCharacters : specialCharReplacements.entrySet()) {
+             String specialChar = specialCharacters.getKey();
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/swift5/Swift5ClientCodegenTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/swift5/Swift5ClientCodegenTest.java
+index 59928dbc266..d71bef08e80 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/swift5/Swift5ClientCodegenTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/swift5/Swift5ClientCodegenTest.java
+@@ -166,6 +166,42 @@ public class Swift5ClientCodegenTest {
+         Assert.assertEquals(op.bodyParam.dataType, "OpenAPIDateWithoutTime");
+     }
+ 
++    @Test(description = "type from languageSpecificPrimitives should not be prefixed", enabled = true)
++    public void prefixExceptionTest() {
++        final DefaultCodegen codegen = new Swift5ClientCodegen();
++        codegen.setModelNamePrefix("API");
++
++        final String result = codegen.toModelName("AnyCodable");
++        Assert.assertEquals(result, "AnyCodable");
++    }
++
++    @Test(description = "type from languageSpecificPrimitives should not be suffixed", enabled = true)
++    public void suffixExceptionTest() {
++        final DefaultCodegen codegen = new Swift5ClientCodegen();
++        codegen.setModelNameSuffix("API");
++
++        final String result = codegen.toModelName("AnyCodable");
++        Assert.assertEquals(result, "AnyCodable");
++    }
++
++    @Test(description = "Other types should be prefixed", enabled = true)
++    public void prefixTest() {
++        final DefaultCodegen codegen = new Swift5ClientCodegen();
++        codegen.setModelNamePrefix("API");
++
++        final String result = codegen.toModelName("MyType");
++        Assert.assertEquals(result, "APIMyType");
++    }
++
++    @Test(description = "Other types should be suffixed", enabled = true)
++    public void suffixTest() {
++        final DefaultCodegen codegen = new Swift5ClientCodegen();
++        codegen.setModelNameSuffix("API");
++
++        final String result = codegen.toModelName("MyType");
++        Assert.assertEquals(result, "MyTypeAPI");
++    }
++
+     @Test(enabled = true)
+     public void testDefaultPodAuthors() throws Exception {
+         // Given
+diff --git a/modules/openapi-generator/src/test/resources/3_0/any_codable.yaml b/modules/openapi-generator/src/test/resources/3_0/any_codable.yaml
+new file mode 100644
+index 00000000000..00448b22ff6
+--- /dev/null
++++ b/modules/openapi-generator/src/test/resources/3_0/any_codable.yaml
+@@ -0,0 +1,45 @@
++openapi: "3.0.0"
++info:
++  version: 1.0.0
++  title: Swagger Petstore
++paths:
++   /pets:
++    get:
++      tags:
++        - pets
++      responses:
++        '200':
++          description: Expected response to a valid request
++          content:
++               application/json:
++                  schema:
++                     $ref: '#/components/schemas/Pet'
++   /pets/{petId}:
++    get:
++      summary: Info for a specific pet
++      operationId: showPetById
++      tags:
++        - pets
++      parameters:
++        - name: petId
++          in: path
++          required: true
++          description: The id of the pet to retrieve
++          schema:
++            type: string
++      responses:
++        '200':
++          description: Expected response to a valid request
++          content:
++            application/json:
++              schema:
++                type: object
++components:
++  schemas:
++    Pet:
++      type: object
++      properties:
++        testProperty:
++            type: string
++      required:
++        - testProperty
+\ No newline at end of file
+diff --git a/samples/client/petstore/swift5/anycodable/.gitignore b/samples/client/petstore/swift5/anycodable/.gitignore
+new file mode 100644
+index 00000000000..627d360a903
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/.gitignore
+@@ -0,0 +1,105 @@
++# Created by https://www.toptal.com/developers/gitignore/api/swift,xcode
++# Edit at https://www.toptal.com/developers/gitignore?templates=swift,xcode
++
++### Swift ###
++# Xcode
++#
++# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
++
++## User settings
++xcuserdata/
++
++## compatibility with Xcode 8 and earlier (ignoring not required starting Xcode 9)
++*.xcscmblueprint
++*.xccheckout
++
++## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
++build/
++DerivedData/
++*.moved-aside
++*.pbxuser
++!default.pbxuser
++*.mode1v3
++!default.mode1v3
++*.mode2v3
++!default.mode2v3
++*.perspectivev3
++!default.perspectivev3
++
++## Obj-C/Swift specific
++*.hmap
++
++## App packaging
++*.ipa
++*.dSYM.zip
++*.dSYM
++
++## Playgrounds
++timeline.xctimeline
++playground.xcworkspace
++
++# Swift Package Manager
++# Add this line if you want to avoid checking in source code from Swift Package Manager dependencies.
++# Packages/
++# Package.pins
++# Package.resolved
++# *.xcodeproj
++# Xcode automatically generates this directory with a .xcworkspacedata file and xcuserdata
++# hence it is not needed unless you have added a package configuration file to your project
++# .swiftpm
++
++.build/
++
++# CocoaPods
++# We recommend against adding the Pods directory to your .gitignore. However
++# you should judge for yourself, the pros and cons are mentioned at:
++# https://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
++# Pods/
++# Add this line if you want to avoid checking in source code from the Xcode workspace
++# *.xcworkspace
++
++# Carthage
++# Add this line if you want to avoid checking in source code from Carthage dependencies.
++# Carthage/Checkouts
++
++Carthage/Build/
++
++# Add this lines if you are using Accio dependency management (Deprecated since Xcode 12)
++# Dependencies/
++# .accio/
++
++# fastlane
++# It is recommended to not store the screenshots in the git repo.
++# Instead, use fastlane to re-generate the screenshots whenever they are needed.
++# For more information about the recommended setup visit:
++# https://docs.fastlane.tools/best-practices/source-control/#source-control
++
++fastlane/report.xml
++fastlane/Preview.html
++fastlane/screenshots/**/*.png
++fastlane/test_output
++
++# Code Injection
++# After new code Injection tools there's a generated folder /iOSInjectionProject
++# https://github.com/johnno1962/injectionforxcode
++
++iOSInjectionProject/
++
++### Xcode ###
++# Xcode
++# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
++
++
++
++
++## Gcc Patch
++/*.gcno
++
++### Xcode Patch ###
++*.xcodeproj/*
++!*.xcodeproj/project.pbxproj
++!*.xcodeproj/xcshareddata/
++!*.xcworkspace/contents.xcworkspacedata
++**/xcshareddata/WorkspaceSettings.xcsettings
++
++# End of https://www.toptal.com/developers/gitignore/api/swift,xcode
+diff --git a/samples/client/petstore/swift5/anycodable/.openapi-generator-ignore b/samples/client/petstore/swift5/anycodable/.openapi-generator-ignore
+new file mode 100644
+index 00000000000..7484ee590a3
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/.openapi-generator-ignore
+@@ -0,0 +1,23 @@
++# OpenAPI Generator Ignore
++# Generated by openapi-generator https://github.com/openapitools/openapi-generator
++
++# Use this file to prevent files from being overwritten by the generator.
++# The patterns follow closely to .gitignore or .dockerignore.
++
++# As an example, the C# client generator defines ApiClient.cs.
++# You can make changes and tell OpenAPI Generator to ignore just this file by uncommenting the following line:
++#ApiClient.cs
++
++# You can match any string of characters against a directory, file or extension with a single asterisk (*):
++#foo/*/qux
++# The above matches foo/bar/qux and foo/baz/qux, but not foo/bar/baz/qux
++
++# You can recursively match patterns against a directory, file or extension with a double asterisk (**):
++#foo/**/qux
++# This matches foo/bar/qux, foo/baz/qux, and foo/bar/baz/qux
++
++# You can also negate patterns with an exclamation (!).
++# For example, you can ignore all files in a docs folder with the file extension .md:
++#docs/*.md
++# Then explicitly reverse the ignore rule for a single file:
++#!docs/README.md
+diff --git a/samples/client/petstore/swift5/anycodable/.openapi-generator/FILES b/samples/client/petstore/swift5/anycodable/.openapi-generator/FILES
+new file mode 100644
+index 00000000000..916770788c3
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/.openapi-generator/FILES
+@@ -0,0 +1,24 @@
++.gitignore
++.swiftformat
++Cartfile
++Package.swift
++PetstoreClient.podspec
++PetstoreClient/Classes/OpenAPIs/APIHelper.swift
++PetstoreClient/Classes/OpenAPIs/APIs.swift
++PetstoreClient/Classes/OpenAPIs/APIs/PetsAPI.swift
++PetstoreClient/Classes/OpenAPIs/CodableHelper.swift
++PetstoreClient/Classes/OpenAPIs/Configuration.swift
++PetstoreClient/Classes/OpenAPIs/Extensions.swift
++PetstoreClient/Classes/OpenAPIs/JSONDataEncoding.swift
++PetstoreClient/Classes/OpenAPIs/JSONEncodingHelper.swift
++PetstoreClient/Classes/OpenAPIs/Models.swift
++PetstoreClient/Classes/OpenAPIs/Models/PrefixPetSuffix.swift
++PetstoreClient/Classes/OpenAPIs/OpenISO8601DateFormatter.swift
++PetstoreClient/Classes/OpenAPIs/SynchronizedDictionary.swift
++PetstoreClient/Classes/OpenAPIs/URLSessionImplementations.swift
++PetstoreClient/Classes/OpenAPIs/Validation.swift
++README.md
++docs/PetsAPI.md
++docs/PrefixPetSuffix.md
++git_push.sh
++project.yml
+diff --git a/samples/client/petstore/swift5/anycodable/.openapi-generator/VERSION b/samples/client/petstore/swift5/anycodable/.openapi-generator/VERSION
+new file mode 100644
+index 00000000000..7f4d792ec2c
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/.openapi-generator/VERSION
+@@ -0,0 +1 @@
++6.5.0-SNAPSHOT
+\ No newline at end of file
+diff --git a/samples/client/petstore/swift5/anycodable/.swiftformat b/samples/client/petstore/swift5/anycodable/.swiftformat
+new file mode 100644
+index 00000000000..93007252801
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/.swiftformat
+@@ -0,0 +1,45 @@
++# This file is auto-generated by OpenAPI Generator: https://openapi-generator.tech/
++#
++# For rules on SwiftFormat, please refer to https://github.com/nicklockwood/SwiftFormat/blob/master/Rules.md
++#
++# file options
++
++# uncomment below to exclude files, folders
++#--exclude path/to/test1.swift,Snapshots,Build
++
++# format options
++
++--allman false
++--binarygrouping 4,8
++--commas always
++--comments indent
++--decimalgrouping 3,6
++--elseposition same-line
++--empty void
++--exponentcase lowercase
++--exponentgrouping disabled
++--fractiongrouping disabled
++--header ignore
++--hexgrouping 4,8
++--hexliteralcase uppercase
++--ifdef indent
++--indent 4
++--indentcase false
++--importgrouping testable-bottom
++--linebreaks lf
++--maxwidth none
++--octalgrouping 4,8
++--operatorfunc spaced
++--patternlet hoist
++--ranges spaced
++--self remove
++--semicolons inline
++--stripunusedargs always
++--swiftversion 5.4
++--trimwhitespace always
++--wraparguments preserve
++--wrapcollections preserve
++
++# rules
++
++--enable isEmpty
+diff --git a/samples/client/petstore/swift5/anycodable/Cartfile b/samples/client/petstore/swift5/anycodable/Cartfile
+new file mode 100644
+index 00000000000..92bac174543
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/Cartfile
+@@ -0,0 +1 @@
++github "Flight-School/AnyCodable" ~> 0.6
+diff --git a/samples/client/petstore/swift5/anycodable/OpenAPIClient.podspec b/samples/client/petstore/swift5/anycodable/OpenAPIClient.podspec
+new file mode 100644
+index 00000000000..57d5e06e6e6
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/OpenAPIClient.podspec
+@@ -0,0 +1,15 @@
++Pod::Spec.new do |s|
++  s.name = 'OpenAPIClient'
++  s.ios.deployment_target = '9.0'
++  s.osx.deployment_target = '10.11'
++  s.tvos.deployment_target = '9.0'
++  s.watchos.deployment_target = '3.0'
++  s.version = '1.0.0'
++  s.source = { :git => 'git@github.com:OpenAPITools/openapi-generator.git', :tag => 'v1.0.0' }
++  s.authors = 'OpenAPI Generator'
++  s.license = 'Proprietary'
++  s.homepage = 'https://github.com/OpenAPITools/openapi-generator'
++  s.summary = 'OpenAPIClient Swift SDK'
++  s.source_files = 'OpenAPIClient/Classes/**/*.swift'
++  s.dependency 'AnyCodable-FlightSchool', '~> 0.6'
++end
+diff --git a/samples/client/petstore/swift5/anycodable/Package.swift b/samples/client/petstore/swift5/anycodable/Package.swift
+new file mode 100644
+index 00000000000..5335b0a3093
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/Package.swift
+@@ -0,0 +1,33 @@
++// swift-tools-version:5.1
++
++import PackageDescription
++
++let package = Package(
++    name: "PetstoreClient",
++    platforms: [
++        .iOS(.v9),
++        .macOS(.v10_11),
++        .tvOS(.v9),
++        .watchOS(.v3),
++    ],
++    products: [
++        // Products define the executables and libraries produced by a package, and make them visible to other packages.
++        .library(
++            name: "PetstoreClient",
++            targets: ["PetstoreClient"]
++        ),
++    ],
++    dependencies: [
++        // Dependencies declare other packages that this package depends on.
++        .package(url: "https://github.com/Flight-School/AnyCodable", .upToNextMajor(from: "0.6.1")),
++    ],
++    targets: [
++        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
++        // Targets can depend on other targets in this package, and on products in packages which this package depends on.
++        .target(
++            name: "PetstoreClient",
++            dependencies: ["AnyCodable", ],
++            path: "PetstoreClient/Classes"
++        ),
++    ]
++)
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient.podspec b/samples/client/petstore/swift5/anycodable/PetstoreClient.podspec
+new file mode 100644
+index 00000000000..4265bb2dc10
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient.podspec
+@@ -0,0 +1,15 @@
++Pod::Spec.new do |s|
++  s.name = 'PetstoreClient'
++  s.ios.deployment_target = '9.0'
++  s.osx.deployment_target = '10.11'
++  s.tvos.deployment_target = '9.0'
++  s.watchos.deployment_target = '3.0'
++  s.version = '1.0.0'
++  s.source = { :git => 'git@github.com:OpenAPITools/openapi-generator.git', :tag => 'v1.0.0' }
++  s.authors = ''
++  s.license = 'Proprietary'
++  s.homepage = 'https://github.com/openapitools/openapi-generator'
++  s.summary = 'PetstoreClient'
++  s.source_files = 'PetstoreClient/Classes/**/*.swift'
++  s.dependency 'AnyCodable-FlightSchool', '~> 0.6'
++end
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/APIHelper.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/APIHelper.swift
+new file mode 100644
+index 00000000000..93c5c762602
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/APIHelper.swift
+@@ -0,0 +1,119 @@
++// APIHelper.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++
++public struct APIHelper {
++    public static func rejectNil(_ source: [String: Any?]) -> [String: Any]? {
++        let destination = source.reduce(into: [String: Any]()) { result, item in
++            if let value = item.value {
++                result[item.key] = value
++            }
++        }
++
++        if destination.isEmpty {
++            return nil
++        }
++        return destination
++    }
++
++    public static func rejectNilHeaders(_ source: [String: Any?]) -> [String: String] {
++        return source.reduce(into: [String: String]()) { result, item in
++            if let collection = item.value as? [Any?] {
++                result[item.key] = collection
++                    .compactMap { value in convertAnyToString(value) }
++                    .joined(separator: ",")
++            } else if let value: Any = item.value {
++                result[item.key] = convertAnyToString(value)
++            }
++        }
++    }
++
++    public static func convertBoolToString(_ source: [String: Any]?) -> [String: Any]? {
++        guard let source = source else {
++            return nil
++        }
++
++        return source.reduce(into: [String: Any]()) { result, item in
++            switch item.value {
++            case let x as Bool:
++                result[item.key] = x.description
++            default:
++                result[item.key] = item.value
++            }
++        }
++    }
++
++    public static func convertAnyToString(_ value: Any?) -> String? {
++        guard let value = value else { return nil }
++        if let value = value as? any RawRepresentable {
++            return "\(value.rawValue)"
++        } else {
++            return "\(value)"
++        }
++    }
++
++    public static func mapValueToPathItem(_ source: Any) -> Any {
++        if let collection = source as? [Any?] {
++            return collection
++                .compactMap { value in convertAnyToString(value) }
++                .joined(separator: ",")
++        }
++        return source
++    }
++
++    /// maps all values from source to query parameters
++    ///
++    /// explode attribute is respected: collection values might be either joined or split up into separate key value pairs
++    public static func mapValuesToQueryItems(_ source: [String: (wrappedValue: Any?, isExplode: Bool)]) -> [URLQueryItem]? {
++        let destination = source.filter { $0.value.wrappedValue != nil }.reduce(into: [URLQueryItem]()) { result, item in
++            if let collection = item.value.wrappedValue as? [Any?] {
++
++                let collectionValues: [String] = collection.compactMap { value in convertAnyToString(value) }
++
++                if !item.value.isExplode {
++                    result.append(URLQueryItem(name: item.key, value: collectionValues.joined(separator: ",")))
++                } else {
++                    collectionValues
++                        .forEach { value in
++                            result.append(URLQueryItem(name: item.key, value: value))
++                        }
++                }
++
++            } else if let value = item.value.wrappedValue {
++                result.append(URLQueryItem(name: item.key, value: convertAnyToString(value)))
++            }
++        }
++
++        if destination.isEmpty {
++            return nil
++        }
++        return destination
++    }
++
++    /// maps all values from source to query parameters
++    ///
++    /// collection values are always exploded
++    public static func mapValuesToQueryItems(_ source: [String: Any?]) -> [URLQueryItem]? {
++        let destination = source.filter { $0.value != nil }.reduce(into: [URLQueryItem]()) { result, item in
++            if let collection = item.value as? [Any?] {
++                collection
++                    .compactMap { value in convertAnyToString(value) }
++                    .forEach { value in
++                        result.append(URLQueryItem(name: item.key, value: value))
++                    }
++
++            } else if let value = item.value {
++                result.append(URLQueryItem(name: item.key, value: convertAnyToString(value)))
++            }
++        }
++
++        if destination.isEmpty {
++            return nil
++        }
++        return destination
++    }
++}
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/APIs.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/APIs.swift
+new file mode 100644
+index 00000000000..513c1222ada
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/APIs.swift
+@@ -0,0 +1,75 @@
++// APIs.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++
++// We reverted the change of PetstoreClientAPI to PetstoreClient introduced in https://github.com/OpenAPITools/openapi-generator/pull/9624
++// Because it was causing the following issue https://github.com/OpenAPITools/openapi-generator/issues/9953
++// If you are affected by this issue, please consider removing the following two lines,
++// By setting the option removeMigrationProjectNameClass to true in the generator
++@available(*, deprecated, renamed: "PetstoreClientAPI")
++public typealias PetstoreClient = PetstoreClientAPI
++
++open class PetstoreClientAPI {
++    public static var basePath = "http://localhost"
++    public static var customHeaders: [String: String] = [:]
++    public static var credential: URLCredential?
++    public static var requestBuilderFactory: RequestBuilderFactory = URLSessionRequestBuilderFactory()
++    public static var apiResponseQueue: DispatchQueue = .main
++}
++
++open class RequestBuilder<T> {
++    var credential: URLCredential?
++    var headers: [String: String]
++    public let parameters: [String: Any]?
++    public let method: String
++    public let URLString: String
++    public let requestTask: RequestTask = RequestTask()
++    public let requiresAuthentication: Bool
++
++    /// Optional block to obtain a reference to the request's progress instance when available.
++    /// With the URLSession http client the request's progress only works on iOS 11.0, macOS 10.13, macCatalyst 13.0, tvOS 11.0, watchOS 4.0.
++    /// If you need to get the request's progress in older OS versions, please use Alamofire http client.
++    public var onProgressReady: ((Progress) -> Void)?
++
++    required public init(method: String, URLString: String, parameters: [String: Any]?, headers: [String: String] = [:], requiresAuthentication: Bool) {
++        self.method = method
++        self.URLString = URLString
++        self.parameters = parameters
++        self.headers = headers
++        self.requiresAuthentication = requiresAuthentication
++
++        addHeaders(PetstoreClientAPI.customHeaders)
++    }
++
++    open func addHeaders(_ aHeaders: [String: String]) {
++        for (header, value) in aHeaders {
++            headers[header] = value
++        }
++    }
++
++    @discardableResult
++    open func execute(_ apiResponseQueue: DispatchQueue = PetstoreClientAPI.apiResponseQueue, _ completion: @escaping (_ result: Swift.Result<Response<T>, ErrorResponse>) -> Void) -> RequestTask {
++        return requestTask
++    }
++
++    public func addHeader(name: String, value: String) -> Self {
++        if !value.isEmpty {
++            headers[name] = value
++        }
++        return self
++    }
++
++    open func addCredential() -> Self {
++        credential = PetstoreClientAPI.credential
++        return self
++    }
++}
++
++public protocol RequestBuilderFactory {
++    func getNonDecodableBuilder<T>() -> RequestBuilder<T>.Type
++    func getBuilder<T: Decodable>() -> RequestBuilder<T>.Type
++}
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/APIs/PetsAPI.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/APIs/PetsAPI.swift
+new file mode 100644
+index 00000000000..03222c67a75
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/APIs/PetsAPI.swift
+@@ -0,0 +1,99 @@
++//
++// PetsAPI.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++#if canImport(AnyCodable)
++import AnyCodable
++#endif
++
++open class PetsAPI {
++
++    /**
++
++     - parameter apiResponseQueue: The queue on which api response is dispatched.
++     - parameter completion: completion handler to receive the data and the error objects
++     */
++    @discardableResult
++    open class func petsGet(apiResponseQueue: DispatchQueue = PetstoreClientAPI.apiResponseQueue, completion: @escaping ((_ data: PrefixPetSuffix?, _ error: Error?) -> Void)) -> RequestTask {
++        return petsGetWithRequestBuilder().execute(apiResponseQueue) { result in
++            switch result {
++            case let .success(response):
++                completion(response.body, nil)
++            case let .failure(error):
++                completion(nil, error)
++            }
++        }
++    }
++
++    /**
++     - GET /pets
++     - returns: RequestBuilder<PrefixPetSuffix> 
++     */
++    open class func petsGetWithRequestBuilder() -> RequestBuilder<PrefixPetSuffix> {
++        let localVariablePath = "/pets"
++        let localVariableURLString = PetstoreClientAPI.basePath + localVariablePath
++        let localVariableParameters: [String: Any]? = nil
++
++        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
++
++        let localVariableNillableHeaders: [String: Any?] = [
++            :
++        ]
++
++        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
++
++        let localVariableRequestBuilder: RequestBuilder<PrefixPetSuffix>.Type = PetstoreClientAPI.requestBuilderFactory.getBuilder()
++
++        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false)
++    }
++
++    /**
++     Info for a specific pet
++     
++     - parameter petId: (path) The id of the pet to retrieve 
++     - parameter apiResponseQueue: The queue on which api response is dispatched.
++     - parameter completion: completion handler to receive the data and the error objects
++     */
++    @discardableResult
++    open class func showPetById(petId: String, apiResponseQueue: DispatchQueue = PetstoreClientAPI.apiResponseQueue, completion: @escaping ((_ data: AnyCodable?, _ error: Error?) -> Void)) -> RequestTask {
++        return showPetByIdWithRequestBuilder(petId: petId).execute(apiResponseQueue) { result in
++            switch result {
++            case let .success(response):
++                completion(response.body, nil)
++            case let .failure(error):
++                completion(nil, error)
++            }
++        }
++    }
++
++    /**
++     Info for a specific pet
++     - GET /pets/{petId}
++     - parameter petId: (path) The id of the pet to retrieve 
++     - returns: RequestBuilder<AnyCodable> 
++     */
++    open class func showPetByIdWithRequestBuilder(petId: String) -> RequestBuilder<AnyCodable> {
++        var localVariablePath = "/pets/{petId}"
++        let petIdPreEscape = "\(APIHelper.mapValueToPathItem(petId))"
++        let petIdPostEscape = petIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
++        localVariablePath = localVariablePath.replacingOccurrences(of: "{petId}", with: petIdPostEscape, options: .literal, range: nil)
++        let localVariableURLString = PetstoreClientAPI.basePath + localVariablePath
++        let localVariableParameters: [String: Any]? = nil
++
++        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
++
++        let localVariableNillableHeaders: [String: Any?] = [
++            :
++        ]
++
++        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
++
++        let localVariableRequestBuilder: RequestBuilder<AnyCodable>.Type = PetstoreClientAPI.requestBuilderFactory.getBuilder()
++
++        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false)
++    }
++}
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/CodableHelper.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/CodableHelper.swift
+new file mode 100644
+index 00000000000..09c82e53e13
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/CodableHelper.swift
+@@ -0,0 +1,49 @@
++//
++// CodableHelper.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++
++open class CodableHelper {
++    private static var customDateFormatter: DateFormatter?
++    private static var defaultDateFormatter: DateFormatter = OpenISO8601DateFormatter()
++
++    private static var customJSONDecoder: JSONDecoder?
++    private static var defaultJSONDecoder: JSONDecoder = {
++        let decoder = JSONDecoder()
++        decoder.dateDecodingStrategy = .formatted(CodableHelper.dateFormatter)
++        return decoder
++    }()
++
++    private static var customJSONEncoder: JSONEncoder?
++    private static var defaultJSONEncoder: JSONEncoder = {
++        let encoder = JSONEncoder()
++        encoder.dateEncodingStrategy = .formatted(CodableHelper.dateFormatter)
++        encoder.outputFormatting = .prettyPrinted
++        return encoder
++    }()
++
++    public static var dateFormatter: DateFormatter {
++        get { return customDateFormatter ?? defaultDateFormatter }
++        set { customDateFormatter = newValue }
++    }
++    public static var jsonDecoder: JSONDecoder {
++        get { return customJSONDecoder ?? defaultJSONDecoder }
++        set { customJSONDecoder = newValue }
++    }
++    public static var jsonEncoder: JSONEncoder {
++        get { return customJSONEncoder ?? defaultJSONEncoder }
++        set { customJSONEncoder = newValue }
++    }
++
++    open class func decode<T>(_ type: T.Type, from data: Data) -> Swift.Result<T, Error> where T: Decodable {
++        return Swift.Result { try jsonDecoder.decode(type, from: data) }
++    }
++
++    open class func encode<T>(_ value: T) -> Swift.Result<Data, Error> where T: Encodable {
++        return Swift.Result { try jsonEncoder.encode(value) }
++    }
++}
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Configuration.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Configuration.swift
+new file mode 100644
+index 00000000000..03789f4b492
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Configuration.swift
+@@ -0,0 +1,19 @@
++// Configuration.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++
++open class Configuration {
++    
++    // This value is used to configure the date formatter that is used to serialize dates into JSON format.
++    // You must set it prior to encoding any dates, and it will only be read once.
++    @available(*, unavailable, message: "To set a different date format, use CodableHelper.dateFormatter instead.")
++    public static var dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
++    /// Configures the range of HTTP status codes that will result in a successful response
++    ///
++    /// If a HTTP status code is outside of this range the response will be interpreted as failed.
++    public static var successfulStatusCodeRange: Range = 200..<300
++}
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Extensions.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Extensions.swift
+new file mode 100644
+index 00000000000..d12fa0fb513
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Extensions.swift
+@@ -0,0 +1,230 @@
++// Extensions.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++#if canImport(AnyCodable)
++import AnyCodable
++#endif
++
++extension Bool: JSONEncodable {
++    func encodeToJSON() -> Any { self }
++}
++
++extension Float: JSONEncodable {
++    func encodeToJSON() -> Any { self }
++}
++
++extension Int: JSONEncodable {
++    func encodeToJSON() -> Any { self }
++}
++
++extension Int32: JSONEncodable {
++    func encodeToJSON() -> Any { self }
++}
++
++extension Int64: JSONEncodable {
++    func encodeToJSON() -> Any { self }
++}
++
++extension Double: JSONEncodable {
++    func encodeToJSON() -> Any { self }
++}
++
++extension Decimal: JSONEncodable {
++    func encodeToJSON() -> Any { self }
++}
++
++extension String: JSONEncodable {
++    func encodeToJSON() -> Any { self }
++}
++
++extension URL: JSONEncodable {
++    func encodeToJSON() -> Any { self }
++}
++
++extension UUID: JSONEncodable {
++    func encodeToJSON() -> Any { self }
++}
++
++extension RawRepresentable where RawValue: JSONEncodable {
++    func encodeToJSON() -> Any { return self.rawValue }
++}
++
++private func encodeIfPossible<T>(_ object: T) -> Any {
++    if let encodableObject = object as? JSONEncodable {
++        return encodableObject.encodeToJSON()
++    } else {
++        return object
++    }
++}
++
++extension Array: JSONEncodable {
++    func encodeToJSON() -> Any {
++        return self.map(encodeIfPossible)
++    }
++}
++
++extension Set: JSONEncodable {
++    func encodeToJSON() -> Any {
++        return Array(self).encodeToJSON()
++    }
++}
++
++extension Dictionary: JSONEncodable {
++    func encodeToJSON() -> Any {
++        var dictionary = [AnyHashable: Any]()
++        for (key, value) in self {
++            dictionary[key] = encodeIfPossible(value)
++        }
++        return dictionary
++    }
++}
++
++extension Data: JSONEncodable {
++    func encodeToJSON() -> Any {
++        return self.base64EncodedString(options: Data.Base64EncodingOptions())
++    }
++}
++
++extension Date: JSONEncodable {
++    func encodeToJSON() -> Any {
++        return CodableHelper.dateFormatter.string(from: self)
++    }
++}
++
++extension JSONEncodable where Self: Encodable {
++    func encodeToJSON() -> Any {
++        guard let data = try? CodableHelper.jsonEncoder.encode(self) else {
++            fatalError("Could not encode to json: \(self)")
++        }
++        return data.encodeToJSON()
++    }
++}
++
++extension String: CodingKey {
++
++    public var stringValue: String {
++        return self
++    }
++
++    public init?(stringValue: String) {
++        self.init(stringLiteral: stringValue)
++    }
++
++    public var intValue: Int? {
++        return nil
++    }
++
++    public init?(intValue: Int) {
++        return nil
++    }
++
++}
++
++extension KeyedEncodingContainerProtocol {
++
++    public mutating func encodeArray<T>(_ values: [T], forKey key: Self.Key) throws where T: Encodable {
++        var arrayContainer = nestedUnkeyedContainer(forKey: key)
++        try arrayContainer.encode(contentsOf: values)
++    }
++
++    public mutating func encodeArrayIfPresent<T>(_ values: [T]?, forKey key: Self.Key) throws where T: Encodable {
++        if let values = values {
++            try encodeArray(values, forKey: key)
++        }
++    }
++
++    public mutating func encodeMap<T>(_ pairs: [Self.Key: T]) throws where T: Encodable {
++        for (key, value) in pairs {
++            try encode(value, forKey: key)
++        }
++    }
++
++    public mutating func encodeMapIfPresent<T>(_ pairs: [Self.Key: T]?) throws where T: Encodable {
++        if let pairs = pairs {
++            try encodeMap(pairs)
++        }
++    }
++
++    public mutating func encode(_ value: Decimal, forKey key: Self.Key) throws {
++        var mutableValue = value
++        let stringValue = NSDecimalString(&mutableValue, Locale(identifier: "en_US"))
++        try encode(stringValue, forKey: key)
++    }
++
++    public mutating func encodeIfPresent(_ value: Decimal?, forKey key: Self.Key) throws {
++        if let value = value {
++            try encode(value, forKey: key)
++        }
++    }
++}
++
++extension KeyedDecodingContainerProtocol {
++
++    public func decodeArray<T>(_ type: T.Type, forKey key: Self.Key) throws -> [T] where T: Decodable {
++        var tmpArray = [T]()
++
++        var nestedContainer = try nestedUnkeyedContainer(forKey: key)
++        while !nestedContainer.isAtEnd {
++            let arrayValue = try nestedContainer.decode(T.self)
++            tmpArray.append(arrayValue)
++        }
++
++        return tmpArray
++    }
++
++    public func decodeArrayIfPresent<T>(_ type: T.Type, forKey key: Self.Key) throws -> [T]? where T: Decodable {
++        var tmpArray: [T]?
++
++        if contains(key) {
++            tmpArray = try decodeArray(T.self, forKey: key)
++        }
++
++        return tmpArray
++    }
++
++    public func decodeMap<T>(_ type: T.Type, excludedKeys: Set<Self.Key>) throws -> [Self.Key: T] where T: Decodable {
++        var map: [Self.Key: T] = [:]
++
++        for key in allKeys {
++            if !excludedKeys.contains(key) {
++                let value = try decode(T.self, forKey: key)
++                map[key] = value
++            }
++        }
++
++        return map
++    }
++
++    public func decode(_ type: Decimal.Type, forKey key: Self.Key) throws -> Decimal {
++        let stringValue = try decode(String.self, forKey: key)
++        guard let decimalValue = Decimal(string: stringValue) else {
++            let context = DecodingError.Context(codingPath: [key], debugDescription: "The key \(key) couldn't be converted to a Decimal value")
++            throw DecodingError.typeMismatch(type, context)
++        }
++
++        return decimalValue
++    }
++
++    public func decodeIfPresent(_ type: Decimal.Type, forKey key: Self.Key) throws -> Decimal? {
++        guard let stringValue = try decodeIfPresent(String.self, forKey: key) else {
++            return nil
++        }
++        guard let decimalValue = Decimal(string: stringValue) else {
++            let context = DecodingError.Context(codingPath: [key], debugDescription: "The key \(key) couldn't be converted to a Decimal value")
++            throw DecodingError.typeMismatch(type, context)
++        }
++
++        return decimalValue
++    }
++
++}
++
++extension HTTPURLResponse {
++    var isStatusCodeSuccessful: Bool {
++        return Configuration.successfulStatusCodeRange.contains(statusCode)
++    }
++}
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/JSONDataEncoding.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/JSONDataEncoding.swift
+new file mode 100644
+index 00000000000..b79e9f5e64d
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/JSONDataEncoding.swift
+@@ -0,0 +1,53 @@
++//
++// JSONDataEncoding.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++
++public struct JSONDataEncoding {
++
++    // MARK: Properties
++
++    private static let jsonDataKey = "jsonData"
++
++    // MARK: Encoding
++
++    /// Creates a URL request by encoding parameters and applying them onto an existing request.
++    ///
++    /// - parameter urlRequest: The request to have parameters applied.
++    /// - parameter parameters: The parameters to apply. This should have a single key/value
++    ///                         pair with "jsonData" as the key and a Data object as the value.
++    ///
++    /// - throws: An `Error` if the encoding process encounters an error.
++    ///
++    /// - returns: The encoded request.
++    public func encode(_ urlRequest: URLRequest, with parameters: [String: Any]?) -> URLRequest {
++        var urlRequest = urlRequest
++
++        guard let jsonData = parameters?[JSONDataEncoding.jsonDataKey] as? Data, !jsonData.isEmpty else {
++            return urlRequest
++        }
++
++        if urlRequest.value(forHTTPHeaderField: "Content-Type") == nil {
++            urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
++        }
++
++        urlRequest.httpBody = jsonData
++
++        return urlRequest
++    }
++
++    public static func encodingParameters(jsonData: Data?) -> [String: Any]? {
++        var returnedParams: [String: Any]?
++        if let jsonData = jsonData, !jsonData.isEmpty {
++            var params: [String: Any] = [:]
++            params[jsonDataKey] = jsonData
++            returnedParams = params
++        }
++        return returnedParams
++    }
++
++}
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/JSONEncodingHelper.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/JSONEncodingHelper.swift
+new file mode 100644
+index 00000000000..02f78ffb470
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/JSONEncodingHelper.swift
+@@ -0,0 +1,45 @@
++//
++// JSONEncodingHelper.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++
++open class JSONEncodingHelper {
++
++    open class func encodingParameters<T: Encodable>(forEncodableObject encodableObj: T?) -> [String: Any]? {
++        var params: [String: Any]?
++
++        // Encode the Encodable object
++        if let encodableObj = encodableObj {
++            let encodeResult = CodableHelper.encode(encodableObj)
++            do {
++                let data = try encodeResult.get()
++                params = JSONDataEncoding.encodingParameters(jsonData: data)
++            } catch {
++                print(error.localizedDescription)
++            }
++        }
++
++        return params
++    }
++
++    open class func encodingParameters(forEncodableObject encodableObj: Any?) -> [String: Any]? {
++        var params: [String: Any]?
++
++        if let encodableObj = encodableObj {
++            do {
++                let data = try JSONSerialization.data(withJSONObject: encodableObj, options: .prettyPrinted)
++                params = JSONDataEncoding.encodingParameters(jsonData: data)
++            } catch {
++                print(error.localizedDescription)
++                return nil
++            }
++        }
++
++        return params
++    }
++
++}
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Models.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Models.swift
+new file mode 100644
+index 00000000000..b73c2b8fde0
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Models.swift
+@@ -0,0 +1,126 @@
++// Models.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++
++protocol JSONEncodable {
++    func encodeToJSON() -> Any
++}
++
++/// An enum where the last case value can be used as a default catch-all.
++protocol CaseIterableDefaultsLast: Decodable & CaseIterable & RawRepresentable
++where RawValue: Decodable, AllCases: BidirectionalCollection {}
++
++extension CaseIterableDefaultsLast {
++    /// Initializes an enum such that if a known raw value is found, then it is decoded.
++    /// Otherwise the last case is used.
++    /// - Parameter decoder: A decoder.
++    public init(from decoder: Decoder) throws {
++        if let value = try Self(rawValue: decoder.singleValueContainer().decode(RawValue.self)) {
++            self = value
++        } else if let lastValue = Self.allCases.last {
++            self = lastValue
++        } else {
++            throw DecodingError.valueNotFound(
++                Self.Type.self,
++                .init(codingPath: decoder.codingPath, debugDescription: "CaseIterableDefaultsLast")
++            )
++        }
++    }
++}
++
++/// A flexible type that can be encoded (`.encodeNull` or `.encodeValue`)
++/// or not encoded (`.encodeNothing`). Intended for request payloads.
++public enum NullEncodable<Wrapped: Hashable>: Hashable {
++    case encodeNothing
++    case encodeNull
++    case encodeValue(Wrapped)
++}
++
++extension NullEncodable: Codable where Wrapped: Codable {
++    public init(from decoder: Decoder) throws {
++        let container = try decoder.singleValueContainer()
++        if let value = try? container.decode(Wrapped.self) {
++            self = .encodeValue(value)
++        } else if container.decodeNil() {
++            self = .encodeNull
++        } else {
++            self = .encodeNothing
++        }
++    }
++
++    public func encode(to encoder: Encoder) throws {
++        var container = encoder.singleValueContainer()
++        switch self {
++        case .encodeNothing: return
++        case .encodeNull: try container.encodeNil()
++        case .encodeValue(let wrapped): try container.encode(wrapped)
++        }
++    }
++}
++
++public enum ErrorResponse: Error {
++    case error(Int, Data?, URLResponse?, Error)
++}
++
++public enum DownloadException: Error {
++    case responseDataMissing
++    case responseFailed
++    case requestMissing
++    case requestMissingPath
++    case requestMissingURL
++}
++
++public enum DecodableRequestBuilderError: Error {
++    case emptyDataResponse
++    case nilHTTPResponse
++    case unsuccessfulHTTPStatusCode
++    case jsonDecoding(DecodingError)
++    case generalError(Error)
++}
++
++open class Response<T> {
++    public let statusCode: Int
++    public let header: [String: String]
++    public let body: T
++    public let bodyData: Data?
++
++    public init(statusCode: Int, header: [String: String], body: T, bodyData: Data?) {
++        self.statusCode = statusCode
++        self.header = header
++        self.body = body
++        self.bodyData = bodyData
++    }
++
++    public convenience init(response: HTTPURLResponse, body: T, bodyData: Data?) {
++        let rawHeader = response.allHeaderFields
++        var header = [String: String]()
++        for (key, value) in rawHeader {
++            if let key = key.base as? String, let value = value as? String {
++                header[key] = value
++            }
++        }
++        self.init(statusCode: response.statusCode, header: header, body: body, bodyData: bodyData)
++    }
++}
++
++public final class RequestTask {
++    private var lock = NSRecursiveLock()
++    private var task: URLSessionTask?
++
++    internal func set(task: URLSessionTask) {
++        lock.lock()
++        defer { lock.unlock() }
++        self.task = task
++    }
++
++    public func cancel() {
++        lock.lock()
++        defer { lock.unlock() }
++        task?.cancel()
++        task = nil
++    }
++}
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Models/PrefixPetSuffix.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Models/PrefixPetSuffix.swift
+new file mode 100644
+index 00000000000..183f8eeb770
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Models/PrefixPetSuffix.swift
+@@ -0,0 +1,32 @@
++//
++// PrefixPetSuffix.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++#if canImport(AnyCodable)
++import AnyCodable
++#endif
++
++public struct PrefixPetSuffix: Codable, JSONEncodable, Hashable {
++
++    public var testProperty: String
++
++    public init(testProperty: String) {
++        self.testProperty = testProperty
++    }
++
++    public enum CodingKeys: String, CodingKey, CaseIterable {
++        case testProperty
++    }
++
++    // Encodable protocol methods
++
++    public func encode(to encoder: Encoder) throws {
++        var container = encoder.container(keyedBy: CodingKeys.self)
++        try container.encode(testProperty, forKey: .testProperty)
++    }
++}
++
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/OpenISO8601DateFormatter.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/OpenISO8601DateFormatter.swift
+new file mode 100644
+index 00000000000..cc3288805f1
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/OpenISO8601DateFormatter.swift
+@@ -0,0 +1,56 @@
++//
++// OpenISO8601DateFormatter.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++
++// https://stackoverflow.com/a/50281094/976628
++public class OpenISO8601DateFormatter: DateFormatter {
++    static let withoutSeconds: DateFormatter = {
++        let formatter = DateFormatter()
++        formatter.calendar = Calendar(identifier: .iso8601)
++        formatter.locale = Locale(identifier: "en_US_POSIX")
++        formatter.timeZone = TimeZone(secondsFromGMT: 0)
++        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
++        return formatter
++    }()
++
++    static let withoutTime: DateFormatter = {
++        let formatter = DateFormatter()
++        formatter.calendar = Calendar(identifier: .iso8601)
++        formatter.locale = Locale(identifier: "en_US_POSIX")
++        formatter.timeZone = TimeZone(secondsFromGMT: 0)
++        formatter.dateFormat = "yyyy-MM-dd"
++        return formatter
++    }()
++
++    private func setup() {
++        calendar = Calendar(identifier: .iso8601)
++        locale = Locale(identifier: "en_US_POSIX")
++        timeZone = TimeZone(secondsFromGMT: 0)
++        dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
++    }
++
++    override init() {
++        super.init()
++        setup()
++    }
++
++    required init?(coder aDecoder: NSCoder) {
++        super.init(coder: aDecoder)
++        setup()
++    }
++
++    override public func date(from string: String) -> Date? {
++        if let result = super.date(from: string) {
++            return result
++        } else if let result = OpenISO8601DateFormatter.withoutSeconds.date(from: string) {
++            return result
++        }
++
++        return OpenISO8601DateFormatter.withoutTime.date(from: string)
++    }
++}
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/SynchronizedDictionary.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/SynchronizedDictionary.swift
+new file mode 100644
+index 00000000000..acf7ff4031b
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/SynchronizedDictionary.swift
+@@ -0,0 +1,36 @@
++// SynchronizedDictionary.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++
++internal struct SynchronizedDictionary<K: Hashable, V> {
++
++    private var dictionary = [K: V]()
++    private let queue = DispatchQueue(
++        label: "SynchronizedDictionary",
++        qos: DispatchQoS.userInitiated,
++        attributes: [DispatchQueue.Attributes.concurrent],
++        autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.inherit,
++        target: nil
++    )
++
++    internal subscript(key: K) -> V? {
++        get {
++            var value: V?
++
++            queue.sync {
++                value = self.dictionary[key]
++            }
++
++            return value
++        }
++        set {
++            queue.sync(flags: DispatchWorkItemFlags.barrier) {
++                self.dictionary[key] = newValue
++            }
++        }
++    }
++}
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/URLSessionImplementations.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/URLSessionImplementations.swift
+new file mode 100644
+index 00000000000..635c69cd6a8
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/URLSessionImplementations.swift
+@@ -0,0 +1,641 @@
++// URLSessionImplementations.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++#if !os(macOS)
++import MobileCoreServices
++#endif
++
++public protocol URLSessionProtocol {
++    func dataTask(with request: URLRequest, completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask
++}
++
++extension URLSession: URLSessionProtocol {}
++
++class URLSessionRequestBuilderFactory: RequestBuilderFactory {
++    func getNonDecodableBuilder<T>() -> RequestBuilder<T>.Type {
++        return URLSessionRequestBuilder<T>.self
++    }
++
++    func getBuilder<T: Decodable>() -> RequestBuilder<T>.Type {
++        return URLSessionDecodableRequestBuilder<T>.self
++    }
++}
++
++public typealias PetstoreClientAPIChallengeHandler = ((URLSession, URLSessionTask, URLAuthenticationChallenge) -> (URLSession.AuthChallengeDisposition, URLCredential?))
++
++// Store the URLSession's delegate to retain its reference
++private let sessionDelegate = SessionDelegate()
++
++// Store the URLSession to retain its reference
++private let defaultURLSession = URLSession(configuration: .default, delegate: sessionDelegate, delegateQueue: nil)
++
++// Store current taskDidReceiveChallenge for every URLSessionTask
++private var challengeHandlerStore = SynchronizedDictionary<Int, PetstoreClientAPIChallengeHandler>()
++
++// Store current URLCredential for every URLSessionTask
++private var credentialStore = SynchronizedDictionary<Int, URLCredential>()
++
++open class URLSessionRequestBuilder<T>: RequestBuilder<T> {
++
++    /**
++     May be assigned if you want to control the authentication challenges.
++     */
++    public var taskDidReceiveChallenge: PetstoreClientAPIChallengeHandler?
++
++    /**
++     May be assigned if you want to do any of those things:
++     - control the task completion
++     - intercept and handle errors like authorization
++     - retry the request.
++     */
++    @available(*, deprecated, message: "Please override execute() method to intercept and handle errors like authorization or retry the request. Check the Wiki for more info. https://github.com/OpenAPITools/openapi-generator/wiki/FAQ#how-do-i-implement-bearer-token-authentication-with-urlsession-on-the-swift-api-client")
++    public var taskCompletionShouldRetry: ((Data?, URLResponse?, Error?, @escaping (Bool) -> Void) -> Void)?
++
++    required public init(method: String, URLString: String, parameters: [String: Any]?, headers: [String: String] = [:], requiresAuthentication: Bool) {
++        super.init(method: method, URLString: URLString, parameters: parameters, headers: headers, requiresAuthentication: requiresAuthentication)
++    }
++
++    /**
++     May be overridden by a subclass if you want to control the URLSession
++     configuration.
++     */
++    open func createURLSession() -> URLSessionProtocol {
++        return defaultURLSession
++    }
++
++    /**
++     May be overridden by a subclass if you want to control the Content-Type
++     that is given to an uploaded form part.
++
++     Return nil to use the default behavior (inferring the Content-Type from
++     the file extension).  Return the desired Content-Type otherwise.
++     */
++    open func contentTypeForFormPart(fileURL: URL) -> String? {
++        return nil
++    }
++
++    /**
++     May be overridden by a subclass if you want to control the URLRequest
++     configuration (e.g. to override the cache policy).
++     */
++    open func createURLRequest(urlSession: URLSessionProtocol, method: HTTPMethod, encoding: ParameterEncoding, headers: [String: String]) throws -> URLRequest {
++
++        guard let url = URL(string: URLString) else {
++            throw DownloadException.requestMissingURL
++        }
++
++        var originalRequest = URLRequest(url: url)
++
++        originalRequest.httpMethod = method.rawValue
++
++        headers.forEach { key, value in
++            originalRequest.setValue(value, forHTTPHeaderField: key)
++        }
++
++        buildHeaders().forEach { key, value in
++            originalRequest.setValue(value, forHTTPHeaderField: key)
++        }
++
++        let modifiedRequest = try encoding.encode(originalRequest, with: parameters)
++
++        return modifiedRequest
++    }
++
++    @discardableResult
++    override open func execute(_ apiResponseQueue: DispatchQueue = PetstoreClientAPI.apiResponseQueue, _ completion: @escaping (_ result: Swift.Result<Response<T>, ErrorResponse>) -> Void) -> RequestTask {
++        let urlSession = createURLSession()
++
++        guard let xMethod = HTTPMethod(rawValue: method) else {
++            fatalError("Unsupported Http method - \(method)")
++        }
++
++        let encoding: ParameterEncoding
++
++        switch xMethod {
++        case .get, .head:
++            encoding = URLEncoding()
++
++        case .options, .post, .put, .patch, .delete, .trace, .connect:
++            let contentType = headers["Content-Type"] ?? "application/json"
++
++            if contentType.hasPrefix("application/json") {
++                encoding = JSONDataEncoding()
++            } else if contentType.hasPrefix("multipart/form-data") {
++                encoding = FormDataEncoding(contentTypeForFormPart: contentTypeForFormPart(fileURL:))
++            } else if contentType.hasPrefix("application/x-www-form-urlencoded") {
++                encoding = FormURLEncoding()
++            } else {
++                fatalError("Unsupported Media Type - \(contentType)")
++            }
++        }
++
++        do {
++            let request = try createURLRequest(urlSession: urlSession, method: xMethod, encoding: encoding, headers: headers)
++
++            var taskIdentifier: Int?
++             let cleanupRequest = {
++                 if let taskIdentifier = taskIdentifier {
++                     challengeHandlerStore[taskIdentifier] = nil
++                     credentialStore[taskIdentifier] = nil
++                 }
++             }
++
++            let dataTask = urlSession.dataTask(with: request) { data, response, error in
++
++                if let taskCompletionShouldRetry = self.taskCompletionShouldRetry {
++
++                    taskCompletionShouldRetry(data, response, error) { shouldRetry in
++
++                        if shouldRetry {
++                            cleanupRequest()
++                            self.execute(apiResponseQueue, completion)
++                        } else {
++                            apiResponseQueue.async {
++                                self.processRequestResponse(urlRequest: request, data: data, response: response, error: error, completion: completion)
++                                cleanupRequest()
++                            }
++                        }
++                    }
++                } else {
++                    apiResponseQueue.async {
++                        self.processRequestResponse(urlRequest: request, data: data, response: response, error: error, completion: completion)
++                        cleanupRequest()
++                    }
++                }
++            }
++
++            if #available(iOS 11.0, macOS 10.13, macCatalyst 13.0, tvOS 11.0, watchOS 4.0, *) {
++                onProgressReady?(dataTask.progress)
++            }
++
++            taskIdentifier = dataTask.taskIdentifier
++            challengeHandlerStore[dataTask.taskIdentifier] = taskDidReceiveChallenge
++            credentialStore[dataTask.taskIdentifier] = credential
++
++            dataTask.resume()
++
++            requestTask.set(task: dataTask)
++        } catch {
++            apiResponseQueue.async {
++                completion(.failure(ErrorResponse.error(415, nil, nil, error)))
++            }
++        }
++
++        return requestTask
++    }
++
++    fileprivate func processRequestResponse(urlRequest: URLRequest, data: Data?, response: URLResponse?, error: Error?, completion: @escaping (_ result: Swift.Result<Response<T>, ErrorResponse>) -> Void) {
++
++        if let error = error {
++            completion(.failure(ErrorResponse.error(-1, data, response, error)))
++            return
++        }
++
++        guard let httpResponse = response as? HTTPURLResponse else {
++            completion(.failure(ErrorResponse.error(-2, data, response, DecodableRequestBuilderError.nilHTTPResponse)))
++            return
++        }
++
++        guard httpResponse.isStatusCodeSuccessful else {
++            completion(.failure(ErrorResponse.error(httpResponse.statusCode, data, response, DecodableRequestBuilderError.unsuccessfulHTTPStatusCode)))
++            return
++        }
++
++        switch T.self {
++        case is Void.Type:
++
++            completion(.success(Response(response: httpResponse, body: () as! T, bodyData: data)))
++
++        default:
++            fatalError("Unsupported Response Body Type - \(String(describing: T.self))")
++        }
++
++    }
++
++    open func buildHeaders() -> [String: String] {
++        var httpHeaders: [String: String] = [:]
++        for (key, value) in headers {
++            httpHeaders[key] = value
++        }
++        for (key, value) in PetstoreClientAPI.customHeaders {
++            httpHeaders[key] = value
++        }
++        return httpHeaders
++    }
++
++    fileprivate func getFileName(fromContentDisposition contentDisposition: String?) -> String? {
++
++        guard let contentDisposition = contentDisposition else {
++            return nil
++        }
++
++        let items = contentDisposition.components(separatedBy: ";")
++
++        var filename: String?
++
++        for contentItem in items {
++
++            let filenameKey = "filename="
++            guard let range = contentItem.range(of: filenameKey) else {
++                continue
++            }
++
++            filename = contentItem
++            return filename?
++                .replacingCharacters(in: range, with: "")
++                .replacingOccurrences(of: "\"", with: "")
++                .trimmingCharacters(in: .whitespacesAndNewlines)
++        }
++
++        return filename
++
++    }
++
++    fileprivate func getPath(from url: URL) throws -> String {
++
++        guard var path = URLComponents(url: url, resolvingAgainstBaseURL: true)?.path else {
++            throw DownloadException.requestMissingPath
++        }
++
++        if path.hasPrefix("/") {
++            path.remove(at: path.startIndex)
++        }
++
++        return path
++
++    }
++
++    fileprivate func getURL(from urlRequest: URLRequest) throws -> URL {
++
++        guard let url = urlRequest.url else {
++            throw DownloadException.requestMissingURL
++        }
++
++        return url
++    }
++
++}
++
++open class URLSessionDecodableRequestBuilder<T: Decodable>: URLSessionRequestBuilder<T> {
++    override fileprivate func processRequestResponse(urlRequest: URLRequest, data: Data?, response: URLResponse?, error: Error?, completion: @escaping (_ result: Swift.Result<Response<T>, ErrorResponse>) -> Void) {
++
++        if let error = error {
++            completion(.failure(ErrorResponse.error(-1, data, response, error)))
++            return
++        }
++
++        guard let httpResponse = response as? HTTPURLResponse else {
++            completion(.failure(ErrorResponse.error(-2, data, response, DecodableRequestBuilderError.nilHTTPResponse)))
++            return
++        }
++
++        guard httpResponse.isStatusCodeSuccessful else {
++            completion(.failure(ErrorResponse.error(httpResponse.statusCode, data, response, DecodableRequestBuilderError.unsuccessfulHTTPStatusCode)))
++            return
++        }
++
++        switch T.self {
++        case is String.Type:
++
++            let body = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
++
++            completion(.success(Response<T>(response: httpResponse, body: body as! T, bodyData: data)))
++
++        case is URL.Type:
++            do {
++
++                guard error == nil else {
++                    throw DownloadException.responseFailed
++                }
++
++                guard let data = data else {
++                    throw DownloadException.responseDataMissing
++                }
++
++                let fileManager = FileManager.default
++                let cachesDirectory = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
++                let requestURL = try getURL(from: urlRequest)
++
++                var requestPath = try getPath(from: requestURL)
++
++                if let headerFileName = getFileName(fromContentDisposition: httpResponse.allHeaderFields["Content-Disposition"] as? String) {
++                    requestPath = requestPath.appending("/\(headerFileName)")
++                } else {
++                    requestPath = requestPath.appending("/tmp.PetstoreClient.\(UUID().uuidString)")
++                }
++
++                let filePath = cachesDirectory.appendingPathComponent(requestPath)
++                let directoryPath = filePath.deletingLastPathComponent().path
++
++                try fileManager.createDirectory(atPath: directoryPath, withIntermediateDirectories: true, attributes: nil)
++                try data.write(to: filePath, options: .atomic)
++
++                completion(.success(Response(response: httpResponse, body: filePath as! T, bodyData: data)))
++
++            } catch let requestParserError as DownloadException {
++                completion(.failure(ErrorResponse.error(400, data, response, requestParserError)))
++            } catch {
++                completion(.failure(ErrorResponse.error(400, data, response, error)))
++            }
++
++        case is Void.Type:
++
++            completion(.success(Response(response: httpResponse, body: () as! T, bodyData: data)))
++
++        case is Data.Type:
++
++            completion(.success(Response(response: httpResponse, body: data as! T, bodyData: data)))
++
++        default:
++
++            guard let unwrappedData = data, !unwrappedData.isEmpty else {
++                if let E = T.self as? ExpressibleByNilLiteral.Type {
++                    completion(.success(Response(response: httpResponse, body: E.init(nilLiteral: ()) as! T, bodyData: data)))
++                } else {
++                    completion(.failure(ErrorResponse.error(httpResponse.statusCode, nil, response, DecodableRequestBuilderError.emptyDataResponse)))
++                }
++                return
++            }
++
++            let decodeResult = CodableHelper.decode(T.self, from: unwrappedData)
++
++            switch decodeResult {
++            case let .success(decodableObj):
++                completion(.success(Response(response: httpResponse, body: decodableObj, bodyData: unwrappedData)))
++            case let .failure(error):
++                completion(.failure(ErrorResponse.error(httpResponse.statusCode, unwrappedData, response, error)))
++            }
++        }
++    }
++}
++
++private class SessionDelegate: NSObject, URLSessionTaskDelegate {
++    func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
++
++        var disposition: URLSession.AuthChallengeDisposition = .performDefaultHandling
++
++        var credential: URLCredential?
++
++        if let taskDidReceiveChallenge = challengeHandlerStore[task.taskIdentifier] {
++            (disposition, credential) = taskDidReceiveChallenge(session, task, challenge)
++        } else {
++            if challenge.previousFailureCount > 0 {
++                disposition = .rejectProtectionSpace
++            } else {
++                credential = credentialStore[task.taskIdentifier] ?? session.configuration.urlCredentialStorage?.defaultCredential(for: challenge.protectionSpace)
++
++                if credential != nil {
++                    disposition = .useCredential
++                }
++            }
++        }
++
++        completionHandler(disposition, credential)
++    }
++}
++
++public enum HTTPMethod: String {
++    case options = "OPTIONS"
++    case get = "GET"
++    case head = "HEAD"
++    case post = "POST"
++    case put = "PUT"
++    case patch = "PATCH"
++    case delete = "DELETE"
++    case trace = "TRACE"
++    case connect = "CONNECT"
++}
++
++public protocol ParameterEncoding {
++    func encode(_ urlRequest: URLRequest, with parameters: [String: Any]?) throws -> URLRequest
++}
++
++private class URLEncoding: ParameterEncoding {
++    func encode(_ urlRequest: URLRequest, with parameters: [String: Any]?) throws -> URLRequest {
++
++        var urlRequest = urlRequest
++
++        guard let parameters = parameters else { return urlRequest }
++
++        guard let url = urlRequest.url else {
++            throw DownloadException.requestMissingURL
++        }
++
++        if var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false), !parameters.isEmpty {
++            urlComponents.queryItems = APIHelper.mapValuesToQueryItems(parameters)
++            urlRequest.url = urlComponents.url
++        }
++
++        return urlRequest
++    }
++}
++
++private class FormDataEncoding: ParameterEncoding {
++
++    let contentTypeForFormPart: (_ fileURL: URL) -> String?
++
++    init(contentTypeForFormPart: @escaping (_ fileURL: URL) -> String?) {
++        self.contentTypeForFormPart = contentTypeForFormPart
++    }
++
++    func encode(_ urlRequest: URLRequest, with parameters: [String: Any]?) throws -> URLRequest {
++
++        var urlRequest = urlRequest
++
++        guard let parameters = parameters, !parameters.isEmpty else {
++            return urlRequest
++        }
++
++        let boundary = "Boundary-\(UUID().uuidString)"
++
++        urlRequest.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
++
++        for (key, value) in parameters {
++            for value in (value as? Array ?? [value]) {
++                switch value {
++                case let fileURL as URL:
++
++                    urlRequest = try configureFileUploadRequest(
++                        urlRequest: urlRequest,
++                        boundary: boundary,
++                        name: key,
++                        fileURL: fileURL
++                    )
++
++                case let string as String:
++
++                    if let data = string.data(using: .utf8) {
++                        urlRequest = configureDataUploadRequest(
++                            urlRequest: urlRequest,
++                            boundary: boundary,
++                            name: key,
++                            data: data
++                        )
++                    }
++
++                case let number as NSNumber:
++
++                    if let data = number.stringValue.data(using: .utf8) {
++                        urlRequest = configureDataUploadRequest(
++                            urlRequest: urlRequest,
++                            boundary: boundary,
++                            name: key,
++                            data: data
++                        )
++                    }
++
++                case let data as Data:
++
++                    urlRequest = configureDataUploadRequest(
++                        urlRequest: urlRequest,
++                        boundary: boundary,
++                        name: key,
++                        data: data
++                    )
++
++                case let uuid as UUID:
++
++                    if let data = uuid.uuidString.data(using: .utf8) {
++                        urlRequest = configureDataUploadRequest(
++                            urlRequest: urlRequest,
++                            boundary: boundary,
++                            name: key,
++                            data: data
++                        )
++                    }
++
++                default:
++                    fatalError("Unprocessable value \(value) with key \(key)")
++                }
++            }
++        }
++
++        var body = urlRequest.httpBody.orEmpty
++
++        body.append("\r\n--\(boundary)--\r\n")
++
++        urlRequest.httpBody = body
++
++        return urlRequest
++    }
++
++    private func configureFileUploadRequest(urlRequest: URLRequest, boundary: String, name: String, fileURL: URL) throws -> URLRequest {
++
++        var urlRequest = urlRequest
++
++        var body = urlRequest.httpBody.orEmpty
++
++        let fileData = try Data(contentsOf: fileURL)
++
++        let mimetype = contentTypeForFormPart(fileURL) ?? mimeType(for: fileURL)
++
++        let fileName = fileURL.lastPathComponent
++
++        // If we already added something then we need an additional newline.
++        if body.count > 0 {
++            body.append("\r\n")
++        }
++
++        // Value boundary.
++        body.append("--\(boundary)\r\n")
++
++        // Value headers.
++        body.append("Content-Disposition: form-data; name=\"\(name)\"; filename=\"\(fileName)\"\r\n")
++        body.append("Content-Type: \(mimetype)\r\n")
++
++        // Separate headers and body.
++        body.append("\r\n")
++
++        // The value data.
++        body.append(fileData)
++
++        urlRequest.httpBody = body
++
++        return urlRequest
++    }
++
++    private func configureDataUploadRequest(urlRequest: URLRequest, boundary: String, name: String, data: Data) -> URLRequest {
++
++        var urlRequest = urlRequest
++
++        var body = urlRequest.httpBody.orEmpty
++
++        // If we already added something then we need an additional newline.
++        if body.count > 0 {
++            body.append("\r\n")
++        }
++
++        // Value boundary.
++        body.append("--\(boundary)\r\n")
++
++        // Value headers.
++        body.append("Content-Disposition: form-data; name=\"\(name)\"\r\n")
++
++        // Separate headers and body.
++        body.append("\r\n")
++
++        // The value data.
++        body.append(data)
++
++        urlRequest.httpBody = body
++
++        return urlRequest
++
++    }
++
++    func mimeType(for url: URL) -> String {
++        let pathExtension = url.pathExtension
++
++        if let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, pathExtension as NSString, nil)?.takeRetainedValue() {
++            if let mimetype = UTTypeCopyPreferredTagWithClass(uti, kUTTagClassMIMEType)?.takeRetainedValue() {
++                return mimetype as String
++            }
++        }
++        return "application/octet-stream"
++    }
++
++}
++
++private class FormURLEncoding: ParameterEncoding {
++    func encode(_ urlRequest: URLRequest, with parameters: [String: Any]?) throws -> URLRequest {
++
++        var urlRequest = urlRequest
++
++        var requestBodyComponents = URLComponents()
++        requestBodyComponents.queryItems = APIHelper.mapValuesToQueryItems(parameters ?? [:])
++
++        if urlRequest.value(forHTTPHeaderField: "Content-Type") == nil {
++            urlRequest.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
++        }
++
++        urlRequest.httpBody = requestBodyComponents.query?.data(using: .utf8)
++
++        return urlRequest
++    }
++}
++
++private extension Data {
++    /// Append string to Data
++    ///
++    /// Rather than littering my code with calls to `dataUsingEncoding` to convert strings to Data, and then add that data to the Data, this wraps it in a nice convenient little extension to Data. This converts using UTF-8.
++    ///
++    /// - parameter string:       The string to be added to the `Data`.
++
++    mutating func append(_ string: String) {
++        if let data = string.data(using: .utf8) {
++            append(data)
++        }
++    }
++}
++
++private extension Optional where Wrapped == Data {
++    var orEmpty: Data {
++        self ?? Data()
++    }
++}
++
++extension JSONDataEncoding: ParameterEncoding {}
+diff --git a/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Validation.swift b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Validation.swift
+new file mode 100644
+index 00000000000..df99b3e124b
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/PetstoreClient/Classes/OpenAPIs/Validation.swift
+@@ -0,0 +1,126 @@
++// Validation.swift
++//
++// Generated by openapi-generator
++// https://openapi-generator.tech
++//
++
++import Foundation
++
++public struct StringRule {
++    public var minLength: Int?
++    public var maxLength: Int?
++    public var pattern: String?
++}
++
++public struct NumericRule<T: Comparable & Numeric> {
++    public var minimum: T?
++    public var exclusiveMinimum = false
++    public var maximum: T?
++    public var exclusiveMaximum = false
++    public var multipleOf: T?
++}
++
++public enum StringValidationErrorKind: Error {
++    case minLength, maxLength, pattern
++}
++
++public enum NumericValidationErrorKind: Error {
++    case minimum, maximum, multipleOf
++}
++
++public struct ValidationError<T: Error & Hashable>: Error {
++    public fileprivate(set) var kinds: Set<T>
++}
++
++public struct Validator {
++    /// Validate a string against a rule.
++    /// - Parameter string: The String you wish to validate.
++    /// - Parameter rule: The StringRule you wish to use for validation.
++    /// - Returns: A validated string.
++    /// - Throws: `ValidationError<StringValidationErrorKind>` if the string is invalid against the rule,
++    ///           `NSError` if the rule.pattern is invalid.
++    public static func validate(_ string: String, against rule: StringRule) throws -> String {
++        var error = ValidationError<StringValidationErrorKind>(kinds: [])
++        if let minLength = rule.minLength, !(minLength <= string.count) {
++            error.kinds.insert(.minLength)
++        }
++        if let maxLength = rule.maxLength, !(string.count <= maxLength) {
++            error.kinds.insert(.maxLength)
++        }
++        if let pattern = rule.pattern {
++            let matches = try NSRegularExpression(pattern: pattern, options: .caseInsensitive)
++                .matches(in: string, range: .init(location: 0, length: string.utf16.count))
++            if matches.isEmpty {
++                error.kinds.insert(.pattern)
++            }
++        }
++        guard error.kinds.isEmpty else {
++            throw error
++        }
++        return string
++    }
++
++    /// Validate a integer against a rule.
++    /// - Parameter numeric: The integer you wish to validate.
++    /// - Parameter rule: The NumericRule you wish to use for validation.
++    /// - Returns: A validated integer.
++    /// - Throws: `ValidationError<NumericValidationErrorKind>` if the numeric is invalid against the rule.
++    public static func validate<T: Comparable & BinaryInteger>(_ numeric: T, against rule: NumericRule<T>) throws -> T {
++        var error = ValidationError<NumericValidationErrorKind>(kinds: [])
++        if let minium = rule.minimum {
++            if !rule.exclusiveMinimum, !(minium <= numeric) {
++                error.kinds.insert(.minimum)
++            }
++            if rule.exclusiveMinimum, !(minium < numeric) {
++                error.kinds.insert(.minimum)
++            }
++        }
++        if let maximum = rule.maximum {
++            if !rule.exclusiveMaximum, !(numeric <= maximum) {
++                error.kinds.insert(.maximum)
++            }
++            if rule.exclusiveMaximum, !(numeric < maximum) {
++                error.kinds.insert(.maximum)
++            }
++        }
++        if let multipleOf = rule.multipleOf, !numeric.isMultiple(of: multipleOf) {
++            error.kinds.insert(.multipleOf)
++        }
++        guard error.kinds.isEmpty else {
++            throw error
++        }
++        return numeric
++    }
++
++    /// Validate a fractional number against a rule.
++    /// - Parameter numeric: The fractional number you wish to validate.
++    /// - Parameter rule: The NumericRule you wish to use for validation.
++    /// - Returns: A validated fractional number.
++    /// - Throws: `ValidationError<NumericValidationErrorKind>` if the numeric is invalid against the rule.
++    public static func validate<T: Comparable & FloatingPoint>(_ numeric: T, against rule: NumericRule<T>) throws -> T {
++        var error = ValidationError<NumericValidationErrorKind>(kinds: [])
++        if let minium = rule.minimum {
++            if !rule.exclusiveMinimum, !(minium <= numeric) {
++                error.kinds.insert(.minimum)
++            }
++            if rule.exclusiveMinimum, !(minium < numeric) {
++                error.kinds.insert(.minimum)
++            }
++        }
++        if let maximum = rule.maximum {
++            if !rule.exclusiveMaximum, !(numeric <= maximum) {
++                error.kinds.insert(.maximum)
++            }
++            if rule.exclusiveMaximum, !(numeric < maximum) {
++                error.kinds.insert(.maximum)
++            }
++        }
++        if let multipleOf = rule.multipleOf, numeric.remainder(dividingBy: multipleOf) != 0 {
++            error.kinds.insert(.multipleOf)
++        }
++        guard error.kinds.isEmpty else {
++            throw error
++        }
++        return numeric
++    }
++}
+diff --git a/samples/client/petstore/swift5/anycodable/README.md b/samples/client/petstore/swift5/anycodable/README.md
+new file mode 100644
+index 00000000000..f98ca53800a
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/README.md
+@@ -0,0 +1,45 @@
++# Swift5 API client for PetstoreClient
++
++No description provided (generated by Openapi Generator https://github.com/openapitools/openapi-generator)
++
++## Overview
++This API client was generated by the [OpenAPI Generator](https://openapi-generator.tech) project.  By using the [openapi-spec](https://github.com/OAI/OpenAPI-Specification) from a remote server, you can easily generate an API client.
++
++- API version: 1.0.0
++- Package version: 
++- Build package: org.openapitools.codegen.languages.Swift5ClientCodegen
++
++## Installation
++
++### Carthage
++
++Run `carthage update`
++
++### CocoaPods
++
++Run `pod install`
++
++## Documentation for API Endpoints
++
++All URIs are relative to *http://localhost*
++
++Class | Method | HTTP request | Description
++------------ | ------------- | ------------- | -------------
++*PetsAPI* | [**petsGet**](docs/PetsAPI.md#petsget) | **GET** /pets | 
++*PetsAPI* | [**showPetById**](docs/PetsAPI.md#showpetbyid) | **GET** /pets/{petId} | Info for a specific pet
++
++
++## Documentation For Models
++
++ - [PrefixPetSuffix](docs/PrefixPetSuffix.md)
++
++
++## Documentation For Authorization
++
++ All endpoints do not require authorization.
++
++
++## Author
++
++
++
+diff --git a/samples/client/petstore/swift5/anycodable/docs/PetsAPI.md b/samples/client/petstore/swift5/anycodable/docs/PetsAPI.md
+new file mode 100644
+index 00000000000..9dfc4bc6c7e
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/docs/PetsAPI.md
+@@ -0,0 +1,101 @@
++# PetsAPI
++
++All URIs are relative to *http://localhost*
++
++Method | HTTP request | Description
++------------- | ------------- | -------------
++[**petsGet**](PetsAPI.md#petsget) | **GET** /pets | 
++[**showPetById**](PetsAPI.md#showpetbyid) | **GET** /pets/{petId} | Info for a specific pet
++
++
++# **petsGet**
++```swift
++    open class func petsGet(completion: @escaping (_ data: PrefixPetSuffix?, _ error: Error?) -> Void)
++```
++
++
++
++### Example
++```swift
++// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
++import PetstoreClient
++
++
++PetsAPI.petsGet() { (response, error) in
++    guard error == nil else {
++        print(error)
++        return
++    }
++
++    if (response) {
++        dump(response)
++    }
++}
++```
++
++### Parameters
++This endpoint does not need any parameter.
++
++### Return type
++
++[**PrefixPetSuffix**](PrefixPetSuffix.md)
++
++### Authorization
++
++No authorization required
++
++### HTTP request headers
++
++ - **Content-Type**: Not defined
++ - **Accept**: application/json
++
++[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
++
++# **showPetById**
++```swift
++    open class func showPetById(petId: String, completion: @escaping (_ data: AnyCodable?, _ error: Error?) -> Void)
++```
++
++Info for a specific pet
++
++### Example
++```swift
++// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
++import PetstoreClient
++
++let petId = "petId_example" // String | The id of the pet to retrieve
++
++// Info for a specific pet
++PetsAPI.showPetById(petId: petId) { (response, error) in
++    guard error == nil else {
++        print(error)
++        return
++    }
++
++    if (response) {
++        dump(response)
++    }
++}
++```
++
++### Parameters
++
++Name | Type | Description  | Notes
++------------- | ------------- | ------------- | -------------
++ **petId** | **String** | The id of the pet to retrieve | 
++
++### Return type
++
++**AnyCodable**
++
++### Authorization
++
++No authorization required
++
++### HTTP request headers
++
++ - **Content-Type**: Not defined
++ - **Accept**: application/json
++
++[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
++
+diff --git a/samples/client/petstore/swift5/anycodable/docs/PrefixPetSuffix.md b/samples/client/petstore/swift5/anycodable/docs/PrefixPetSuffix.md
+new file mode 100644
+index 00000000000..62e3869100b
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/docs/PrefixPetSuffix.md
+@@ -0,0 +1,10 @@
++# PrefixPetSuffix
++
++## Properties
++Name | Type | Description | Notes
++------------ | ------------- | ------------- | -------------
++**testProperty** | **String** |  | 
++
++[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
++
++
+diff --git a/samples/client/petstore/swift5/anycodable/git_push.sh b/samples/client/petstore/swift5/anycodable/git_push.sh
+new file mode 100644
+index 00000000000..f53a75d4fab
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/git_push.sh
+@@ -0,0 +1,57 @@
++#!/bin/sh
++# ref: https://help.github.com/articles/adding-an-existing-project-to-github-using-the-command-line/
++#
++# Usage example: /bin/sh ./git_push.sh wing328 openapi-petstore-perl "minor update" "gitlab.com"
++
++git_user_id=$1
++git_repo_id=$2
++release_note=$3
++git_host=$4
++
++if [ "$git_host" = "" ]; then
++    git_host="github.com"
++    echo "[INFO] No command line input provided. Set \$git_host to $git_host"
++fi
++
++if [ "$git_user_id" = "" ]; then
++    git_user_id="GIT_USER_ID"
++    echo "[INFO] No command line input provided. Set \$git_user_id to $git_user_id"
++fi
++
++if [ "$git_repo_id" = "" ]; then
++    git_repo_id="GIT_REPO_ID"
++    echo "[INFO] No command line input provided. Set \$git_repo_id to $git_repo_id"
++fi
++
++if [ "$release_note" = "" ]; then
++    release_note="Minor update"
++    echo "[INFO] No command line input provided. Set \$release_note to $release_note"
++fi
++
++# Initialize the local directory as a Git repository
++git init
++
++# Adds the files in the local repository and stages them for commit.
++git add .
++
++# Commits the tracked changes and prepares them to be pushed to a remote repository.
++git commit -m "$release_note"
++
++# Sets the new remote
++git_remote=$(git remote)
++if [ "$git_remote" = "" ]; then # git remote not defined
++
++    if [ "$GIT_TOKEN" = "" ]; then
++        echo "[INFO] \$GIT_TOKEN (environment variable) is not set. Using the git credential in your environment."
++        git remote add origin https://${git_host}/${git_user_id}/${git_repo_id}.git
++    else
++        git remote add origin https://${git_user_id}:"${GIT_TOKEN}"@${git_host}/${git_user_id}/${git_repo_id}.git
++    fi
++
++fi
++
++git pull origin master
++
++# Pushes (Forces) the changes in the local repository up to the remote repository
++echo "Git pushing to https://${git_host}/${git_user_id}/${git_repo_id}.git"
++git push origin master 2>&1 | grep -v 'To https'
+diff --git a/samples/client/petstore/swift5/anycodable/pom.xml b/samples/client/petstore/swift5/anycodable/pom.xml
+new file mode 100644
+index 00000000000..c1b201eb3b4
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/pom.xml
+@@ -0,0 +1,43 @@
++<project>
++    <modelVersion>4.0.0</modelVersion>
++    <groupId>io.swagger</groupId>
++    <artifactId>Swift5PetstoreClientTests</artifactId>
++    <packaging>pom</packaging>
++    <version>1.0-SNAPSHOT</version>
++    <name>Swift5 Swagger Petstore Client</name>
++    <build>
++        <plugins>
++            <plugin>
++                <artifactId>maven-dependency-plugin</artifactId>
++                <executions>
++                    <execution>
++                        <phase>package</phase>
++                        <goals>
++                            <goal>copy-dependencies</goal>
++                        </goals>
++                        <configuration>
++                            <outputDirectory>${project.build.directory}</outputDirectory>
++                        </configuration>
++                    </execution>
++                </executions>
++            </plugin>
++            <plugin>
++                <groupId>org.codehaus.mojo</groupId>
++                <artifactId>exec-maven-plugin</artifactId>
++                <version>1.2.1</version>
++                <executions>
++                    <execution>
++                        <id>xcodebuild-test</id>
++                        <phase>integration-test</phase>
++                        <goals>
++                            <goal>exec</goal>
++                        </goals>
++                        <configuration>
++                            <executable>./run_spmbuild.sh</executable>
++                        </configuration>
++                    </execution>
++                </executions>
++            </plugin>
++        </plugins>
++    </build>
++</project>
+diff --git a/samples/client/petstore/swift5/anycodable/project.yml b/samples/client/petstore/swift5/anycodable/project.yml
+new file mode 100644
+index 00000000000..0493cf65896
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/project.yml
+@@ -0,0 +1,15 @@
++name: PetstoreClient
++targets:
++  PetstoreClient:
++    type: framework
++    platform: iOS
++    deploymentTarget: "9.0"
++    sources: [PetstoreClient]
++    info:
++      path: ./Info.plist
++      version: 1.0.0
++    settings:
++      APPLICATION_EXTENSION_API_ONLY: true
++    scheme: {}
++    dependencies:
++    - carthage: AnyCodable
+diff --git a/samples/client/petstore/swift5/anycodable/run_spmbuild.sh b/samples/client/petstore/swift5/anycodable/run_spmbuild.sh
+new file mode 100755
+index 00000000000..1a9f585ad05
+--- /dev/null
++++ b/samples/client/petstore/swift5/anycodable/run_spmbuild.sh
+@@ -0,0 +1,3 @@
++#!/bin/sh
++
++swift build && exit ${PIPESTATUS[0]}
+diff --git a/samples/client/petstore/swift5/default/docs/AdditionalPropertiesClass.md b/samples/client/petstore/swift5/default/docs/AdditionalPropertiesClass.md
+index 1cffcdd8484..4d5f0963145 100644
+--- a/samples/client/petstore/swift5/default/docs/AdditionalPropertiesClass.md
++++ b/samples/client/petstore/swift5/default/docs/AdditionalPropertiesClass.md
+@@ -11,9 +11,9 @@ Name | Type | Description | Notes
+ **mapArrayAnytype** | [String: [AnyCodable]] |  | [optional] 
+ **mapMapString** | [String: [String: String]] |  | [optional] 
+ **mapMapAnytype** | [String: [String: AnyCodable]] |  | [optional] 
+-**anytype1** | [**AnyCodable**](.md) |  | [optional] 
+-**anytype2** | [**AnyCodable**](.md) |  | [optional] 
+-**anytype3** | [**AnyCodable**](.md) |  | [optional] 
++**anytype1** | **AnyCodable** |  | [optional] 
++**anytype2** | **AnyCodable** |  | [optional] 
++**anytype3** | **AnyCodable** |  | [optional] 
+ 
+ [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+ 
+diff --git a/samples/client/petstore/swift5/swift5_test_all.sh b/samples/client/petstore/swift5/swift5_test_all.sh
+index c1d6899114a..902a476ef7d 100755
+--- a/samples/client/petstore/swift5/swift5_test_all.sh
++++ b/samples/client/petstore/swift5/swift5_test_all.sh
+@@ -14,6 +14,7 @@ mvn -f $DIRECTORY/urlsessionLibrary/SwaggerClientTests/pom.xml integration-test
+ 
+ # spm build
+ mvn -f $DIRECTORY/alamofireLibrary/pom.xml integration-test
++mvn -f $DIRECTORY/anycodable/pom.xml integration-test
+ mvn -f $DIRECTORY/asyncAwaitLibrary/pom.xml integration-test
+ mvn -f $DIRECTORY/combineLibrary/pom.xml integration-test
+ mvn -f $DIRECTORY/default/pom.xml integration-test
+diff --git a/samples/client/petstore/swift5/vaporLibrary/docs/AdditionalPropertiesClass.md b/samples/client/petstore/swift5/vaporLibrary/docs/AdditionalPropertiesClass.md
+index 1cffcdd8484..4d5f0963145 100644
+--- a/samples/client/petstore/swift5/vaporLibrary/docs/AdditionalPropertiesClass.md
++++ b/samples/client/petstore/swift5/vaporLibrary/docs/AdditionalPropertiesClass.md
+@@ -11,9 +11,9 @@ Name | Type | Description | Notes
+ **mapArrayAnytype** | [String: [AnyCodable]] |  | [optional] 
+ **mapMapString** | [String: [String: String]] |  | [optional] 
+ **mapMapAnytype** | [String: [String: AnyCodable]] |  | [optional] 
+-**anytype1** | [**AnyCodable**](.md) |  | [optional] 
+-**anytype2** | [**AnyCodable**](.md) |  | [optional] 
+-**anytype3** | [**AnyCodable**](.md) |  | [optional] 
++**anytype1** | **AnyCodable** |  | [optional] 
++**anytype2** | **AnyCodable** |  | [optional] 
++**anytype3** | **AnyCodable** |  | [optional] 
+ 
+ [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+ 

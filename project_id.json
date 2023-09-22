@@ -118,7 +118,7 @@
   },
   "gson": {
     "owner": "google",
-    "number_of_bugs": 13,
+    "number_of_bugs": 12,
     "commit_db": "commit_db/gson_bugs.csv",
     "repo_path": "/root/framework/repos/gson",
     "requirements": {
@@ -170,7 +170,7 @@
   },
   "rocketmq": {
     "owner": "apache",
-    "number_of_bugs": 14,
+    "number_of_bugs": 12,
     "commit_db": "commit_db/rocketmq_bugs.csv",
     "repo_path": "/root/framework/repos/rocketmq",
     "requirements": {

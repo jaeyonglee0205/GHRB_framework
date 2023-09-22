@@ -1,0 +1,91 @@
+diff --git a/pom.xml b/pom.xml
+index f00bc7f01..0b0064262 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -4571,6 +4571,10 @@
+                 <param>com.puppycrawl.tools.checkstyle.filters.SuppressWithPlainTextCommentFilterTest</param>
+                 <param>com.puppycrawl.tools.checkstyle.checks.whitespace.FileTabCharacterCheckTest</param>
+                 <param>com.puppycrawl.tools.checkstyle.checks.NewlineAtEndOfFileCheckTest</param>
++                <!-- kills mutation in AutomaticBean -->
++                <param>com.puppycrawl.tools.checkstyle.checks.naming.ParameterNameCheckTest</param>
++                <!-- kills mutation in AutomaticBean -->
++                <param>com.puppycrawl.tools.checkstyle.checks.coding.IllegalTypeCheckTest</param>
+               </targetTests>
+               <excludedTestClasses>
+                 <param>*.Input*</param>
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/api/AutomaticBean.java b/src/main/java/com/puppycrawl/tools/checkstyle/api/AutomaticBean.java
+index c9a23ef4b..31df6e3ed 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/api/AutomaticBean.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/api/AutomaticBean.java
+@@ -361,7 +361,7 @@ public abstract class AutomaticBean
+         @Override
+         public Object convert(Class type, Object value) {
+             final StringTokenizer tokenizer = new StringTokenizer(
+-                value.toString(), COMMA_SEPARATOR);
++                value.toString().trim(), COMMA_SEPARATOR);
+             final List<String> result = new ArrayList<>();
+ 
+             while (tokenizer.hasMoreTokens()) {
+@@ -390,7 +390,7 @@ public abstract class AutomaticBean
+         public Object convert(Class type, Object value) {
+             // Converts to a String and trims it for the tokenizer.
+             final StringTokenizer tokenizer = new StringTokenizer(
+-                value.toString(), COMMA_SEPARATOR);
++                value.toString().trim(), COMMA_SEPARATOR);
+             final List<AccessModifierOption> result = new ArrayList<>();
+ 
+             while (tokenizer.hasMoreTokens()) {
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeWhitespaceInConfig.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeWhitespaceInConfig.java
+new file mode 100644
+index 000000000..31fd6334b
+--- /dev/null
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeWhitespaceInConfig.java
+@@ -0,0 +1,28 @@
++/*
++IllegalType
++validateAbstractClassNames = (default)false
++illegalClassNames = java.lang.StringBuffer,\t
++legalAbstractClassNames = (default)
++ignoredMethodNames = (default)getEnvironment, getInitialContext
++illegalAbstractClassNameFormat = (default)^(.*[.])?Abstract.*$
++memberModifiers = (default)
++tokens = (default)ANNOTATION_FIELD_DEF, CLASS_DEF, INTERFACE_DEF, METHOD_CALL, METHOD_DEF, \
++         METHOD_REF, PARAMETER_DEF, VARIABLE_DEF, PATTERN_VARIABLE_DEF, RECORD_DEF, \
++         RECORD_COMPONENT_DEF
++
++
++*/
++package com.puppycrawl.tools.checkstyle.checks.coding.illegaltype;
++
++import java.lang.annotation.ElementType;
++import java.lang.annotation.Target;
++import java.util.List;
++
++public class InputIllegalTypeWhitespaceInConfig {
++    public void example(List<@MyPattern String> strings) { // ok
++    }
++
++    @Target(ElementType.TYPE_USE)
++    public @interface MyPattern {}
++}
++
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/naming/parametername/InputParameterNameWhitespaceInConfig.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/naming/parametername/InputParameterNameWhitespaceInConfig.java
+new file mode 100644
+index 000000000..b0397160f
+--- /dev/null
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/naming/parametername/InputParameterNameWhitespaceInConfig.java
+@@ -0,0 +1,14 @@
++/*
++ParameterName
++format = (default)^[a-z][a-zA-Z0-9]*$
++ignoreOverridden = (default)false
++accessModifiers = public\t,\t
++
++
++*/
++
++package com.puppycrawl.tools.checkstyle.checks.naming.parametername;
++
++public class InputParameterNameWhitespaceInConfig {
++    int method(){return 1;} // ok
++}

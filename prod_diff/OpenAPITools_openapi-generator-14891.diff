@@ -1,0 +1,214 @@
+diff --git a/docs/customization.md b/docs/customization.md
+index f9be18ff07f..90676792631 100644
+--- a/docs/customization.md
++++ b/docs/customization.md
+@@ -505,3 +505,10 @@ Example:
+ ```
+ java -jar modules/openapi-generator-cli/target/openapi-generator-cli.jar generate -g java -i modules/openapi-generator/src/test/resources/3_0/enableKeepOnlyFirstTagInOperation_test.yaml -o /tmp/java-okhttp/ --openapi-normalizer SET_TAGS_FOR_ALL_OPERATIONS=true
+ ```
++
++- `ADD_UNSIGNED_TO_INTEGER_WITH_INVALID_MAX_VALUE`: when set to true, auto fix integer with maximum value 4294967295 (2^32-1) or long with 18446744073709551615 (2^64-1) by adding x-unsigned to the schema
++
++Example:
++```
++java -jar modules/openapi-generator-cli/target/openapi-generator-cli.jar generate -g java -i modules/openapi-generator/src/test/resources/3_0/addUnsignedToIntegerWithInvalidMaxValue_test.yaml -o /tmp/java-okhttp/ --openapi-normalizer ADD_UNSIGNED_TO_INTEGER_WITH_INVALID_MAX_VALUE=true
++```
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java
+index 3e883e47b18..c11f296d237 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java
+@@ -76,6 +76,11 @@ public class OpenAPINormalizer {
+     final String SET_TAGS_FOR_ALL_OPERATIONS = "SET_TAGS_FOR_ALL_OPERATIONS";
+     String setTagsForAllOperations;
+ 
++    // when set to true, auto fix integer with maximum value 4294967295 (2^32-1) or long with 18446744073709551615 (2^64-1)
++    // by adding x-unsigned to the schema
++    final String ADD_UNSIGNED_TO_INTEGER_WITH_INVALID_MAX_VALUE = "ADD_UNSIGNED_TO_INTEGER_WITH_INVALID_MAX_VALUE";
++    boolean addUnsignedToIntegerWithInvalidMaxValue;
++
+     // ============= end of rules =============
+ 
+     /**
+@@ -132,6 +137,9 @@ public class OpenAPINormalizer {
+             setTagsForAllOperations = rules.get(SET_TAGS_FOR_ALL_OPERATIONS);
+         }
+ 
++        if (enableAll || "true".equalsIgnoreCase(rules.get(ADD_UNSIGNED_TO_INTEGER_WITH_INVALID_MAX_VALUE))) {
++            addUnsignedToIntegerWithInvalidMaxValue = true;
++        }
+     }
+ 
+     /**
+@@ -367,6 +375,8 @@ public class OpenAPINormalizer {
+             normalizeProperties(schema.getProperties(), visitedSchemas);
+         } else if (schema instanceof BooleanSchema) {
+             normalizeBooleanSchema(schema, visitedSchemas);
++        } else if (schema instanceof IntegerSchema) {
++            normalizeIntegerSchema(schema, visitedSchemas);
+         } else if (schema instanceof Schema) {
+             normalizeSchemaWithOnlyProperties(schema, visitedSchemas);
+         } else {
+@@ -380,6 +390,10 @@ public class OpenAPINormalizer {
+         processSimplifyBooleanEnum(schema);
+     }
+ 
++    private void normalizeIntegerSchema(Schema schema, Set<Schema> visitedSchemas) {
++        processAddUnsignedToIntegerWithInvalidMaxValue(schema);
++    }
++
+     private void normalizeSchemaWithOnlyProperties(Schema schema, Set<Schema> visitedSchemas) {
+         // normalize non-composed schema (e.g. schema with only properties)
+     }
+@@ -675,5 +689,36 @@ public class OpenAPINormalizer {
+         }
+     }
+ 
++    /**
++     * If the schema is integer and the max value is invalid (out of bound)
++     * then add x-unsigned to use unsigned integer/long instead.
++     *
++     * @param schema Schema
++     * @return Schema
++     */
++    private void processAddUnsignedToIntegerWithInvalidMaxValue(Schema schema) {
++        if (!addUnsignedToIntegerWithInvalidMaxValue && !enableAll) {
++            return;
++        }
++
++        LOGGER.info("processAddUnsignedToIntegerWithInvalidMaxValue");
++        if (schema instanceof IntegerSchema) {
++            if (ModelUtils.isLongSchema(schema)) {
++                if ("18446744073709551615".equals(String.valueOf(schema.getMaximum())) &&
++                        "0".equals(String.valueOf(schema.getMinimum()))) {
++                    schema.addExtension("x-unsigned", true);
++                    LOGGER.info("fix long");
++                }
++            } else {
++                if ("4294967295".equals(String.valueOf(schema.getMaximum())) &&
++                        "0".equals(String.valueOf(schema.getMinimum()))) {
++                    schema.addExtension("x-unsigned", true);
++                    LOGGER.info("fix integer");
++
++                }
++            }
++        }
++    }
++
+     // ===================== end of rules =====================
+ }
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java
+index 383924cb627..b393608b626 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java
+@@ -4496,4 +4496,30 @@ public class DefaultCodegenTest {
+         assertEquals(openAPI.getPaths().get("/person/display/{personId}").getGet().getTags().get(0), "core");
+         assertEquals(openAPI.getPaths().get("/person/display/{personId}").getDelete().getTags().get(0), "core");
+     }
++
++    @Test
++    public void testAddUnsignedToIntegerWithInvalidMaxValue() {
++        OpenAPI openAPI = TestUtils.parseSpec("src/test/resources/3_0/addUnsignedToIntegerWithInvalidMaxValue_test.yaml");
++
++        Schema person = openAPI.getComponents().getSchemas().get("Person");
++        assertNull(((Schema)person.getProperties().get("integer")).getExtensions());
++        assertNull(((Schema)person.getProperties().get("int32")).getExtensions());
++        assertNull(((Schema)person.getProperties().get("int64")).getExtensions());
++        assertNull(((Schema)person.getProperties().get("integer_max")).getExtensions());
++        assertNull(((Schema)person.getProperties().get("int32_max")).getExtensions());
++        assertNull(((Schema)person.getProperties().get("int64_max")).getExtensions());
++
++        Map<String, String> options = new HashMap<>();
++        options.put("ADD_UNSIGNED_TO_INTEGER_WITH_INVALID_MAX_VALUE", "true");
++        OpenAPINormalizer openAPINormalizer = new OpenAPINormalizer(openAPI, options);
++        openAPINormalizer.normalize();
++
++        Schema person2 = openAPI.getComponents().getSchemas().get("Person");
++        assertNull(((Schema)person2.getProperties().get("integer")).getExtensions());
++        assertNull(((Schema)person2.getProperties().get("int32")).getExtensions());
++        assertNull(((Schema)person2.getProperties().get("int64")).getExtensions());
++        assertTrue((Boolean)((Schema)person2.getProperties().get("integer_max")).getExtensions().get("x-unsigned"));
++        assertTrue((Boolean)((Schema)person2.getProperties().get("int32_max")).getExtensions().get("x-unsigned"));
++        assertTrue((Boolean)((Schema)person2.getProperties().get("int64_max")).getExtensions().get("x-unsigned"));
++    }
+ }
+diff --git a/modules/openapi-generator/src/test/resources/3_0/addUnsignedToIntegerWithInvalidMaxValue_test.yaml b/modules/openapi-generator/src/test/resources/3_0/addUnsignedToIntegerWithInvalidMaxValue_test.yaml
+new file mode 100644
+index 00000000000..081d96a9013
+--- /dev/null
++++ b/modules/openapi-generator/src/test/resources/3_0/addUnsignedToIntegerWithInvalidMaxValue_test.yaml
+@@ -0,0 +1,75 @@
++openapi: 3.0.1
++info:
++  version: 1.0.0
++  title: Example
++  license:
++    name: MIT
++servers:
++  - url: http://api.example.xyz/v1
++paths:
++  /person/display/{personId}:
++    get:
++      tags:
++        - person
++        - basic
++      parameters:
++        - name: personId
++          in: path
++          required: true
++          description: The id of the person to retrieve
++          schema:
++            type: string
++      operationId: list
++      responses:
++        '200':
++          description: OK
++          content:
++            application/json:
++              schema:
++                $ref: "#/components/schemas/Person"
++    delete:
++      tags:
++        - person
++      parameters:
++        - name: personId
++          in: path
++          required: true
++          description: The id of the person to retrieve
++          schema:
++            type: string
++      operationId: delete
++      responses:
++        '200':
++          description: OK
++          content:
++            application/json:
++              schema:
++                $ref: "#/components/schemas/Person"
++components:
++  schemas:
++    Person:
++      description: person
++      type: object
++      properties:
++        integer:
++          type: integer
++        int32:
++          type: integer
++          format: int32 
++        int64:
++          type: integer
++          format: int64 
++        integer_max:
++          type: integer
++          minimum: 0
++          maximum: 4294967295 #(2^32)-1
++        int32_max:
++          type: integer
++          format: int32
++          minimum: 0
++          maximum: 4294967295 #(2^32)-1
++        int64_max:
++          type: integer
++          format: int64
++          minimum: 0
++          maximum: 18446744073709551615 #(2^64)-1

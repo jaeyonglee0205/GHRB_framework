@@ -1,0 +1,116 @@
+diff --git a/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/contexts/MethodCallExprContext.java b/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/contexts/MethodCallExprContext.java
+index ac94b26a0..017d9abc9 100644
+--- a/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/contexts/MethodCallExprContext.java
++++ b/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/contexts/MethodCallExprContext.java
+@@ -335,6 +335,13 @@ public class MethodCallExprContext extends AbstractJavaParserContext<MethodCallE
+         if (source.isNull()) {
+             return;
+         }
++        
++        if (target.isReferenceType()) {
++            ResolvedReferenceType formalTypeAsReference = target.asReferenceType();
++            if (formalTypeAsReference.isJavaLangObject()) {
++                return;
++            }
++        }
+         throw new RuntimeException(source.describe() + " " + target.describe());
+     }
+ 
+diff --git a/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/logic/InferenceContext.java b/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/logic/InferenceContext.java
+index 931730a33..9f9034827 100644
+--- a/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/logic/InferenceContext.java
++++ b/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/logic/InferenceContext.java
+@@ -21,15 +21,19 @@
+ 
+ package com.github.javaparser.symbolsolver.logic;
+ 
+-import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
+-import com.github.javaparser.resolution.types.*;
+-
+ import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.stream.Collectors;
+ 
++import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
++import com.github.javaparser.resolution.types.ResolvedArrayType;
++import com.github.javaparser.resolution.types.ResolvedLambdaConstraintType;
++import com.github.javaparser.resolution.types.ResolvedReferenceType;
++import com.github.javaparser.resolution.types.ResolvedType;
++import com.github.javaparser.resolution.types.ResolvedWildcard;
++
+ /**
+  * @author Federico Tomassetti
+  */
+@@ -166,6 +170,13 @@ public class InferenceContext {
+             } else {
+                 // nothing to do
+             }
++        } else if (formalType.isReferenceType()) {
++            ResolvedReferenceType formalTypeAsReference = formalType.asReferenceType();
++            if (formalTypeAsReference.isJavaLangObject()) {
++             // nothing to do
++            } else {
++                throw new UnsupportedOperationException(formalType.describe() + " " + actualType.describe());
++            }
+         } else {
+             throw new UnsupportedOperationException(formalType.describe() + " " + actualType.describe());
+         }
+diff --git a/javaparser-symbol-solver-testing/src/test/java/com/github/javaparser/symbolsolver/Issue2259Test.java b/javaparser-symbol-solver-testing/src/test/java/com/github/javaparser/symbolsolver/Issue2259Test.java
+new file mode 100755
+index 000000000..c7d49a1db
+--- /dev/null
++++ b/javaparser-symbol-solver-testing/src/test/java/com/github/javaparser/symbolsolver/Issue2259Test.java
+@@ -0,0 +1,51 @@
++package com.github.javaparser.symbolsolver;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++
++import java.io.IOException;
++
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++
++import com.github.javaparser.ParserConfiguration;
++import com.github.javaparser.ParserConfiguration.LanguageLevel;
++import com.github.javaparser.StaticJavaParser;
++import com.github.javaparser.ast.CompilationUnit;
++import com.github.javaparser.ast.expr.MethodCallExpr;
++import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
++import com.github.javaparser.symbolsolver.resolution.AbstractResolutionTest;
++import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
++import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
++
++public class Issue2259Test extends AbstractResolutionTest {
++
++    @BeforeEach
++    void setup() {
++    }
++    
++    @Test
++    void test() throws IOException {
++        // Source code
++        String src = "public class TestClass2 {\n" + 
++                "    public static void foo(Object o) {\n" + 
++                "    }\n" + 
++                "    public static void main(String[] args) {\n" + 
++                "        foo(new Object[5]);\n" + 
++                "    }\n" + 
++                "}";
++        TypeSolver typeSolver = new CombinedTypeSolver(new ReflectionTypeSolver());
++
++        // Setup symbol solver
++        ParserConfiguration configuration = new ParserConfiguration()
++                .setSymbolResolver(new JavaSymbolSolver(typeSolver)).setLanguageLevel(LanguageLevel.JAVA_8);
++        // Setup parser
++        StaticJavaParser.setConfiguration(configuration);
++        CompilationUnit cu = StaticJavaParser.parse(src);
++        MethodCallExpr mce = cu.findFirst(MethodCallExpr.class).get();
++        assertEquals("foo(new Object[5])",mce.toString());
++        assertEquals("TestClass2.foo(java.lang.Object)",mce.resolve().getQualifiedSignature());
++        assertEquals("void",mce.calculateResolvedType().describe());
++
++    }
++
++}

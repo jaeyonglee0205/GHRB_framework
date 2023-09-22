@@ -1,0 +1,545 @@
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java
+index 1b48c608a33..5d8639a0114 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java
+@@ -3795,8 +3795,8 @@ public class DefaultCodegen implements CodegenConfig {
+         }
+ 
+         Schema original = null;
+-        // check if it's allOf (only 1 sub schema) with default/nullable/etc set in the top level
+-        if (ModelUtils.isAllOf(p) && p.getAllOf().size() == 1 &&  ModelUtils.hasCommonAttributesDefined(p) ) {
++        // check if it's allOf (only 1 sub schema) with or without default/nullable/etc set in the top level
++        if (ModelUtils.isAllOf(p) && p.getAllOf().size() == 1 && !(this instanceof PythonClientCodegen)) {
+             if (p.getAllOf().get(0) instanceof Schema) {
+                 original = p;
+                 p = (Schema) p.getAllOf().get(0);
+@@ -4002,7 +4002,7 @@ public class DefaultCodegen implements CodegenConfig {
+         // restore original schema with default value, nullable, readonly etc
+         if (original != null) {
+             p = original;
+-            // evaluate common attributes defined in the top level
++            // evaluate common attributes if defined in the top level
+             if (p.getNullable() != null) {
+                 property.isNullable = p.getNullable();
+             } else if (p.getExtensions() != null && p.getExtensions().containsKey("x-nullable")) {
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/AbstractDartCodegen.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/AbstractDartCodegen.java
+index 9ddfc6e42c9..e542f21b74f 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/AbstractDartCodegen.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/AbstractDartCodegen.java
+@@ -555,8 +555,8 @@ public abstract class AbstractDartCodegen extends DefaultCodegen {
+     public CodegenProperty fromProperty(String name, Schema p, boolean required) {
+         final CodegenProperty property = super.fromProperty(name, p, required);
+ 
+-        // Handle composed properties
+-        if (ModelUtils.isComposedSchema(p)) {
++        // Handle composed properties and it's NOT allOf with a single ref only
++        if (ModelUtils.isComposedSchema(p) && !(ModelUtils.isAllOf(p) && p.getAllOf().size() == 1)) {
+             ComposedSchema composed = (ComposedSchema) p;
+ 
+             // Count the occurrences of allOf/anyOf/oneOf with exactly one child element
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java
+index 515e7f52081..e78b5af3076 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java
+@@ -4582,6 +4582,18 @@ public class DefaultCodegenTest {
+         Assert.assertFalse(defaultEnumSchemaProperty.isContainer);
+         Assert.assertFalse(defaultEnumSchemaProperty.isPrimitiveType);
+         Assert.assertEquals(defaultEnumSchemaProperty.defaultValue, "2");
++
++        // test allOf with a single sub-schema and no default value set in the top level
++        CodegenProperty allOfEnumSchemaProperty = modelWithReferencedSchema.vars.get(5);
++        Assert.assertEquals(allOfEnumSchemaProperty.getName(), "allofMinusnumberMinusenum");
++        Assert.assertFalse(allOfEnumSchemaProperty.isEnum);
++        Assert.assertTrue(allOfEnumSchemaProperty.getIsEnumOrRef());
++        Assert.assertTrue(allOfEnumSchemaProperty.isEnumRef);
++        Assert.assertFalse(allOfEnumSchemaProperty.isInnerEnum);
++        Assert.assertFalse(allOfEnumSchemaProperty.isString);
++        Assert.assertFalse(allOfEnumSchemaProperty.isContainer);
++        Assert.assertFalse(allOfEnumSchemaProperty.isPrimitiveType);
++        Assert.assertEquals(allOfEnumSchemaProperty.defaultValue, "null");
+     }
+ 
+     @Test
+diff --git a/modules/openapi-generator/src/test/resources/3_0/issue-5676-enums.yaml b/modules/openapi-generator/src/test/resources/3_0/issue-5676-enums.yaml
+index cbfa2e6000e..68746de926e 100644
+--- a/modules/openapi-generator/src/test/resources/3_0/issue-5676-enums.yaml
++++ b/modules/openapi-generator/src/test/resources/3_0/issue-5676-enums.yaml
+@@ -215,4 +215,7 @@ components:
+           default: 2
+           allOf:
+             - $ref: "#/components/schemas/NumberEnum"
++        allof-number-enum:
++          allOf:
++            - $ref: "#/components/schemas/NumberEnum"
+ 
+diff --git a/samples/client/petstore/elixir/lib/openapi_petstore/model/all_of_with_single_ref.ex b/samples/client/petstore/elixir/lib/openapi_petstore/model/all_of_with_single_ref.ex
+index df660951bc4..cb9ace8ec80 100644
+--- a/samples/client/petstore/elixir/lib/openapi_petstore/model/all_of_with_single_ref.ex
++++ b/samples/client/petstore/elixir/lib/openapi_petstore/model/all_of_with_single_ref.ex
+@@ -14,13 +14,15 @@ defmodule OpenapiPetstore.Model.AllOfWithSingleRef do
+ 
+   @type t :: %__MODULE__{
+     :username => String.t | nil,
+-    :SingleRefType => any() | nil
++    :SingleRefType => OpenapiPetstore.Model.SingleRefType.t | nil
+   }
+ end
+ 
+ defimpl Poison.Decoder, for: OpenapiPetstore.Model.AllOfWithSingleRef do
+-  def decode(value, _options) do
++  import OpenapiPetstore.Deserializer
++  def decode(value, options) do
+     value
++    |> deserialize(:SingleRefType, :struct, OpenapiPetstore.Model.SingleRefType, options)
+   end
+ end
+ 
+diff --git a/samples/client/petstore/java-helidon-client/mp/docs/AllOfWithSingleRef.md b/samples/client/petstore/java-helidon-client/mp/docs/AllOfWithSingleRef.md
+index 0a9e61bc682..4146d56a372 100644
+--- a/samples/client/petstore/java-helidon-client/mp/docs/AllOfWithSingleRef.md
++++ b/samples/client/petstore/java-helidon-client/mp/docs/AllOfWithSingleRef.md
+@@ -8,7 +8,7 @@
+ | Name | Type | Description | Notes |
+ |------------ | ------------- | ------------- | -------------|
+ |**username** | **String** |  |  [optional] |
+-|**singleRefType** | [**SingleRefType**](SingleRefType.md) |  |  [optional] |
++|**singleRefType** | **SingleRefType** |  |  [optional] |
+ 
+ 
+ 
+diff --git a/samples/client/petstore/java-helidon-client/se/docs/AllOfWithSingleRef.md b/samples/client/petstore/java-helidon-client/se/docs/AllOfWithSingleRef.md
+index 0a9e61bc682..4146d56a372 100644
+--- a/samples/client/petstore/java-helidon-client/se/docs/AllOfWithSingleRef.md
++++ b/samples/client/petstore/java-helidon-client/se/docs/AllOfWithSingleRef.md
+@@ -8,7 +8,7 @@
+ | Name | Type | Description | Notes |
+ |------------ | ------------- | ------------- | -------------|
+ |**username** | **String** |  |  [optional] |
+-|**singleRefType** | [**SingleRefType**](SingleRefType.md) |  |  [optional] |
++|**singleRefType** | **SingleRefType** |  |  [optional] |
+ 
+ 
+ 
+diff --git a/samples/client/petstore/java/apache-httpclient/docs/AllOfWithSingleRef.md b/samples/client/petstore/java/apache-httpclient/docs/AllOfWithSingleRef.md
+index 0a9e61bc682..4146d56a372 100644
+--- a/samples/client/petstore/java/apache-httpclient/docs/AllOfWithSingleRef.md
++++ b/samples/client/petstore/java/apache-httpclient/docs/AllOfWithSingleRef.md
+@@ -8,7 +8,7 @@
+ | Name | Type | Description | Notes |
+ |------------ | ------------- | ------------- | -------------|
+ |**username** | **String** |  |  [optional] |
+-|**singleRefType** | [**SingleRefType**](SingleRefType.md) |  |  [optional] |
++|**singleRefType** | **SingleRefType** |  |  [optional] |
+ 
+ 
+ 
+diff --git a/samples/client/petstore/java/apache-httpclient/src/main/java/org/openapitools/client/model/AllOfWithSingleRef.java b/samples/client/petstore/java/apache-httpclient/src/main/java/org/openapitools/client/model/AllOfWithSingleRef.java
+index 68f60026b89..bd81167203f 100644
+--- a/samples/client/petstore/java/apache-httpclient/src/main/java/org/openapitools/client/model/AllOfWithSingleRef.java
++++ b/samples/client/petstore/java/apache-httpclient/src/main/java/org/openapitools/client/model/AllOfWithSingleRef.java
+@@ -180,7 +180,12 @@ public class AllOfWithSingleRef {
+ 
+     // add `SingleRefType` to the URL query string
+     if (getSingleRefType() != null) {
+-      joiner.add(getSingleRefType().toUrlQueryString(prefix + "SingleRefType" + suffix));
++      try {
++        joiner.add(String.format("%sSingleRefType%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSingleRefType()), "UTF-8").replaceAll("\\+", "%20")));
++      } catch (UnsupportedEncodingException e) {
++        // Should never happen, UTF-8 is always supported
++        throw new RuntimeException(e);
++      }
+     }
+ 
+     return joiner.toString();
+diff --git a/samples/client/petstore/java/webclient-jakarta/docs/AllOfWithSingleRef.md b/samples/client/petstore/java/webclient-jakarta/docs/AllOfWithSingleRef.md
+index 0a9e61bc682..4146d56a372 100644
+--- a/samples/client/petstore/java/webclient-jakarta/docs/AllOfWithSingleRef.md
++++ b/samples/client/petstore/java/webclient-jakarta/docs/AllOfWithSingleRef.md
+@@ -8,7 +8,7 @@
+ | Name | Type | Description | Notes |
+ |------------ | ------------- | ------------- | -------------|
+ |**username** | **String** |  |  [optional] |
+-|**singleRefType** | [**SingleRefType**](SingleRefType.md) |  |  [optional] |
++|**singleRefType** | **SingleRefType** |  |  [optional] |
+ 
+ 
+ 
+diff --git a/samples/client/petstore/java/webclient/docs/AllOfWithSingleRef.md b/samples/client/petstore/java/webclient/docs/AllOfWithSingleRef.md
+index 0a9e61bc682..4146d56a372 100644
+--- a/samples/client/petstore/java/webclient/docs/AllOfWithSingleRef.md
++++ b/samples/client/petstore/java/webclient/docs/AllOfWithSingleRef.md
+@@ -8,7 +8,7 @@
+ | Name | Type | Description | Notes |
+ |------------ | ------------- | ------------- | -------------|
+ |**username** | **String** |  |  [optional] |
+-|**singleRefType** | [**SingleRefType**](SingleRefType.md) |  |  [optional] |
++|**singleRefType** | **SingleRefType** |  |  [optional] |
+ 
+ 
+ 
+diff --git a/samples/client/petstore/php/OpenAPIClient-php/docs/Model/AllOfWithSingleRef.md b/samples/client/petstore/php/OpenAPIClient-php/docs/Model/AllOfWithSingleRef.md
+index a8da431674c..d8a2b54b5a0 100644
+--- a/samples/client/petstore/php/OpenAPIClient-php/docs/Model/AllOfWithSingleRef.md
++++ b/samples/client/petstore/php/OpenAPIClient-php/docs/Model/AllOfWithSingleRef.md
+@@ -5,6 +5,6 @@
+ Name | Type | Description | Notes
+ ------------ | ------------- | ------------- | -------------
+ **username** | **string** |  | [optional]
+-**single_ref_type** | [**SingleRefType**](SingleRefType.md) |  | [optional]
++**single_ref_type** | [**\OpenAPI\Client\Model\SingleRefType**](SingleRefType.md) |  | [optional]
+ 
+ [[Back to Model list]](../../README.md#models) [[Back to API list]](../../README.md#endpoints) [[Back to README]](../../README.md)
+diff --git a/samples/client/petstore/php/OpenAPIClient-php/lib/Model/AllOfWithSingleRef.php b/samples/client/petstore/php/OpenAPIClient-php/lib/Model/AllOfWithSingleRef.php
+index e217bd93f3c..1615517c110 100644
+--- a/samples/client/petstore/php/OpenAPIClient-php/lib/Model/AllOfWithSingleRef.php
++++ b/samples/client/petstore/php/OpenAPIClient-php/lib/Model/AllOfWithSingleRef.php
+@@ -58,7 +58,7 @@ class AllOfWithSingleRef implements ModelInterface, ArrayAccess, \JsonSerializab
+       */
+     protected static $openAPITypes = [
+         'username' => 'string',
+-        'single_ref_type' => 'SingleRefType'
++        'single_ref_type' => '\OpenAPI\Client\Model\SingleRefType'
+     ];
+ 
+     /**
+@@ -326,7 +326,7 @@ class AllOfWithSingleRef implements ModelInterface, ArrayAccess, \JsonSerializab
+     /**
+      * Gets single_ref_type
+      *
+-     * @return SingleRefType|null
++     * @return \OpenAPI\Client\Model\SingleRefType|null
+      */
+     public function getSingleRefType()
+     {
+@@ -336,7 +336,7 @@ class AllOfWithSingleRef implements ModelInterface, ArrayAccess, \JsonSerializab
+     /**
+      * Sets single_ref_type
+      *
+-     * @param SingleRefType|null $single_ref_type single_ref_type
++     * @param \OpenAPI\Client\Model\SingleRefType|null $single_ref_type single_ref_type
+      *
+      * @return self
+      */
+diff --git a/samples/client/petstore/ruby-autoload/lib/petstore/models/all_of_with_single_ref.rb b/samples/client/petstore/ruby-autoload/lib/petstore/models/all_of_with_single_ref.rb
+index ea186df537a..4ee2a0ec205 100644
+--- a/samples/client/petstore/ruby-autoload/lib/petstore/models/all_of_with_single_ref.rb
++++ b/samples/client/petstore/ruby-autoload/lib/petstore/models/all_of_with_single_ref.rb
+@@ -19,6 +19,28 @@ module Petstore
+ 
+     attr_accessor :single_ref_type
+ 
++    class EnumAttributeValidator
++      attr_reader :datatype
++      attr_reader :allowable_values
++
++      def initialize(datatype, allowable_values)
++        @allowable_values = allowable_values.map do |value|
++          case datatype.to_s
++          when /Integer/i
++            value.to_i
++          when /Float/i
++            value.to_f
++          else
++            value
++          end
++        end
++      end
++
++      def valid?(value)
++        !value || allowable_values.include?(value)
++      end
++    end
++
+     # Attribute mapping from ruby-style variable name to JSON key.
+     def self.attribute_map
+       {
+diff --git a/samples/client/petstore/ruby-faraday/lib/petstore/models/all_of_with_single_ref.rb b/samples/client/petstore/ruby-faraday/lib/petstore/models/all_of_with_single_ref.rb
+index ea186df537a..4ee2a0ec205 100644
+--- a/samples/client/petstore/ruby-faraday/lib/petstore/models/all_of_with_single_ref.rb
++++ b/samples/client/petstore/ruby-faraday/lib/petstore/models/all_of_with_single_ref.rb
+@@ -19,6 +19,28 @@ module Petstore
+ 
+     attr_accessor :single_ref_type
+ 
++    class EnumAttributeValidator
++      attr_reader :datatype
++      attr_reader :allowable_values
++
++      def initialize(datatype, allowable_values)
++        @allowable_values = allowable_values.map do |value|
++          case datatype.to_s
++          when /Integer/i
++            value.to_i
++          when /Float/i
++            value.to_f
++          else
++            value
++          end
++        end
++      end
++
++      def valid?(value)
++        !value || allowable_values.include?(value)
++      end
++    end
++
+     # Attribute mapping from ruby-style variable name to JSON key.
+     def self.attribute_map
+       {
+diff --git a/samples/client/petstore/ruby/lib/petstore/models/all_of_with_single_ref.rb b/samples/client/petstore/ruby/lib/petstore/models/all_of_with_single_ref.rb
+index ea186df537a..4ee2a0ec205 100644
+--- a/samples/client/petstore/ruby/lib/petstore/models/all_of_with_single_ref.rb
++++ b/samples/client/petstore/ruby/lib/petstore/models/all_of_with_single_ref.rb
+@@ -19,6 +19,28 @@ module Petstore
+ 
+     attr_accessor :single_ref_type
+ 
++    class EnumAttributeValidator
++      attr_reader :datatype
++      attr_reader :allowable_values
++
++      def initialize(datatype, allowable_values)
++        @allowable_values = allowable_values.map do |value|
++          case datatype.to_s
++          when /Integer/i
++            value.to_i
++          when /Float/i
++            value.to_f
++          else
++            value
++          end
++        end
++      end
++
++      def valid?(value)
++        !value || allowable_values.include?(value)
++      end
++    end
++
+     # Attribute mapping from ruby-style variable name to JSON key.
+     def self.attribute_map
+       {
+diff --git a/samples/openapi3/client/petstore/dart-dio/petstore_client_lib_fake-json_serializable/lib/src/model/all_of_with_single_ref.dart b/samples/openapi3/client/petstore/dart-dio/petstore_client_lib_fake-json_serializable/lib/src/model/all_of_with_single_ref.dart
+index dd3a19e9d93..b654a66733e 100644
+--- a/samples/openapi3/client/petstore/dart-dio/petstore_client_lib_fake-json_serializable/lib/src/model/all_of_with_single_ref.dart
++++ b/samples/openapi3/client/petstore/dart-dio/petstore_client_lib_fake-json_serializable/lib/src/model/all_of_with_single_ref.dart
+@@ -69,5 +69,3 @@ class AllOfWithSingleRef {
+ 
+ }
+ 
+-
+-
+diff --git a/samples/openapi3/client/petstore/dart-dio/petstore_client_lib_fake/lib/src/model/all_of_with_single_ref.dart b/samples/openapi3/client/petstore/dart-dio/petstore_client_lib_fake/lib/src/model/all_of_with_single_ref.dart
+index 04f59d36012..5bcd7d9dee8 100644
+--- a/samples/openapi3/client/petstore/dart-dio/petstore_client_lib_fake/lib/src/model/all_of_with_single_ref.dart
++++ b/samples/openapi3/client/petstore/dart-dio/petstore_client_lib_fake/lib/src/model/all_of_with_single_ref.dart
+@@ -21,6 +21,7 @@ abstract class AllOfWithSingleRef implements Built<AllOfWithSingleRef, AllOfWith
+ 
+   @BuiltValueField(wireName: r'SingleRefType')
+   SingleRefType? get singleRefType;
++  // enum singleRefTypeEnum {  admin,  user,  };
+ 
+   AllOfWithSingleRef._();
+ 
+diff --git a/samples/openapi3/client/petstore/dart2/petstore_client_lib_fake/lib/model/all_of_with_single_ref.dart b/samples/openapi3/client/petstore/dart2/petstore_client_lib_fake/lib/model/all_of_with_single_ref.dart
+index e98860d25a8..c21911eeec8 100644
+--- a/samples/openapi3/client/petstore/dart2/petstore_client_lib_fake/lib/model/all_of_with_single_ref.dart
++++ b/samples/openapi3/client/petstore/dart2/petstore_client_lib_fake/lib/model/all_of_with_single_ref.dart
+@@ -25,6 +25,12 @@ class AllOfWithSingleRef {
+   ///
+   String? username;
+ 
++  ///
++  /// Please note: This property should have been non-nullable! Since the specification file
++  /// does not include a default value (using the "default:" property), however, the generated
++  /// source code must fall back to having a nullable type.
++  /// Consider adding a "default:" property in the specification file to hide this note.
++  ///
+   SingleRefType? singleRefType;
+ 
+   @override
+diff --git a/samples/openapi3/client/petstore/python-nextgen-aiohttp/petstore_api/models/all_of_with_single_ref.py b/samples/openapi3/client/petstore/python-nextgen-aiohttp/petstore_api/models/all_of_with_single_ref.py
+index a68465d4aac..c6826c1a651 100644
+--- a/samples/openapi3/client/petstore/python-nextgen-aiohttp/petstore_api/models/all_of_with_single_ref.py
++++ b/samples/openapi3/client/petstore/python-nextgen-aiohttp/petstore_api/models/all_of_with_single_ref.py
+@@ -19,15 +19,16 @@ import re  # noqa: F401
+ import json
+ 
+ 
+-from typing import Any, Optional
++from typing import Optional
+ from pydantic import BaseModel, Field, StrictStr
++from petstore_api.models.single_ref_type import SingleRefType
+ 
+ class AllOfWithSingleRef(BaseModel):
+     """
+     AllOfWithSingleRef
+     """
+     username: Optional[StrictStr] = None
+-    single_ref_type: Optional[Any] = Field(None, alias="SingleRefType")
++    single_ref_type: Optional[SingleRefType] = Field(None, alias="SingleRefType")
+     __properties = ["username", "SingleRefType"]
+ 
+     class Config:
+@@ -53,9 +54,6 @@ class AllOfWithSingleRef(BaseModel):
+                           exclude={
+                           },
+                           exclude_none=True)
+-        # override the default output from pydantic by calling `to_dict()` of single_ref_type
+-        if self.single_ref_type:
+-            _dict['SingleRefType'] = self.single_ref_type.to_dict()
+         return _dict
+ 
+     @classmethod
+@@ -69,7 +67,7 @@ class AllOfWithSingleRef(BaseModel):
+ 
+         _obj = AllOfWithSingleRef.parse_obj({
+             "username": obj.get("username"),
+-            "single_ref_type": SingleRefType.from_dict(obj.get("SingleRefType")) if obj.get("SingleRefType") is not None else None
++            "single_ref_type": obj.get("SingleRefType")
+         })
+         return _obj
+ 
+diff --git a/samples/openapi3/client/petstore/python-nextgen/petstore_api/models/all_of_with_single_ref.py b/samples/openapi3/client/petstore/python-nextgen/petstore_api/models/all_of_with_single_ref.py
+index 9b0dca364e5..7480ccec361 100644
+--- a/samples/openapi3/client/petstore/python-nextgen/petstore_api/models/all_of_with_single_ref.py
++++ b/samples/openapi3/client/petstore/python-nextgen/petstore_api/models/all_of_with_single_ref.py
+@@ -19,15 +19,16 @@ import re  # noqa: F401
+ import json
+ 
+ 
+-from typing import Any, Optional
++from typing import Optional
+ from pydantic import BaseModel, Field, StrictStr
++from petstore_api.models.single_ref_type import SingleRefType
+ 
+ class AllOfWithSingleRef(BaseModel):
+     """
+     AllOfWithSingleRef
+     """
+     username: Optional[StrictStr] = None
+-    single_ref_type: Optional[Any] = Field(None, alias="SingleRefType")
++    single_ref_type: Optional[SingleRefType] = Field(None, alias="SingleRefType")
+     additional_properties: Dict[str, Any] = {}
+     __properties = ["username", "SingleRefType"]
+ 
+@@ -55,9 +56,6 @@ class AllOfWithSingleRef(BaseModel):
+                             "additional_properties"
+                           },
+                           exclude_none=True)
+-        # override the default output from pydantic by calling `to_dict()` of single_ref_type
+-        if self.single_ref_type:
+-            _dict['SingleRefType'] = self.single_ref_type.to_dict()
+         # puts key-value pairs in additional_properties in the top level
+         if self.additional_properties is not None:
+             for _key, _value in self.additional_properties.items():
+@@ -76,7 +74,7 @@ class AllOfWithSingleRef(BaseModel):
+ 
+         _obj = AllOfWithSingleRef.parse_obj({
+             "username": obj.get("username"),
+-            "single_ref_type": SingleRefType.from_dict(obj.get("SingleRefType")) if obj.get("SingleRefType") is not None else None
++            "single_ref_type": obj.get("SingleRefType")
+         })
+         # store additional fields in additional_properties
+         for _key in obj.keys():
+diff --git a/samples/server/petstore/cpp-restbed/generated/3_0/model/AllOfWithSingleRef.cpp b/samples/server/petstore/cpp-restbed/generated/3_0/model/AllOfWithSingleRef.cpp
+index 2cdce0f84c6..1fec59230a3 100644
+--- a/samples/server/petstore/cpp-restbed/generated/3_0/model/AllOfWithSingleRef.cpp
++++ b/samples/server/petstore/cpp-restbed/generated/3_0/model/AllOfWithSingleRef.cpp
+@@ -20,6 +20,7 @@
+ #include <sstream>
+ #include <stdexcept>
+ #include <regex>
++#include <algorithm>
+ #include <boost/lexical_cast.hpp>
+ #include <boost/property_tree/ptree.hpp>
+ #include <boost/property_tree/json_parser.hpp>
+@@ -63,7 +64,6 @@ ptree AllOfWithSingleRef::toPropertyTree() const
+ 	ptree pt;
+ 	ptree tmp_node;
+ 	pt.put("username", m_Username);
+-	pt.add_child("SingleRefType", m_SingleRefType.toPropertyTree());
+ 	return pt;
+ }
+ 
+@@ -71,9 +71,6 @@ void AllOfWithSingleRef::fromPropertyTree(ptree const &pt)
+ {
+ 	ptree tmp_node;
+ 	m_Username = pt.get("username", "");
+-	if (pt.get_child_optional("SingleRefType")) {
+-        m_SingleRefType = fromPt<SingleRefType>(pt.get_child("SingleRefType"));
+-	}
+ }
+ 
+ std::string AllOfWithSingleRef::getUsername() const
+diff --git a/samples/server/petstore/cpp-restbed/generated/3_0/model/AllOfWithSingleRef.h b/samples/server/petstore/cpp-restbed/generated/3_0/model/AllOfWithSingleRef.h
+index 7c4c278079d..9d0052abb41 100644
+--- a/samples/server/petstore/cpp-restbed/generated/3_0/model/AllOfWithSingleRef.h
++++ b/samples/server/petstore/cpp-restbed/generated/3_0/model/AllOfWithSingleRef.h
+@@ -25,6 +25,7 @@
+ #include "SingleRefType.h"
+ #include <memory>
+ #include <vector>
++#include <array>
+ #include <boost/property_tree/ptree.hpp>
+ #include "helpers.h"
+ 
+@@ -72,7 +73,7 @@ public:
+ 
+ protected:
+     std::string m_Username = "";
+-    SingleRefType m_SingleRefType;
++    SingleRefType m_SingleRefType = SingleRefType{};
+ };
+ 
+ std::vector<AllOfWithSingleRef> createAllOfWithSingleRefVectorFromJsonString(const std::string& json);
+diff --git a/samples/server/petstore/java-helidon-server/mp/src/main/java/org/openapitools/server/model/AllOfWithSingleRef.java b/samples/server/petstore/java-helidon-server/mp/src/main/java/org/openapitools/server/model/AllOfWithSingleRef.java
+index c6f0778d346..40e102a9cb3 100644
+--- a/samples/server/petstore/java-helidon-server/mp/src/main/java/org/openapitools/server/model/AllOfWithSingleRef.java
++++ b/samples/server/petstore/java-helidon-server/mp/src/main/java/org/openapitools/server/model/AllOfWithSingleRef.java
+@@ -12,6 +12,8 @@
+ 
+ package org.openapitools.server.model;
+ 
++import com.fasterxml.jackson.annotation.JsonCreator;
++import com.fasterxml.jackson.annotation.JsonValue;
+ import org.openapitools.server.model.SingleRefType;
+ import jakarta.validation.constraints.*;
+ import jakarta.validation.Valid;
+diff --git a/samples/server/petstore/java-helidon-server/se/src/main/java/org/openapitools/server/model/AllOfWithSingleRef.java b/samples/server/petstore/java-helidon-server/se/src/main/java/org/openapitools/server/model/AllOfWithSingleRef.java
+index b40d9201c0e..cdf67cc9aa4 100644
+--- a/samples/server/petstore/java-helidon-server/se/src/main/java/org/openapitools/server/model/AllOfWithSingleRef.java
++++ b/samples/server/petstore/java-helidon-server/se/src/main/java/org/openapitools/server/model/AllOfWithSingleRef.java
+@@ -1,5 +1,7 @@
+ package org.openapitools.server.model;
+ 
++import com.fasterxml.jackson.annotation.JsonCreator;
++import com.fasterxml.jackson.annotation.JsonValue;
+ import org.openapitools.server.model.SingleRefType;
+ 
+ 
+diff --git a/samples/server/petstore/jaxrs-jersey/src/gen/java/org/openapitools/model/AllOfWithSingleRef.java b/samples/server/petstore/jaxrs-jersey/src/gen/java/org/openapitools/model/AllOfWithSingleRef.java
+index fb68166b6b2..443173966fe 100644
+--- a/samples/server/petstore/jaxrs-jersey/src/gen/java/org/openapitools/model/AllOfWithSingleRef.java
++++ b/samples/server/petstore/jaxrs-jersey/src/gen/java/org/openapitools/model/AllOfWithSingleRef.java
+@@ -16,6 +16,7 @@ package org.openapitools.model;
+ import java.util.Objects;
+ import com.fasterxml.jackson.annotation.JsonProperty;
+ import com.fasterxml.jackson.annotation.JsonCreator;
++import com.fasterxml.jackson.annotation.JsonValue;
+ import io.swagger.annotations.ApiModel;
+ import io.swagger.annotations.ApiModelProperty;
+ import org.openapitools.model.SingleRefType;
+diff --git a/samples/server/petstore/php-laravel/lib/app/Models/AllOfWithSingleRef.php b/samples/server/petstore/php-laravel/lib/app/Models/AllOfWithSingleRef.php
+index 90a2bca8d56..97b38ffcf76 100644
+--- a/samples/server/petstore/php-laravel/lib/app/Models/AllOfWithSingleRef.php
++++ b/samples/server/petstore/php-laravel/lib/app/Models/AllOfWithSingleRef.php
+@@ -12,7 +12,7 @@ class AllOfWithSingleRef {
+     /** @var string $username */
+     public $username = "";
+ 
+-    /** @var SingleRefType $singleRefType */
++    /** @var \app\Models\SingleRefType $singleRefType */
+     public $singleRefType;
+ 
+ }

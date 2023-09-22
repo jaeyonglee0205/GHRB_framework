@@ -1,0 +1,224 @@
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/checks/javadoc/SummaryJavadocCheck.java b/src/main/java/com/puppycrawl/tools/checkstyle/checks/javadoc/SummaryJavadocCheck.java
+index f257150b5..d95806003 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/checks/javadoc/SummaryJavadocCheck.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/checks/javadoc/SummaryJavadocCheck.java
+@@ -309,11 +309,14 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
+     @Override
+     public void visitJavadocToken(DetailNode ast) {
+         final Optional<DetailNode> inlineTag = getInlineTagNode(ast);
+-        if (inlineTag.isPresent() && isSummaryTag(inlineTag.get())) {
+-            validateSummaryTag(inlineTag.get());
++        final DetailNode inlineTagNode = inlineTag.orElse(null);
++        if (inlineTag.isPresent()
++            && isSummaryTag(inlineTagNode)
++            && isDefinedFirst(inlineTagNode)) {
++            validateSummaryTag(inlineTagNode);
+         }
+-        else if (inlineTag.isPresent() && isInlineReturnTag(inlineTag.get())) {
+-            validateInlineReturnTag(inlineTag.get());
++        else if (inlineTag.isPresent() && isInlineReturnTag(inlineTagNode)) {
++            validateInlineReturnTag(inlineTagNode);
+         }
+         else if (!startsWithInheritDoc(ast)) {
+             validateUntaggedSummary(ast);
+@@ -356,6 +359,61 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
+             .map(SummaryJavadocCheck::getInlineTagNodeWithinHtmlElement);
+     }
+ 
++    /**
++     * Whether the {@code {@summary}} tag is defined first in the javadoc.
++     *
++     * @param inlineSummaryTag node of type {@link JavadocTokenTypes#JAVADOC_INLINE_TAG}
++     * @return {@code true} if the {@code {@summary}} tag is defined first in the javadoc
++     */
++    private static boolean isDefinedFirst(DetailNode inlineSummaryTag) {
++        boolean isDefinedFirst = true;
++        DetailNode previousSibling = JavadocUtil.getPreviousSibling(inlineSummaryTag);
++        while (previousSibling != null && isDefinedFirst) {
++            switch (previousSibling.getType()) {
++                case JavadocTokenTypes.TEXT:
++                    isDefinedFirst = previousSibling.getText().isBlank();
++                    break;
++                case JavadocTokenTypes.HTML_ELEMENT:
++                    isDefinedFirst = !isTextPresentInsideHtmlTag(previousSibling);
++                    break;
++                default:
++                    break;
++            }
++            previousSibling = JavadocUtil.getPreviousSibling(previousSibling);
++        }
++        return isDefinedFirst;
++    }
++
++    /**
++     * Whether some text is present inside the HTML element or tag.
++     *
++     * @param node DetailNode of type {@link JavadocTokenTypes#HTML_TAG}
++     *             or {@link JavadocTokenTypes#HTML_ELEMENT}
++     * @return {@code true} if some text is present inside the HTML element or tag
++     */
++    public static boolean isTextPresentInsideHtmlTag(DetailNode node) {
++        DetailNode nestedChild = JavadocUtil.getFirstChild(node);
++        if (node.getType() == JavadocTokenTypes.HTML_ELEMENT) {
++            nestedChild = JavadocUtil.getFirstChild(nestedChild);
++        }
++        boolean isTextPresentInsideHtmlTag = false;
++        while (nestedChild != null && !isTextPresentInsideHtmlTag) {
++            switch (nestedChild.getType()) {
++                case JavadocTokenTypes.TEXT:
++                    isTextPresentInsideHtmlTag = !nestedChild.getText().isBlank();
++                    break;
++                case JavadocTokenTypes.HTML_TAG:
++                case JavadocTokenTypes.HTML_ELEMENT:
++                    isTextPresentInsideHtmlTag = isTextPresentInsideHtmlTag(nestedChild);
++                    break;
++                default:
++                    break;
++            }
++            nestedChild = JavadocUtil.getNextSibling(nestedChild);
++        }
++        return isTextPresentInsideHtmlTag;
++    }
++
+     /**
+      * Checks if the inline tag node is present.
+      *
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocIncorrect.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocIncorrect.java
+index 3e658b783..16a5d5570 100644
+--- a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocIncorrect.java
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocIncorrect.java
+@@ -154,8 +154,6 @@ class InputSummaryJavadocIncorrect {
+      * This is the summary.
+      * {@summary This is NOT summary according to javadoc tool}
+      */
+-    // violation 2 lines above 'Summary .* missing an ending period.'
+-    // until https://github.com/checkstyle/checkstyle/issues/11213
+     void testMethod() {
+     }
+ }
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocIncorrect3.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocIncorrect3.java
+new file mode 100644
+index 000000000..53e38697d
+--- /dev/null
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocIncorrect3.java
+@@ -0,0 +1,90 @@
++/*
++SummaryJavadoc
++violateExecutionOnNonTightHtml = (default)false
++forbiddenSummaryFragments = (default)^$
++period = (default).
++
++
++*/
++
++package com.puppycrawl.tools.checkstyle.checks.javadoc.summaryjavadoc;
++
++/**
++ * This is the real summary.
++ * {@summary This is not the summary}
++ */
++public class InputSummaryJavadocIncorrect3 {
++
++    /**
++     * {@summary This is the real summary.}
++     * {@summary This is not the summary}
++     */
++    public void testAnotherSummaryTag() {
++    }
++
++    /**
++     * <p>This is summary.</p>
++     * {@summary This is not the summary}
++     */
++    public void testHtmlTags() {
++    }
++
++    /**
++     * <p><i></i></p>
++     * {@summary This is summary}
++     */
++    // violation 2 lines above 'Summary of Javadoc is missing an ending period'
++    public void testHtmlTags2() {
++    }
++
++    // violation below 'Summary javadoc is missing.'
++    /**
++     * @param a parameter
++     * {@summary Wrong usage}
++     */
++    public void method(int a) {
++    }
++
++    // violation below 'First sentence of Javadoc is missing an ending period'
++    /**
++     * <p> This is the summary {@summary This is not summary.}
++     */
++    public void testParagraphTag() {
++    }
++
++    /**
++     * <pre></pre>
++     * {@summary This is summary}
++     */
++    // violation 2 lines above 'Summary of Javadoc is missing an ending period'
++    public void testPreTag() {
++    }
++
++    // violation below 'First sentence of Javadoc is missing an ending period'
++    /**
++     * <i>This will be in italics and is the summary</i>
++     * {@summary This is not summary}
++     */
++    public void testOtherTags() {
++    }
++
++    /**
++     * <br>
++     * <br>
++     * {@summary Line breaks will be there but this will be the summary}
++     */
++    // violation 2 lines above 'Summary of Javadoc is missing an ending period.'
++    public void testBreakTag() {
++    }
++
++    // Until https://github.com/checkstyle/checkstyle/issues/11425
++    // violation below 'Summary javadoc is missing'
++    /**
++     * <ul>
++     *   <li><i>This is the summary</i></li>
++     * </ul>
++     * {@summary This is not the summary.}
++     */
++    public void testMultipleElements() {
++    }
++}
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineCorrect.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineCorrect.java
+index 127708de3..dbb49e86f 100644
+--- a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineCorrect.java
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineCorrect.java
+@@ -108,6 +108,7 @@ class InputSummaryJavadocInlineCorrect {
+      */
+     private void voidValidJavadoc() {} // ok
+ 
++    // violation below 'First sentence of Javadoc is missing an ending period'
+     /**
+      * Sentence starts as a plain text sentence
+      * {@summary ... but ends in the summary tag.}
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineForbidden.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineForbidden.java
+index c0a11269d..f3ad3ff78 100644
+--- a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineForbidden.java
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineForbidden.java
+@@ -110,12 +110,11 @@ public class InputSummaryJavadocInlineForbidden {
+     void foo12() {
+     }
+ 
++    // violation below 'First sentence of Javadoc is missing an ending period'
+     /**
+      * Sentence starts as a plain text sentence
+      * {@summary ... but ends in the summary tag}
+      */
+-    // violation 2 lines above 'Summary .* missing an ending period.'
+-    // until https://github.com/checkstyle/checkstyle/issues/11213
+     public class TestClass {}
+ 
+     /**

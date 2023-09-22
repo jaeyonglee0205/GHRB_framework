@@ -1,0 +1,146 @@
+diff --git a/javaparser-core-testing-bdd/src/test/resources/com/github/javaparser/pretty_printing_scenarios.story b/javaparser-core-testing-bdd/src/test/resources/com/github/javaparser/pretty_printing_scenarios.story
+index b9cb786c4..061344367 100644
+--- a/javaparser-core-testing-bdd/src/test/resources/com/github/javaparser/pretty_printing_scenarios.story
++++ b/javaparser-core-testing-bdd/src/test/resources/com/github/javaparser/pretty_printing_scenarios.story
+@@ -48,8 +48,8 @@ Then it is printed as:
+ class A {
+ 
+     public void helloWorld(String greeting, String name) {
+-        // sdfsdfsdf
+-        // sdfds
++        //sdfsdfsdf
++        //sdfds
+         /*
+                             dgfdgfdgfdgfdgfd
+          */
+diff --git a/javaparser-core-testing/src/test/java/com/github/javaparser/printer/PrettyPrintVisitorTest.java b/javaparser-core-testing/src/test/java/com/github/javaparser/printer/PrettyPrintVisitorTest.java
+index 4a6f060b6..a1af7fb0e 100644
+--- a/javaparser-core-testing/src/test/java/com/github/javaparser/printer/PrettyPrintVisitorTest.java
++++ b/javaparser-core-testing/src/test/java/com/github/javaparser/printer/PrettyPrintVisitorTest.java
+@@ -381,7 +381,7 @@ class PrettyPrintVisitorTest extends TestParser {
+ 
+         assertEqualsStringIgnoringEol("public class X {\n" +
+                 "\n" +
+-                "    // line1\n" +
++                "    //   line1\n" +
+                 "    void abc() {\n" +
+                 "    }\n" +
+                 "}\n", cu.toString());
+@@ -402,8 +402,8 @@ class PrettyPrintVisitorTest extends TestParser {
+         assertEqualsStringIgnoringEol("class A {\n" +
+                 "\n" +
+                 "    public void helloWorld(String greeting, String name) {\n" +
+-                "        // sdfsdfsdf\n" +
+-                "        // sdfds\n" +
++                "        //sdfsdfsdf\n" +
++                "        //sdfds\n" +
+                 "        /*\n" +
+                 "                            dgfdgfdgfdgfdgfd\n" +
+                 "         */\n" +
+diff --git a/javaparser-core-testing/src/test/resources/com/github/javaparser/issue_samples/Issue412.java.expected.txt b/javaparser-core-testing/src/test/resources/com/github/javaparser/issue_samples/Issue412.java.expected.txt
+index a13577a5a..9bc477973 100644
+--- a/javaparser-core-testing/src/test/resources/com/github/javaparser/issue_samples/Issue412.java.expected.txt
++++ b/javaparser-core-testing/src/test/resources/com/github/javaparser/issue_samples/Issue412.java.expected.txt
+@@ -6,30 +6,30 @@
+  */
+ package /* a */
+ /* b */
+-// c
+-// d
++//c
++//d
+ com.pany/*alma*/
+ /*körte*/
+-// lófasz
+-// jóska
++//lófasz
++//jóska
+ .experiment;
+ 
+-// z
+-// x
++//z
++//x
+ /*y*/
+ /*w*/
+ /*aa*/
+ /*bb*/
+-// cc
+-// dd
++//cc
++//dd
+ import com.github.javaparser.JavaParser;
+ 
+ public class Main {
+ 
+     public static void main(String[] args) throws FileNotFoundException, IOException, ParseException {
+-        // try (FileInputStream fisTargetFile = new FileInputStream(new File(FILENAME))) {
+-        // final String content = IOUtils.toString(fisTargetFile, "UTF-8");
+-        // System.out.println(content);
+-        // }
++        //        try (FileInputStream fisTargetFile = new FileInputStream(new File(FILENAME))) {
++        //            final String content = IOUtils.toString(fisTargetFile, "UTF-8");
++        //            System.out.println(content);
++        //        }
+     }
+ }
+diff --git a/javaparser-core/src/main/java/com/github/javaparser/printer/DefaultPrettyPrinterVisitor.java b/javaparser-core/src/main/java/com/github/javaparser/printer/DefaultPrettyPrinterVisitor.java
+index 078077d9e..3e1b36e13 100644
+--- a/javaparser-core/src/main/java/com/github/javaparser/printer/DefaultPrettyPrinterVisitor.java
++++ b/javaparser-core/src/main/java/com/github/javaparser/printer/DefaultPrettyPrinterVisitor.java
+@@ -39,6 +39,7 @@ import com.github.javaparser.printer.configuration.PrinterConfiguration;
+ 
+ import java.util.*;
+ import java.util.concurrent.atomic.AtomicBoolean;
++import java.util.regex.Pattern;
+ 
+ import static com.github.javaparser.ast.Node.Parsedness.UNPARSABLE;
+ import static com.github.javaparser.utils.PositionUtils.sortByBeginPosition;
+@@ -50,6 +51,8 @@ import static java.util.stream.Collectors.joining;
+  * Outputs the AST as formatted Java source code.
+  */
+ public class DefaultPrettyPrinterVisitor implements VoidVisitor<Void> {
++	
++	private static Pattern RTRIM = Pattern.compile("\\s+$");
+ 
+     protected final PrinterConfiguration configuration;
+ 
+@@ -1609,7 +1612,7 @@ public class DefaultPrettyPrinterVisitor implements VoidVisitor<Void> {
+         if (!getOption(ConfigOption.PRINT_COMMENTS).isPresent()) {
+             return;
+         }
+-        printer.print("// ").println(normalizeEolInTextBlock(n.getContent(), "").trim());
++        printer.print("//").println(normalizeEolInTextBlock(RTRIM.matcher(n.getContent()).replaceAll(""), ""));
+     }
+ 
+     @Override
+diff --git a/javaparser-core/src/main/java/com/github/javaparser/printer/PrettyPrintVisitor.java b/javaparser-core/src/main/java/com/github/javaparser/printer/PrettyPrintVisitor.java
+index 1c260aad8..441197ac6 100644
+--- a/javaparser-core/src/main/java/com/github/javaparser/printer/PrettyPrintVisitor.java
++++ b/javaparser-core/src/main/java/com/github/javaparser/printer/PrettyPrintVisitor.java
+@@ -37,6 +37,7 @@ import com.github.javaparser.printer.configuration.PrettyPrinterConfiguration;
+ 
+ import java.util.*;
+ import java.util.concurrent.atomic.AtomicBoolean;
++import java.util.regex.Pattern;
+ import java.util.stream.Collectors;
+ 
+ import static com.github.javaparser.ast.Node.Parsedness.UNPARSABLE;
+@@ -55,6 +56,8 @@ import static java.util.stream.Collectors.joining;
+  */
+ @Deprecated
+ public class PrettyPrintVisitor implements VoidVisitor<Void> {
++	
++	private static Pattern RTRIM = Pattern.compile("\\s+$");
+ 
+     protected PrettyPrinterConfiguration configuration;
+ 
+@@ -1614,7 +1617,7 @@ public class PrettyPrintVisitor implements VoidVisitor<Void> {
+         if (configuration.isIgnoreComments()) {
+             return;
+         }
+-        printer.print("// ").println(normalizeEolInTextBlock(n.getContent(), "").trim());
++        printer.print("//").println(normalizeEolInTextBlock(RTRIM.matcher(n.getContent()).replaceAll(""), ""));
+     }
+ 
+     @Override

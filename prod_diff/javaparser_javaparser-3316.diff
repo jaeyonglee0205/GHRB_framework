@@ -1,0 +1,125 @@
+diff --git a/javaparser-core-testing/src/test/java/com/github/javaparser/printer/lexicalpreservation/Issue3296Test.java b/javaparser-core-testing/src/test/java/com/github/javaparser/printer/lexicalpreservation/Issue3296Test.java
+new file mode 100755
+index 000000000..9563b0570
+--- /dev/null
++++ b/javaparser-core-testing/src/test/java/com/github/javaparser/printer/lexicalpreservation/Issue3296Test.java
+@@ -0,0 +1,65 @@
++package com.github.javaparser.printer.lexicalpreservation;
++
++import static com.github.javaparser.utils.TestUtils.assertEqualsStringIgnoringEol;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++import java.util.Optional;
++
++/*
++ * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
++ * Copyright (C) 2011, 2013-2019 The JavaParser Team.
++ *
++ * This file is part of JavaParser.
++ *
++ * JavaParser can be used either under the terms of
++ * a) the GNU Lesser General Public License as published by
++ *     the Free Software Foundation, either version 3 of the License, or
++ *     (at your option) any later version.
++ * b) the terms of the Apache License
++ *
++ * You should have received a copy of both licenses in LICENCE.LGPL and
++ * LICENCE.APACHE. Please refer to those files for details.
++ *
++ * JavaParser is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU Lesser General Public License for more details.
++ */
++
++import org.junit.jupiter.api.Test;
++
++import com.github.javaparser.StaticJavaParser;
++import com.github.javaparser.ast.CompilationUnit;
++import com.github.javaparser.ast.NodeList;
++import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
++import com.github.javaparser.ast.body.VariableDeclarator;
++
++public class Issue3296Test extends AbstractLexicalPreservingTest  {
++    
++    @Test
++    public void test() {
++        String code = "public class Test { String[][] allTest; }";
++        String expected = "public class Test { @Nullable\n" + 
++                "String[][] allTest; }";
++        CompilationUnit cu = LexicalPreservingPrinter.setup(StaticJavaParser.parse(code));
++        Optional<ClassOrInterfaceDeclaration> clazzOptional = cu.getClassByName("Test");
++        assertTrue(clazzOptional.isPresent());
++        ClassOrInterfaceDeclaration clazz = clazzOptional.get();
++        clazz.getMembers().forEach(
++                bodyDeclaration ->
++                        bodyDeclaration.ifFieldDeclaration(
++                                fieldDeclaration -> {
++                                    NodeList<VariableDeclarator> vars =
++                                            fieldDeclaration.asFieldDeclaration().getVariables();
++                                    for (VariableDeclarator v : vars) {
++                                        if (v.getName().toString().equals("allTest")) {
++                                            fieldDeclaration.addMarkerAnnotation("Nullable");
++                                            break;
++                                        }
++                                    }
++                                }));
++        String changed = LexicalPreservingPrinter.print(cu);
++        assertEqualsStringIgnoringEol(changed, expected);
++        System.out.println(changed);
++    }
++}
+diff --git a/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Difference.java b/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Difference.java
+index 5ff907b8a..6e13586d9 100644
+--- a/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Difference.java
++++ b/javaparser-core/src/main/java/com/github/javaparser/printer/lexicalpreservation/Difference.java
+@@ -43,6 +43,7 @@ import com.github.javaparser.ast.Node;
+ import com.github.javaparser.ast.NodeList;
+ import com.github.javaparser.ast.comments.Comment;
+ import com.github.javaparser.ast.nodeTypes.NodeWithTypeArguments;
++import com.github.javaparser.ast.type.ArrayType;
+ import com.github.javaparser.ast.type.Type;
+ import com.github.javaparser.printer.concretesyntaxmodel.CsmElement;
+ import com.github.javaparser.printer.concretesyntaxmodel.CsmIndent;
+@@ -502,6 +503,11 @@ public class Difference {
+                 int step = getIndexToNextTokenElement((TokenTextElement) originalElement, 0);
+                 originalIndex += step;
+                 originalIndex++;
++            } else if (originalElement.isIdentifier() && isArrayType(kept)) {
++                int step = getArrayLevel(kept);
++                diffIndex++;
++                originalIndex += step*2; // there is a couple of brackets per level
++                originalIndex++;
+             } else if (originalElement.isIdentifier()) {
+                 originalIndex++;
+                 diffIndex++;
+@@ -558,6 +564,29 @@ public class Difference {
+             throw new UnsupportedOperationException("kept " + kept.getElement() + " vs " + originalElement);
+         }
+     }
++    
++    
++    /*
++     * Returns the array level if the DifferenceElement is a CsmChild representing an ArrayType else 0
++     */
++    private int getArrayLevel(DifferenceElement element) {
++        CsmElement csmElem = element.getElement();
++        if (csmElem instanceof LexicalDifferenceCalculator.CsmChild && 
++                ((LexicalDifferenceCalculator.CsmChild) csmElem).getChild() instanceof ArrayType) {
++            Node child = ((LexicalDifferenceCalculator.CsmChild) csmElem).getChild();
++            return ((ArrayType)child).getArrayLevel();
++        }
++        return 0;
++    }
++    
++    /*
++     * Returns true if the DifferenceElement is a CsmChild representing an ArrayType
++     */
++    private boolean isArrayType(DifferenceElement element) {
++        CsmElement csmElem = element.getElement();
++        return csmElem instanceof LexicalDifferenceCalculator.CsmChild && 
++                ((LexicalDifferenceCalculator.CsmChild) csmElem).getChild() instanceof ArrayType;
++    }
+ 
+     /*
+      * Returns true if the DifferenceElement is a CsmChild with type arguments

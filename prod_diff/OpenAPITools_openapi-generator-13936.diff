@@ -1,0 +1,90 @@
+diff --git a/modules/openapi-generator/src/main/resources/JavaSpring/beanValidationBodyParams.mustache b/modules/openapi-generator/src/main/resources/JavaSpring/beanValidationBodyParams.mustache
+new file mode 100644
+index 00000000000..71bc546835e
+--- /dev/null
++++ b/modules/openapi-generator/src/main/resources/JavaSpring/beanValidationBodyParams.mustache
+@@ -0,0 +1 @@
++{{! RequestBody required param is responsible for optional and nullability }}{{>beanValidationCore}}
+\ No newline at end of file
+diff --git a/modules/openapi-generator/src/main/resources/JavaSpring/bodyParams.mustache b/modules/openapi-generator/src/main/resources/JavaSpring/bodyParams.mustache
+index 137c4d86b7a..9e683484efd 100644
+--- a/modules/openapi-generator/src/main/resources/JavaSpring/bodyParams.mustache
++++ b/modules/openapi-generator/src/main/resources/JavaSpring/bodyParams.mustache
+@@ -1 +1 @@
+-{{#isBodyParam}}{{>paramDoc}}{{#useBeanValidation}} @Valid{{/useBeanValidation}} @RequestBody{{^required}}(required = false){{/required}} {{^reactive}}{{{dataType}}}{{/reactive}}{{#reactive}}{{^isArray}}Mono<{{{dataType}}}>{{/isArray}}{{#isArray}}Flux<{{{baseType}}}>{{/isArray}}{{/reactive}} {{paramName}}{{/isBodyParam}}
+\ No newline at end of file
++{{#isBodyParam}}{{>paramDoc}}{{#useBeanValidation}} @Valid{{>beanValidationBodyParams}}{{/useBeanValidation}} @RequestBody{{^required}}(required = false){{/required}} {{^reactive}}{{{dataType}}}{{/reactive}}{{#reactive}}{{^isArray}}Mono<{{{dataType}}}>{{/isArray}}{{#isArray}}Flux<{{{baseType}}}>{{/isArray}}{{/reactive}} {{paramName}}{{/isBodyParam}}
+\ No newline at end of file
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/spring/SpringCodegenTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/spring/SpringCodegenTest.java
+index 9a053872acf..c86200fe85c 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/spring/SpringCodegenTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/spring/SpringCodegenTest.java
+@@ -1809,6 +1809,38 @@ public class SpringCodegenTest {
+                 .bodyContainsLines("return Arrays.equals(this.picture, testObject.picture);");
+     }
+ 
++
++    @Test
++    public void useBeanValidationGenerateAnnotationsForRequestBody_issue13932() throws IOException {
++        File output = Files.createTempDirectory("test").toFile().getCanonicalFile();
++        output.deleteOnExit();
++
++        OpenAPI openAPI = new OpenAPIParser()
++                .readLocation("src/test/resources/bugs/issue_13932.yml", null, new ParseOptions()).getOpenAPI();
++        SpringCodegen codegen = new SpringCodegen();
++        codegen.setLibrary(SPRING_BOOT);
++        codegen.setOutputDir(output.getAbsolutePath());
++        codegen.additionalProperties().put(SpringCodegen.INTERFACE_ONLY, "true");
++        codegen.additionalProperties().put(SpringCodegen.USE_BEANVALIDATION, "true");
++        codegen.additionalProperties().put(CodegenConstants.MODEL_PACKAGE, "xyz.model");
++        codegen.additionalProperties().put(CodegenConstants.API_PACKAGE, "xyz.controller");
++
++        ClientOptInput input = new ClientOptInput()
++                .openAPI(openAPI)
++                .config(codegen);
++
++        DefaultGenerator generator = new DefaultGenerator();
++        Map<String, File> files = generator.opts(input).generate().stream()
++                .collect(Collectors.toMap(File::getName, Function.identity()));
++
++        JavaFileAssert.assertThat(files.get("AddApi.java"))
++                .printFileContent()
++                .assertMethod("addPost")
++                .hasParameter("body")
++                .assertParameterAnnotations()
++                .containsWithNameAndAttributes("Min", ImmutableMap.of("value", "2"));
++    }
++    
+     @Test
+     public void shouldHandleSeparatelyInterfaceAndModelAdditionalAnnotations() throws IOException {
+         File output = Files.createTempDirectory("test").toFile().getCanonicalFile();
+diff --git a/modules/openapi-generator/src/test/resources/bugs/issue_13932.yml b/modules/openapi-generator/src/test/resources/bugs/issue_13932.yml
+new file mode 100644
+index 00000000000..9b83e047b17
+--- /dev/null
++++ b/modules/openapi-generator/src/test/resources/bugs/issue_13932.yml
+@@ -0,0 +1,23 @@
++openapi: 3.0.3
++info:
++  version: 1.0.0
++  description: Specification to reproduce beanValidation bodyParam issue
++  title: RequestBodyValidationTest Api
++paths:
++  /add:
++    post:
++      requestBody:
++        content:
++          application/json:
++            schema:
++              type: integer
++              title: quantity
++              minimum: 2
++        required: true
++      responses:
++        '200':
++          description: OK
++          content:
++            application/json:
++              schema:
++                type: boolean
+\ No newline at end of file

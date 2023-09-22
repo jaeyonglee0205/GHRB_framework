@@ -1,0 +1,74 @@
+diff --git a/javaparser-core-testing/src/test/java/com/github/javaparser/ast/body/FieldDeclarationTest.java b/javaparser-core-testing/src/test/java/com/github/javaparser/ast/body/FieldDeclarationTest.java
+index d2c2369ca..96e9d8e63 100644
+--- a/javaparser-core-testing/src/test/java/com/github/javaparser/ast/body/FieldDeclarationTest.java
++++ b/javaparser-core-testing/src/test/java/com/github/javaparser/ast/body/FieldDeclarationTest.java
+@@ -21,6 +21,7 @@
+ 
+ package com.github.javaparser.ast.body;
+ 
++import com.github.javaparser.StaticJavaParser;
+ import com.github.javaparser.ast.CompilationUnit;
+ import com.github.javaparser.ast.Modifier;
+ import com.github.javaparser.ast.Modifier.Keyword;
+@@ -30,8 +31,7 @@ import org.junit.jupiter.api.Test;
+ 
+ import static com.github.javaparser.StaticJavaParser.parse;
+ import static com.github.javaparser.StaticJavaParser.parseBodyDeclaration;
+-import static org.junit.jupiter.api.Assertions.assertEquals;
+-import static org.junit.jupiter.api.Assertions.assertTrue;
++import static org.junit.jupiter.api.Assertions.*;
+ 
+ class FieldDeclarationTest {
+     @Test
+@@ -100,4 +100,32 @@ class FieldDeclarationTest {
+         }
+     }
+ 
++    /**
++     * Regression test for issue #4056.
++     */
++    @Test
++    void testEnumWithPrivateFieldInsideInterface() {
++        String source = "interface Outer {\n" +
++                        "  enum Numbers {\n" +
++                        "    ONE(1),\n" +
++                        "    TWO(2),\n" +
++                        "    THREE(3);\n" +
++                        "\n" +
++                        "    Numbers(int i) {\n" +
++                        "      this.i = i;\n" +
++                        "    }\n" +
++                        "\n" +
++                        "    private int i;\n" +
++                        "  }\n" +
++                        "}";
++        CompilationUnit cu = StaticJavaParser.parse(source);
++        FieldDeclaration i = cu.getTypes().get(0).asClassOrInterfaceDeclaration()
++                .getMembers().get(0).asEnumDeclaration()
++                .getFields().get(0);
++        assertAll(
++                () -> assertFalse(i.isPublic()),
++                () -> assertFalse(i.isStatic()),
++                () -> assertFalse(i.isFinal())
++        );
++    }
+ }
+diff --git a/javaparser-core/src/main/java/com/github/javaparser/ast/body/FieldDeclaration.java b/javaparser-core/src/main/java/com/github/javaparser/ast/body/FieldDeclaration.java
+index 3c7cf1c49..31b583b35 100644
+--- a/javaparser-core/src/main/java/com/github/javaparser/ast/body/FieldDeclaration.java
++++ b/javaparser-core/src/main/java/com/github/javaparser/ast/body/FieldDeclaration.java
+@@ -267,8 +267,12 @@ public class FieldDeclaration extends BodyDeclaration<FieldDeclaration> implemen
+      * Returns true if the field is declared in an interface
+      */
+     private boolean isDeclaredInInterface() {
+-    	Optional<ClassOrInterfaceDeclaration> parentClass = findAncestor(ClassOrInterfaceDeclaration.class);
+-    	return parentClass.map(parent -> parent.isInterface()).orElse(false);
++    	Optional<TypeDeclaration> parentType = findAncestor(TypeDeclaration.class);
++        return parentType
++                .filter(BodyDeclaration::isClassOrInterfaceDeclaration)
++                .map(BodyDeclaration::asClassOrInterfaceDeclaration)
++                .map(ClassOrInterfaceDeclaration::isInterface)
++                .orElse(false);
+     }
+ 
+     @Override

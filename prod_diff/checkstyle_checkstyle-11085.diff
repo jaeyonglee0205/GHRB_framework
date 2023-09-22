@@ -1,0 +1,157 @@
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/StringLiteralEqualityCheck.java b/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/StringLiteralEqualityCheck.java
+index bf5b2df46..592b24126 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/StringLiteralEqualityCheck.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/StringLiteralEqualityCheck.java
+@@ -112,12 +112,35 @@ public class StringLiteralEqualityCheck extends AbstractCheck {
+     @Override
+     public void visitToken(DetailAST ast) {
+         final boolean hasStringLiteralChild =
+-            ast.findFirstToken(TokenTypes.STRING_LITERAL) != null
+-                || ast.findFirstToken(TokenTypes.TEXT_BLOCK_LITERAL_BEGIN) != null;
++                ast.findFirstToken(TokenTypes.STRING_LITERAL) != null
++                    || ast.findFirstToken(TokenTypes.TEXT_BLOCK_LITERAL_BEGIN) != null
++                    || areStringsConcatenated(ast);
+ 
+         if (hasStringLiteralChild) {
+             log(ast, MSG_KEY, ast.getText());
+         }
+     }
+ 
++    /**
++     * Checks whether string literal or text block literals are concatenated.
++     *
++     * @param ast ast
++     * @return {@code true} if string literal or text block literals are concatenated
++     */
++    private static boolean areStringsConcatenated(DetailAST ast) {
++        DetailAST plusAst = ast.findFirstToken(TokenTypes.PLUS);
++        boolean result = false;
++        while (plusAst != null) {
++            if (plusAst.findFirstToken(TokenTypes.STRING_LITERAL) == null
++                    && plusAst.findFirstToken(TokenTypes.TEXT_BLOCK_LITERAL_BEGIN) == null) {
++                plusAst = plusAst.findFirstToken(TokenTypes.PLUS);
++            }
++            else {
++                result = true;
++                break;
++            }
++        }
++        return result;
++    }
++
+ }
+diff --git a/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/stringliteralequality/InputStringLiteralEqualityConcatenatedTextBlocks.java b/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/stringliteralequality/InputStringLiteralEqualityConcatenatedTextBlocks.java
+new file mode 100644
+index 000000000..b2ef7b63a
+--- /dev/null
++++ b/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/stringliteralequality/InputStringLiteralEqualityConcatenatedTextBlocks.java
+@@ -0,0 +1,57 @@
++/*
++StringLiteralEquality
++
++
++*/
++
++//non-compiled with javac: Compilable with Java14
++package com.puppycrawl.tools.checkstyle.checks.coding.stringliteralequality;
++
++public class InputStringLiteralEqualityConcatenatedTextBlocks {
++
++    public void testMethod() {
++        String s = "abc";
++        String p = "asd";
++        if (s == """
++                a""" + "bc") { // violation above
++        }
++
++        if ("""
++                a""" + """
++                bc""" == s) { // violation
++        }
++
++        if ("a" + ("""
++                b""" + """
++                c""") != s) { // violation
++        }
++
++        if (s == """
++                a""" + """
++                b""" + """
++                c""") { // violation 3 lines above
++        }
++        if ((s += """
++                asd""") != p) { // ok, can't be detected as check in not type aware.
++        }
++
++        if ((s += "asd") == s + (p + """
++                asd""")) { // violation above
++        }
++
++        if ((s += "asd") != s + """
++                p""" + p) { // violation above
++        }
++
++        if (s != s + """
++                p""" + p) { // violation above
++        }
++
++        String c = ("""
++                ab""" + s) != null ? // violation
++                (p + """
++                        ab""" == null ? p : s) : p; // violation
++
++    }
++
++}
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/coding/stringliteralequality/InputStringLiteralEqualityConcatenatedString.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/coding/stringliteralequality/InputStringLiteralEqualityConcatenatedString.java
+new file mode 100644
+index 000000000..4f076748d
+--- /dev/null
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/coding/stringliteralequality/InputStringLiteralEqualityConcatenatedString.java
+@@ -0,0 +1,46 @@
++/*
++StringLiteralEquality
++
++
++*/
++
++package com.puppycrawl.tools.checkstyle.checks.coding.stringliteralequality;
++
++public class InputStringLiteralEqualityConcatenatedString {
++
++    public void testMethod() {
++        String s = "abc";
++        String p = "asd";
++        if (s == "a" + "bc") { // violation
++        }
++
++        if ("a" + "bc" == s) { // violation
++        }
++
++        if ("a" + ("b" + "c") != s) { // violation
++        }
++
++        if (s == "a" + "b" + "c") { // violation
++        }
++        if ((s += "asd") != p) { // ok, can't be detected as check in not type aware.
++        }
++
++        if ((s += "asd") == s + (p + "asd")) { // violation
++        }
++
++        if ((s += "asd") != s + "p" + p) { // violation
++        }
++
++        if (s != s + "p" + p) { // violation
++        }
++
++        String a = (s + "asd") == null ? "asd" : s; // violation
++
++        String b = s + "ab" + p != null ? s : p; // violation
++
++        String c = ("ab" + s) != null ? // violation
++                (p + "ab" == null ? p : s) : p; // violation
++
++    }
++
++}

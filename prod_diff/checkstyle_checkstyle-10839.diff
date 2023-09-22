@@ -1,0 +1,131 @@
+diff --git a/config/checkstyle_checks.xml b/config/checkstyle_checks.xml
+index 24fea637f..470e3f0ff 100644
+--- a/config/checkstyle_checks.xml
++++ b/config/checkstyle_checks.xml
+@@ -660,7 +660,8 @@
+                        FileNotFoundException, TestException, Log, Sets, Multimap,
+                        TokenStreamRecognitionException, RecognitionException,
+                        TokenStreamException, IOException, Override, Deprecated, SafeVarargs,
+-                       SuppressWarnings, FunctionalInterface"/>
++                       SuppressWarnings, FunctionalInterface, NoSuchMethodException,
++                       InvocationTargetException, IllegalAccessException"/>
+     </module>
+     <module name="CyclomaticComplexity">
+       <property name="switchBlockAsSingleDecisionPoint" value="true"/>
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/checks/metrics/AbstractClassCouplingCheck.java b/src/main/java/com/puppycrawl/tools/checkstyle/checks/metrics/AbstractClassCouplingCheck.java
+index d330f5ea8..7620e4a48 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/checks/metrics/AbstractClassCouplingCheck.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/checks/metrics/AbstractClassCouplingCheck.java
+@@ -38,7 +38,6 @@ import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
+ import com.puppycrawl.tools.checkstyle.api.DetailAST;
+ import com.puppycrawl.tools.checkstyle.api.FullIdent;
+ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
+-import com.puppycrawl.tools.checkstyle.utils.CheckUtil;
+ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
+ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
+ 
+@@ -376,10 +375,16 @@ public abstract class AbstractClassCouplingCheck extends AbstractCheck {
+          * @param ast type to process.
+          */
+         public void visitType(DetailAST ast) {
+-            final String fullTypeName = CheckUtil.createFullType(ast).getText();
+-            final String trimmed = BRACKET_PATTERN
+-                    .matcher(fullTypeName).replaceAll("");
+-            addReferencedClassName(trimmed);
++            DetailAST child = ast.getFirstChild();
++            while (child != null) {
++                if (TokenUtil.isOfType(child, TokenTypes.IDENT, TokenTypes.DOT)) {
++                    final String fullTypeName = FullIdent.createFullIdent(child).getText();
++                    final String trimmed = BRACKET_PATTERN
++                            .matcher(fullTypeName).replaceAll("");
++                    addReferencedClassName(trimmed);
++                }
++                child = child.getNextSibling();
++            }
+         }
+ 
+         /**
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/utils/CheckUtil.java b/src/main/java/com/puppycrawl/tools/checkstyle/utils/CheckUtil.java
+index 9b8e76824..43593367c 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/utils/CheckUtil.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/utils/CheckUtil.java
+@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
+ import java.util.stream.Collectors;
+ 
+ import com.puppycrawl.tools.checkstyle.api.DetailAST;
+-import com.puppycrawl.tools.checkstyle.api.FullIdent;
+ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
+ import com.puppycrawl.tools.checkstyle.checks.naming.AccessModifierOption;
+ 
+@@ -76,16 +75,6 @@ public final class CheckUtil {
+     private CheckUtil() {
+     }
+ 
+-    /**
+-     * Creates {@code FullIdent} for given type node.
+-     *
+-     * @param typeAST a type node.
+-     * @return {@code FullIdent} for given type.
+-     */
+-    public static FullIdent createFullType(final DetailAST typeAST) {
+-        return FullIdent.createFullIdent(typeAST.getFirstChild());
+-    }
+-
+     /**
+      * Tests whether a method definition AST defines an equals covariant.
+      *
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityImplementsAndNestedCount.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityImplementsAndNestedCount.java
+new file mode 100644
+index 000000000..3f5c0ba12
+--- /dev/null
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityImplementsAndNestedCount.java
+@@ -0,0 +1,33 @@
++/*
++ClassFanOutComplexity
++max = 0
++excludedClasses = (default)ArrayIndexOutOfBoundsException, ArrayList, Boolean, Byte, \
++                  Character, Class, Collection, Deprecated, Deque, Double, DoubleStream, \
++                  EnumSet, Exception, Float, FunctionalInterface, HashMap, HashSet, \
++                  IllegalArgumentException, IllegalStateException, IndexOutOfBoundsException, \
++                  IntStream, Integer, LinkedHashMap, LinkedHashSet, LinkedList, List, Long, \
++                  LongStream, Map, NullPointerException, Object, Optional, OptionalDouble, \
++                  OptionalInt, OptionalLong, Override, Queue, RuntimeException, SafeVarargs, \
++                  SecurityException, Set, Short, SortedMap, SortedSet, Stream, String, \
++                  StringBuffer, StringBuilder, SuppressWarnings, Throwable, TreeMap, TreeSet, \
++                  UnsupportedOperationException, Void, boolean, byte, char, double, float, \
++                  int, long, short, var, void
++excludeClassesRegexps = (default)^$
++excludedPackages = (default)
++
++
++*/
++
++package com.puppycrawl.tools.checkstyle.checks.metrics.classfanoutcomplexity;
++
++import java.io.Serializable;
++import java.util.RandomAccess;
++
++public class InputClassFanOutComplexityImplementsAndNestedCount // violation '.* Complexity is 3 .*'
++    extends Outer.Nested implements Serializable, RandomAccess {
++
++}
++
++class Outer {
++    static class Nested {}
++}
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityRemoveMultiCatchBitwiseOr.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityMultiCatchBitwiseOr.java
+similarity index 94%
+rename from src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityRemoveMultiCatchBitwiseOr.java
+rename to src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityMultiCatchBitwiseOr.java
+index 42b3b5bed..77c2e47a4 100644
+--- a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityRemoveMultiCatchBitwiseOr.java
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityMultiCatchBitwiseOr.java
+@@ -24,7 +24,7 @@ import java.io.File;
+ import java.io.IOException;
+ import java.io.InputStream;
+ 
+-public class InputClassFanOutComplexityRemoveMultiCatchBitwiseOr { // ok
++public class InputClassFanOutComplexityMultiCatchBitwiseOr { // violation '.* Complexity is 5 .*'
+     public static void main(String[] args) {
+         try {
+             System.out.println(args[7]);

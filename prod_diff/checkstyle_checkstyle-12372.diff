@@ -1,0 +1,147 @@
+diff --git a/.ci/checker-framework-suppressions/checker-nullness-optional-interning-suppressions.xml b/.ci/checker-framework-suppressions/checker-nullness-optional-interning-suppressions.xml
+index 43cca426d..41bd02ad1 100644
+--- a/.ci/checker-framework-suppressions/checker-nullness-optional-interning-suppressions.xml
++++ b/.ci/checker-framework-suppressions/checker-nullness-optional-interning-suppressions.xml
+@@ -4520,13 +4520,6 @@
+     <lineContent>result = latestDefinition == methodDef.getParent().getParent();</lineContent>
+   </checkerFrameworkError>
+ 
+-  <checkerFrameworkError unstable="false">
+-    <fileName>src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/NoWhitespaceAfterCheck.java</fileName>
+-    <specifier>introduce.eliminate</specifier>
+-    <message>It is bad style to create an Optional just to chain methods to get a value.</message>
+-    <lineContent>return Optional.ofNullable(referencedMemberDot).orElse(referencedClassDot);</lineContent>
+-  </checkerFrameworkError>
+-
+   <checkerFrameworkError unstable="false">
+     <fileName>src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/ParenPadCheck.java</fileName>
+     <specifier>not.interned</specifier>
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/NoWhitespaceAfterCheck.java b/src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/NoWhitespaceAfterCheck.java
+index 4ce471673..2049871bf 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/NoWhitespaceAfterCheck.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/NoWhitespaceAfterCheck.java
+@@ -506,13 +506,12 @@ public class NoWhitespaceAfterCheck extends AbstractCheck {
+         final DetailAST previousElement;
+         final DetailAST ident = getIdentLastToken(parent.getParent());
+         final DetailAST lastTypeNode = getTypeLastNode(ast);
+-        final boolean isTypeCast = parent.getParent().getType() == TokenTypes.TYPECAST;
+         // sometimes there are ident-less sentences
+         // i.e. "(Object[]) null", but in casual case should be
+         // checked whether ident or lastTypeNode has preceding position
+         // determining if it is java style or C style
+ 
+-        if (ident == null || isTypeCast || ident.getLineNo() > ast.getLineNo()) {
++        if (ident == null || ident.getLineNo() > ast.getLineNo()) {
+             previousElement = lastTypeNode;
+         }
+         else if (ident.getLineNo() < ast.getLineNo()) {
+@@ -544,9 +543,9 @@ public class NoWhitespaceAfterCheck extends AbstractCheck {
+      */
+     private static DetailAST getIdentLastToken(DetailAST ast) {
+         final DetailAST result;
+-        final DetailAST dot = getPrecedingDot(ast);
++        final Optional<DetailAST> dot = getPrecedingDot(ast);
+         // method call case
+-        if (dot == null || ast.getFirstChild().getType() == TokenTypes.METHOD_CALL) {
++        if (dot.isEmpty() || ast.getFirstChild().getType() == TokenTypes.METHOD_CALL) {
+             final DetailAST methodCall = ast.findFirstToken(TokenTypes.METHOD_CALL);
+             if (methodCall == null) {
+                 result = ast.findFirstToken(TokenTypes.IDENT);
+@@ -557,7 +556,7 @@ public class NoWhitespaceAfterCheck extends AbstractCheck {
+         }
+         // qualified name case
+         else {
+-            result = dot.getFirstChild().getNextSibling();
++            result = dot.get().getFirstChild().getNextSibling();
+         }
+         return result;
+     }
+@@ -569,11 +568,24 @@ public class NoWhitespaceAfterCheck extends AbstractCheck {
+      * @param leftBracket the ast we are checking
+      * @return dot preceding the left bracket
+      */
+-    private static DetailAST getPrecedingDot(DetailAST leftBracket) {
+-        final DetailAST referencedClassDot =
+-                leftBracket.getParent().findFirstToken(TokenTypes.DOT);
++    private static Optional<DetailAST> getPrecedingDot(DetailAST leftBracket) {
+         final DetailAST referencedMemberDot = leftBracket.findFirstToken(TokenTypes.DOT);
+-        return Optional.ofNullable(referencedMemberDot).orElse(referencedClassDot);
++        final Optional<DetailAST> result = Optional.ofNullable(referencedMemberDot);
++        return result.or(() -> getReferencedClassDot(leftBracket));
++    }
+ 
++    /**
++     * Gets the dot preceding a class reference.
++     *
++     * @param leftBracket the ast we are checking
++     * @return dot preceding the left bracket
++     */
++    private static Optional<DetailAST> getReferencedClassDot(DetailAST leftBracket) {
++        final DetailAST parent = leftBracket.getParent();
++        Optional<DetailAST> classDot = Optional.empty();
++        if (parent.getType() != TokenTypes.ASSIGN) {
++            classDot = Optional.ofNullable(parent.findFirstToken(TokenTypes.DOT));
++        }
++        return classDot;
+     }
+ }
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/whitespace/nowhitespaceafter/InputNoWhitespaceAfterTestAssignment.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/whitespace/nowhitespaceafter/InputNoWhitespaceAfterTestAssignment.java
+new file mode 100644
+index 000000000..de870d857
+--- /dev/null
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/whitespace/nowhitespaceafter/InputNoWhitespaceAfterTestAssignment.java
+@@ -0,0 +1,41 @@
++/*
++NoWhitespaceAfter
++allowLineBreaks = false
++tokens = (default)ARRAY_INIT, AT, INC, DEC, UNARY_MINUS, UNARY_PLUS, BNOT, LNOT, \
++         DOT, ARRAY_DECLARATOR, INDEX_OP
++
++
++*/
++
++package com.puppycrawl.tools.checkstyle.checks.whitespace.nowhitespaceafter; // ^ 2 violations above
++
++public class InputNoWhitespaceAfterTestAssignment {
++
++    Object o;
++    static boolean b = true;
++
++    void some() {
++        Object oo = new Object[4];
++        Object[] oo2 = new Object[4];
++        this.o = ((Object[]) oo)[1]; // ok
++        this.o = ((java.lang.Object[]) oo)[1]; // ok
++        this.o = oo2[1];
++        QualifiedAssignment.o1 = ((Object[]) oo)[1]; // ok
++        QualifiedAssignment.o1 = ((java.lang.Object[]) oo)[1]; // ok
++        QualifiedAssignment.o1 = oo2[1];
++        QualifiedAssignment qa1 = null;
++        QualifiedAssignment[] qa2 = null;
++        int idx = 0;
++        (qa1 = (QualifiedAssignment)qa2[idx]).o1 = (new QualifiedAssignment[idx][idx][idx])[idx];
++        (b ? (new QualifiedAssignment().q1 = new QualifiedAssignment()) :
++            (QualifiedAssignment)(new QualifiedAssignment().q1 = new QualifiedAssignment())).q1 =
++            (new QualifiedAssignment[new QualifiedAssignment().idx = (QualifiedAssignment.idx =
++                QualifiedAssignment.idx)])[QualifiedAssignment.idx];
++    }
++}
++
++class QualifiedAssignment {
++    static Object o1;
++    static QualifiedAssignment q1;
++    static int idx = 1;
++}
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/whitespace/nowhitespaceafter/InputNoWhitespaceAfterTestDefault.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/whitespace/nowhitespaceafter/InputNoWhitespaceAfterTestDefault.java
+index 005d752ae..ecd13e22e 100644
+--- a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/whitespace/nowhitespaceafter/InputNoWhitespaceAfterTestDefault.java
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/whitespace/nowhitespaceafter/InputNoWhitespaceAfterTestDefault.java
+@@ -192,7 +192,7 @@ class InputNoWhitespaceAfterTestDefault
+     /** bug 806243 (NoWhitespaceBeforeCheck violation for anonymous inner class) */
+     void bug806243()
+     {
+-        Object o = new InputNoWhitespaceAfterTestDefault() {
++        Object o = new InputNoWhitespaceAfterTestAssignment() {
+             private int j ;
+             //           ^ whitespace
+         };
