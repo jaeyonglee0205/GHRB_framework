@@ -3,10 +3,11 @@
 cd Docker
 docker build -t ghrb_framework .
 ```
-
 ```
 sh run_docker_container.sh
 ```
+
+Inside the docker:
 
 ```
 cd framework/Docker
@@ -19,6 +20,7 @@ chmod +x cli.py
 
 cd debug
 python collector.py
+cd ..
 ```
 
 Check whether cli.py runs correctly  
