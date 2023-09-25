@@ -6,6 +6,7 @@ from os import path
 from collections import defaultdict
 from tqdm import tqdm
 import glob
+import shlex
 
 #from util import config, fix_build_env
 import re
@@ -179,6 +180,10 @@ def call_checkout(pid, vid, dir, patch):
             #print("dir is not None 1")
             if not os.path.isdir(dir):
                 os.mkdir(dir)
+
+            p = sp.run(['git', 'fetch', 'origin', commit], 
+                                        stderr=sp.PIPE, stdout=sp.PIPE,
+                                        cwd=repo_path)
 
             run = sp.run(['git', f'--work-tree={dir}', 'checkout', commit, '--', '.'], cwd=repo_path)
             output += (f"Checking out \033[92m{commit}\033[0m to \033[92m{dir}\033[0m\n")

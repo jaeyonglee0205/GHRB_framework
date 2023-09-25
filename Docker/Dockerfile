@@ -1,5 +1,7 @@
 FROM ubuntu:20.04
 
+
+
 ENV DEBIAN_FRONTEND noninteractive
 
 # set default java environment variable
@@ -71,3 +73,5 @@ RUN tar -xzvf /tmp/apache-maven-3.8.6-bin.tar.gz -C /opt
 
 
 RUN git config --global --add safe.directory '*'
+
+WORKDIR /root/framework

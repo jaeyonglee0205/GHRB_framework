@@ -5,17 +5,19 @@ docker build -t ghrb_framework .
 ```
 
 ```
+sh run_docker_container.sh
+```
+
+```
 cd framework/Docker
 pip install -r requirements.txt  
 cd ..
 ```
 
 ```
-sh run_docker_container.sh
-```
-
-```
 chmod +x cli.py
+
+cd debug
 python collector.py
 ```
 
