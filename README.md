@@ -10,21 +10,15 @@ For AMD64:
 sh run_docker_container.sh
 ```
 
-For ARM64:
-
-```
-sh arm64_run_docker_container.sh
-```
-
 Inside the docker:
 
 ```
-cd framework/Docker
+cd /root/framework/Docker
 pip install -r requirements.txt  
-cd ..
 ```
 
 ```
+cd /root/framework
 chmod +x cli.py
 
 cd debug

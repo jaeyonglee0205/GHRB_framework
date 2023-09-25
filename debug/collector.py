@@ -18,24 +18,24 @@ def clone_repo (owner, name):
 def project_id_collector():
     project_map = defaultdict(dict)
     
-    for file in os.listdir("verified_bug/"): 
+    for file in os.listdir("/root/framework/verified_bug/"): 
         project_id = file.split("_")[-1].replace(".json", "")
         owner = file.split("_")[-2]
         
-        with open("verified_bug/" + file, 'r') as f:
+        with open("/root/framework/verified_bug/" + file, 'r') as f:
             active_bug_list = json.load(f)
         
         number_of_bugs = len(active_bug_list)
         commit_db = f"commit_db/{project_id}_bugs.csv"
 
-        with open("root/framework/data/requirements.json", 'r') as f:
+        with open("/root/framework/data/requirements.json", 'r') as f:
             requirements = json.load(f)
 
         repo_path = None
 
         clone_repo(owner, project_id)
 
-        for dir in os.listdir("repos/"):
+        for dir in os.listdir("/root/framework/repos/"):
             if project_id in dir:
                 repo_path = os.path.abspath(os.path.join('repos/', f'{dir}'))
         project_map[project_id]["owner"] = owner
@@ -45,15 +45,15 @@ def project_id_collector():
         project_map[project_id]['requirements'] = requirements[project_id]
 
     
-    with open('root/framework/data/project_id.json', 'w') as f:
+    with open('/root/framework/data/project_id.json', 'w') as f:
         json.dump(project_map, f, indent=2)
 
 def commit_db_collector():
-    for file in os.listdir("verified_bug/"): 
+    for file in os.listdir("/root/framework/verified_bug/"): 
         project_id = file.split("_")[-1].replace(".json", "")
         owner = file.split("_")[-2]
         
-        with open("verified_bug/" + file, 'r') as f:
+        with open("/root/framework/verified_bug/" + file, 'r') as f:
             active_bug_list = json.load(f)
         
         commit_db = pd.DataFrame(columns=['bug_id', 'revision.id.buggy', 'revision.id.fixed', 'report.id', 'report.url'], 
@@ -73,14 +73,14 @@ def commit_db_collector():
 def find_og_collector():
     total_list = set()
     filtered = []
-    with open('root/framework/data/og_mapping.json', 'r') as f:
+    with open('/root/framework/data/og_mapping.json', 'r') as f:
         og_mapping = json.load(f)
     
     for key, value in og_mapping.items():
         total_list.add(key)
 
-    for file in os.listdir("verified_bug/"):
-        with open("verified_bug/" + file, 'r') as f:
+    for file in os.listdir("/root/framework/verified_bug/"):
+        with open("/root/framework/verified_bug/" + file, 'r') as f:
             active_bug_list = json.load(f)
         for key in active_bug_list.keys():
             #print(key)
@@ -100,8 +100,8 @@ def find_og_collector():
 def find_total_bug():
     bug_dict = defaultdict(int)
     total = 0
-    for file in os.listdir("verified_bug/"):
-        with open("verified_bug/" + file, 'r') as f:
+    for file in os.listdir("/root/framework/verified_bug/"):
+        with open("/root/framework/verified_bug/" + file, 'r') as f:
             active_bug_list = json.load(f)
         name = str(file).replace(".json", '')
         bug_dict[name.split("_")[-1]] = len(active_bug_list)
@@ -113,15 +113,15 @@ def find_total_bug():
 
 def remove_test_diff ():
     all_bug = []
-    for file in os.listdir("verified_bug/"):
-        with open("verified_bug/" + file, 'r') as f:
+    for file in os.listdir("/root/framework/verified_bug/"):
+        with open("/root/framework/verified_bug/" + file, 'r') as f:
             active_bug_list = json.load(f)
         for key in active_bug_list.keys():
             all_bug.append(key)
     i = 0
     bug_dict = defaultdict(int)
     
-    for diff in os.listdir("root/framework/data/test_diff/"):
+    for diff in os.listdir("/root/framework/data/test_diff/"):
         bug_dict[diff.split("_")[-2] + "_" + diff.split("_")[-1].split("-")[0]] += 1
 
         name = diff.replace(".diff", "")
