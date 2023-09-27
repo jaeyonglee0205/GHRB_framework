@@ -1,17 +1,3 @@
-diff --git a/config/checkstyle_checks.xml b/config/checkstyle_checks.xml
-index 24fea637f..470e3f0ff 100644
---- a/config/checkstyle_checks.xml
-+++ b/config/checkstyle_checks.xml
-@@ -660,7 +660,8 @@
-                        FileNotFoundException, TestException, Log, Sets, Multimap,
-                        TokenStreamRecognitionException, RecognitionException,
-                        TokenStreamException, IOException, Override, Deprecated, SafeVarargs,
--                       SuppressWarnings, FunctionalInterface"/>
-+                       SuppressWarnings, FunctionalInterface, NoSuchMethodException,
-+                       InvocationTargetException, IllegalAccessException"/>
-     </module>
-     <module name="CyclomaticComplexity">
-       <property name="switchBlockAsSingleDecisionPoint" value="true"/>
 diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/checks/metrics/AbstractClassCouplingCheck.java b/src/main/java/com/puppycrawl/tools/checkstyle/checks/metrics/AbstractClassCouplingCheck.java
 index d330f5ea8..7620e4a48 100644
 --- a/src/main/java/com/puppycrawl/tools/checkstyle/checks/metrics/AbstractClassCouplingCheck.java

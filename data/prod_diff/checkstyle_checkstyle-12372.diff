@@ -1,21 +1,3 @@
-diff --git a/.ci/checker-framework-suppressions/checker-nullness-optional-interning-suppressions.xml b/.ci/checker-framework-suppressions/checker-nullness-optional-interning-suppressions.xml
-index 43cca426d..41bd02ad1 100644
---- a/.ci/checker-framework-suppressions/checker-nullness-optional-interning-suppressions.xml
-+++ b/.ci/checker-framework-suppressions/checker-nullness-optional-interning-suppressions.xml
-@@ -4520,13 +4520,6 @@
-     <lineContent>result = latestDefinition == methodDef.getParent().getParent();</lineContent>
-   </checkerFrameworkError>
- 
--  <checkerFrameworkError unstable="false">
--    <fileName>src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/NoWhitespaceAfterCheck.java</fileName>
--    <specifier>introduce.eliminate</specifier>
--    <message>It is bad style to create an Optional just to chain methods to get a value.</message>
--    <lineContent>return Optional.ofNullable(referencedMemberDot).orElse(referencedClassDot);</lineContent>
--  </checkerFrameworkError>
--
-   <checkerFrameworkError unstable="false">
-     <fileName>src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/ParenPadCheck.java</fileName>
-     <specifier>not.interned</specifier>
 diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/NoWhitespaceAfterCheck.java b/src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/NoWhitespaceAfterCheck.java
 index 4ce471673..2049871bf 100644
 --- a/src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/NoWhitespaceAfterCheck.java

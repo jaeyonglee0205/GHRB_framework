@@ -1,0 +1,2761 @@
+jackson-dataformat-xml_1
+
+[1mTEST: .com.fasterxml.jackson.dataformat.xml.misc.XmlTextTest[0m
+
+[91mFailure/Error info:[0m
+    XmlTextTest.testRawValue:95 expected:<<RawValue><[a>b</a]></RawValue>> but was:<<RawValue><[foo><a>b</a></foo]></RawValue>>
+------------------------------------------------------------------------
+
+[1mTEST: .com.fasterxml.jackson.dataformat.xml.stream.XmlGeneratorTest[0m
+
+[91mFailure/Error info:[0m
+    XmlGeneratorTest.testRawCharArrayValueUnwrapped:237 expected:<<root>[value]</root>> but was:<<root>[<elem>value</elem>]</root>>
+   XmlGeneratorTest.testRawOffsetValueUnwrapped:219 expected:<<root>[value]</root>> but was:<<root>[<elem>value</elem>]</root>>
+   XmlGeneratorTest.testRawSimpleValueUnwrapped:201 expected:<<root>[value]</root>> but was:<<root>[<elem>value</elem>]</root>>
+------------------------------------------------------------------------
+
+checkstyle_1
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.indentation.IndentationCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    IndentationCheckTest.testIndentationLineBreakVariableDeclaration:2922->verifyWarns:156->getLinesWithWarnAndCheckComments:68 » NoSuchFile
+   IndentationCheckTest.testIndentationLongConcatenatedString:2910->verifyWarns:156->getLinesWithWarnAndCheckComments:68 » NoSuchFile
+------------------------------------------------------------------------
+
+checkstyle_2
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.metrics.ClassFanOutComplexityCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    ClassFanOutComplexityCheckTest.testClassFanOutComplexityMultiCatchBitwiseOr:280->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+   ClassFanOutComplexityCheckTest.testImplementsAndNestedCount:239->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_3
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocMethodCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    JavadocMethodCheckTest.testAccessModifierEnum:474->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+   JavadocMethodCheckTest.testDefaultAccessModifier:465->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_4
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.imports.UnusedImportsCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    UnusedImportsCheckTest.testArrayRef:153->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_5
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.coding.IllegalTypeCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    IllegalTypeCheckTest.testRecordComponentsDefault:350->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+   IllegalTypeCheckTest.testRecordComponentsFinal:363->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+   IllegalTypeCheckTest.testRecordComponentsPrivateFinal:376->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+   IllegalTypeCheckTest.testRecordComponentsPublicProtectedStatic:387->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_6
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.coding.EqualsAvoidNullCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    EqualsAvoidNullCheckTest.testEqualsSuperClass:187->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_7
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.whitespace.OperatorWrapCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    OperatorWrapCheckTest.testArraysAssign:138->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_8
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.coding.SimplifyBooleanExpressionCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    SimplifyBooleanExpressionCheckTest.testIt:54->AbstractModuleTestSupport.verifyWithInlineConfigParser:271->AbstractModuleTestSupport.verify:287->AbstractModuleTestSupport.verify:325->AbstractModuleTestSupport.verify:347->AbstractModuleTestSupport.verify:377->AbstractModuleTestSupport.lambda$verify$1:380 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/coding/simplifybooleanexpression/InputSimplifyBooleanExpression.java differ.
+missing (8)
+#1      : 95:27: Expression can be simplified.
+#2      : 96:24: Expression can be simplified.
+#3      : 98:27: Expression can be simplified.
+#4      : 104:23: Expression can be simplified.
+#5      : 106:17: Expression can be simplified.
+#6      : 109:21: Expression can be simplified.
+#7      : 110:23: Expression can be simplified.
+#8      : 111:20: Expression can be simplified.
+---
+expected: [22:18: Expression can be simplified., 43:36: Expression can be simplified., 44:36: Expression can be simplified., 45:16: Expression can be simplified., 45:32: Expression can be simplified., 95:27: Expression can be simplified., 96:24: Expression can be simplified., 98:27: Expression can be simplified., 104:23: Expression can be simplified., 106:17: Expression can be simplified., 109:21: Expression can be simplified., 110:23: Expression can be simplified., 111:20: Expression can be simplified.]
+but was : [22:18: Expression can be simplified., 43:36: Expression can be simplified., 44:36: Expression can be simplified., 45:16: Expression can be simplified., 45:32: Expression can be simplified.]
+------------------------------------------------------------------------
+
+checkstyle_9
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.coding.StringLiteralEqualityCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    StringLiteralEqualityCheckTest.testConcatenatedStringLiterals:76->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+   StringLiteralEqualityCheckTest.testConcatenatedTextBlocks:93->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_10
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.modifier.RedundantModifierCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    RedundantModifierCheckTest.testGetAcceptableTokens:159 Invalid acceptable tokens
+value of: getAcceptableTokens()
+expected: [9, 10, 161, 15, 8, 14, 154, 178, 157]
+but was : [9, 10, 161, 15, 8, 14, 154, 178]
+wrong length
+expected: 9
+but was : 8
+   RedundantModifierCheckTest.testNestedClassConsInPublicInterfaceHasValidPublicModifier:137->AbstractModuleTestSupport.verifyWithInlineConfigParser:271->AbstractModuleTestSupport.verify:287->AbstractModuleTestSupport.verify:325->AbstractModuleTestSupport.verify:347->AbstractModuleTestSupport.verify:377->AbstractModuleTestSupport.lambda$verify$1:380 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/modifier/redundantmodifier/InputRedundantModifierNestedClassInPublicInterfaceRedundantModifiers.java differ.
+missing (1): 24:13: Redundant 'public' modifier.
+---
+expected   : [22:17: Redundant 'public' modifier., 24:13: Redundant 'public' modifier., 26:21: Redundant 'public' modifier., 37:12: Redundant 'public' modifier., 45:17: Redundant 'public' modifier.]
+but was    : [22:17: Redundant 'public' modifier., 26:21: Redundant 'public' modifier., 37:12: Redundant 'public' modifier., 45:17: Redundant 'public' modifier.]
+   RedundantModifierCheckTest.testNestedDef:312->AbstractModuleTestSupport.verifyWithInlineConfigParser:271->AbstractModuleTestSupport.verify:287->AbstractModuleTestSupport.verify:325->AbstractModuleTestSupport.verify:347->AbstractModuleTestSupport.verify:377->AbstractModuleTestSupport.lambda$verify$1:380 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/modifier/redundantmodifier/InputRedundantModifierNestedDef.java differ.
+missing (16)
+#1      : 19:5: Redundant 'public' modifier.
+#2      : 19:12: Redundant 'static' modifier.
+#3      : 22:5: Redundant 'public' modifier.
+#4      : 22:12: Redundant 'abstract' modifier.
+#5      : 22:21: Redundant 'static' modifier.
+#6      : 26:1: Redundant 'abstract' modifier.
+#7      : 28:5: Redundant 'public' modifier.
+#8      : 28:12: Redundant 'static' modifier.
+#9      : 32:9: Redundant 'public' modifier.
+#10     : 32:16: Redundant 'static' modifier.
+#11     : 34:13: Redundant 'public' modifier.
+#12     : 34:20: Redundant 'static' modifier.
+#13     : 37:13: Redundant 'public' modifier.
+#14     : 37:20: Redundant 'static' modifier.
+#15     : 40:13: Redundant 'public' modifier.
+#16     : 40:20: Redundant 'static' modifier.
+---
+expected: [10:5: Redundant 'public' modifier., 11:5: Redundant 'static' modifier., 12:5: Redundant 'public' modifier., 12:12: Redundant 'static' modifier., 13:5: Redundant 'static' modifier., 13:12: Redundant 'public' modifier., 16:9: Redundant 'public' modifier., 19:5: Redundant 'public' modifier., 19:12: Redundant 'static' modifier., 22:5: Redundant 'public' modifier., 22:12: Redundant 'abstract' modifier., 22:21: Redundant 'static' modifier., 26:1: Redundant 'abstract' modifier., 28:5: Redundant 'public' modifier., 28:12: Redundant 'static' modifier., 32:9: Redundant 'public' modifier., 32:16: Redundant 'static' modifier., 34:13: Redundant 'public' modifier., 34:20: Redundant 'static' modifier., 37:13: Redundant 'public' modifier., 37:20: Redundant 'static' modifier., 40:13: Redundant 'public' modifier., 40:20: Redundant 'static' modifier.]
+but was : [10:5: Redundant 'public' modifier., 11:5: Redundant 'static' modifier., 12:5: Redundant 'public' modifier., 12:12: Redundant 'static' modifier., 13:5: Redundant 'static' modifier., 13:12: Redundant 'public' modifier., 16:9: Redundant 'public' modifier.]
+   RedundantModifierCheckTest.testWrongTokenType:168 IllegalStateException was expected ==> Unexpected exception type thrown ==> expected: <java.lang.IllegalStateException> but was: <java.lang.NullPointerException>
+------------------------------------------------------------------------
+
+checkstyle_11
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    SummaryJavadocCheckTest.testIncorrect:87->AbstractModuleTestSupport.verifyWithInlineConfigParser:272->AbstractModuleTestSupport.verify:288->AbstractModuleTestSupport.verify:326->AbstractModuleTestSupport.verify:348->AbstractModuleTestSupport.verify:378->AbstractModuleTestSupport.lambda$verify$1:381 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocIncorrect.java differ.
+unexpected (1): 155: Summary of Javadoc is missing an ending period.
+---
+expected      : [24: Summary javadoc is missing., 42: Summary javadoc is missing., 47: First sentence of Javadoc is missing an ending period., 57: Forbidden summary fragment., 63: Summary javadoc is missing., 68: Summary javadoc is missing., 79: Summary javadoc is missing., 93: Forbidden summary fragment., 113: Summary javadoc is missing., 126: First sentence of Javadoc is missing an ending period., 131: Summary javadoc is missing., 136: Summary javadoc is missing., 142: First sentence of Javadoc is missing an ending period., 147: Summary javadoc is missing., 150: Summary javadoc is missing.]
+but was       : [24: Summary javadoc is missing., 42: Summary javadoc is missing., 47: First sentence of Javadoc is missing an ending period., 57: Forbidden summary fragment., 63: Summary javadoc is missing., 68: Summary javadoc is missing., 79: Summary javadoc is missing., 93: Forbidden summary fragment., 113: Summary javadoc is missing., 126: First sentence of Javadoc is missing an ending period., 131: Summary javadoc is missing., 136: Summary javadoc is missing., 142: First sentence of Javadoc is missing an ending period., 147: Summary javadoc is missing., 150: Summary javadoc is missing., 155: Summary of Javadoc is missing an ending period.]
+   SummaryJavadocCheckTest.testInlineCorrect:64->AbstractModuleTestSupport.verifyWithInlineConfigParser:272->AbstractModuleTestSupport.verify:288->AbstractModuleTestSupport.verify:326->AbstractModuleTestSupport.verify:348->AbstractModuleTestSupport.verify:376 Files with expected violations and actual violations differ.
+value of   : keySet()
+missing (1): /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineCorrect.java
+---
+expected   : [/root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineCorrect.java]
+but was    : []
+   SummaryJavadocCheckTest.testInlineForbidden:106->AbstractModuleTestSupport.verifyWithInlineConfigParser:272->AbstractModuleTestSupport.verify:288->AbstractModuleTestSupport.verify:326->AbstractModuleTestSupport.verify:348->AbstractModuleTestSupport.verify:378->AbstractModuleTestSupport.lambda$verify$1:381 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineForbidden.java differ.
+missing (1)   : 114: First sentence of Javadoc is missing an ending period.
+unexpected (1): 115: Summary of Javadoc is missing an ending period.
+---
+expected      : [26: Summary of Javadoc is missing an ending period., 31: Summary of Javadoc is missing an ending period., 36: Summary of Javadoc is missing an ending period., 41: Forbidden summary fragment., 45: Summary javadoc is missing., 49: Summary of Javadoc is missing an ending period., 59: Forbidden summary fragment., 80: First sentence of Javadoc is missing an ending period., 94: Summary of Javadoc is missing an ending period., 108: Summary javadoc is missing., 114: First sentence of Javadoc is missing an ending period.]
+but was       : [26: Summary of Javadoc is missing an ending period., 31: Summary of Javadoc is missing an ending period., 36: Summary of Javadoc is missing an ending period., 41: Forbidden summary fragment., 45: Summary javadoc is missing., 49: Summary of Javadoc is missing an ending period., 59: Forbidden summary fragment., 80: First sentence of Javadoc is missing an ending period., 94: Summary of Javadoc is missing an ending period., 108: Summary javadoc is missing., 115: Summary of Javadoc is missing an ending period.]
+ Errors: 
+   SummaryJavadocCheckTest.testIncorrectUsageOfSummaryTag:165->AbstractModuleTestSupport.verifyWithInlineConfigParser:268 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_12
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.design.FinalClassCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    FinalClassCheckTest.testFinalClassInnerAndNestedClasses:148->AbstractModuleTestSupport.verifyWithInlineConfigParser:237->AbstractModuleTestSupport.verify:253->AbstractModuleTestSupport.verify:291->AbstractModuleTestSupport.verify:313->AbstractModuleTestSupport.verify:343->AbstractModuleTestSupport.lambda$verify$1:346 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/design/finalclass/InputFinalClassInnerAndNestedClass.java differ.
+missing (1): 84:9: Class c should be declared as final.
+---
+expected   : [19:5: Class SameName should be declared as final., 45:9: Class SameName should be declared as final., 69:13: Class B should be declared as final., 84:9: Class c should be declared as final.]
+but was    : [19:5: Class SameName should be declared as final., 45:9: Class SameName should be declared as final., 69:13: Class B should be declared as final.]
+ Errors: 
+   FinalClassCheckTest.testFinalClassAnonymousInnerClass:204->AbstractModuleTestSupport.verifyWithInlineConfigParser:233 » Checkstyle
+   FinalClassCheckTest.testFinalClassNestedInEnum:224->AbstractModuleTestSupport.verifyWithInlineConfigParser:233 » Checkstyle
+   FinalClassCheckTest.testFinalClassNestedInInterface:214->AbstractModuleTestSupport.verifyWithInlineConfigParser:233 » Checkstyle
+   FinalClassCheckTest.testFinalClassNestedInRecord:234->AbstractModuleTestSupport.verifyWithInlineConfigParser:233 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_13
+
+[1mTEST: com.puppycrawl.tools.checkstyle.checks.javadoc.InvalidJavadocPositionCheckTest[0m
+
+[91mFailure/Error info:[0m
+    InvalidJavadocPositionCheckTest.testDefault:93->AbstractModuleTestSupport.verifyWithInlineConfigParser:237->AbstractModuleTestSupport.verify:253->AbstractModuleTestSupport.verify:291->AbstractModuleTestSupport.verify:313->AbstractModuleTestSupport.verify:343->AbstractModuleTestSupport.lambda$verify$1:346 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/invalidjavadocposition/InputInvalidJavadocPosition.java differ.
+missing (5)
+#1      : 73:6: Javadoc comment is placed in the wrong location.
+#2      : 76:24: Javadoc comment is placed in the wrong location.
+#3      : 79:43: Javadoc comment is placed in the wrong location.
+#4      : 82:69: Javadoc comment is placed in the wrong location.
+#5      : 94:1: Javadoc comment is placed in the wrong location.
+
+unexpected (1)
+#1      : 68:1: Javadoc comment is placed in the wrong location.
+---
+expected: [7:9: Javadoc comment is placed in the wrong location., 10:1: Javadoc comment is placed in the wrong location., 13:1: Javadoc comment is placed in the wrong location., 16:5: Javadoc comment is placed in the wrong location., 21:5: Javadoc comment is placed in the wrong location., 24:5: Javadoc comment is placed in the wrong location., 34:9: Javadoc comment is placed in the wrong location., 35:17: Javadoc comment is placed in the wrong location., 36:17: Javadoc comment is placed in the wrong location., 46:10: Javadoc comment is placed in the wrong location., 47:19: Javadoc comment is placed in the wrong location., 48:19: Javadoc comment is placed in the wrong location., 49:21: Javadoc comment is placed in the wrong location., 50:23: Javadoc comment is placed in the wrong location., 51:23: Javadoc comment is placed in the wrong location., 54:1: Javadoc comment is placed in the wrong location., 59:7: Javadoc comment is placed in the wrong location., 60:36: Javadoc comment is placed in the wrong location., 63:9: Javadoc comment is placed in the wrong location., 64:9: Javadoc comment is placed in the wrong location., 65:9: Javadoc comment is placed in the wrong location., 73:6: Javadoc comment is placed in the wrong location., 76:24: Javadoc comment is placed in the wrong location., 79:43: Javadoc comment is placed in the wrong location., 82:69: Javadoc comment is placed in the wrong location., 94:1: Javadoc comment is placed in the wrong location.]
+but was : [7:9: Javadoc comment is placed in the wrong location., 10:1: Javadoc comment is placed in the wrong location., 13:1: Javadoc comment is placed in the wrong location., 16:5: Javadoc comment is placed in the wrong location., 21:5: Javadoc comment is placed in the wrong location., 24:5: Javadoc comment is placed in the wrong location., 34:9: Javadoc comment is placed in the wrong location., 35:17: Javadoc comment is placed in the wrong location., 36:17: Javadoc comment is placed in the wrong location., 46:10: Javadoc comment is placed in the wrong location., 47:19: Javadoc comment is placed in the wrong location., 48:19: Javadoc comment is placed in the wrong location., 49:21: Javadoc comment is placed in the wrong location., 50:23: Javadoc comment is placed in the wrong location., 51:23: Javadoc comment is placed in the wrong location., 54:1: Javadoc comment is placed in the wrong location., 59:7: Javadoc comment is placed in the wrong location., 60:36: Javadoc comment is placed in the wrong location., 63:9: Javadoc comment is placed in the wrong location., 64:9: Javadoc comment is placed in the wrong location., 65:9: Javadoc comment is placed in the wrong location., 68:1: Javadoc comment is placed in the wrong location.]
+------------------------------------------------------------------------
+
+checkstyle_14
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.whitespace.NoWhitespaceAfterCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    NoWhitespaceAfterCheckTest.testAssignment:69->AbstractModuleTestSupport.verifyWithInlineConfigParser:233 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_15
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.coding.IllegalTypeCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    IllegalTypeCheckTest.testTrailingWhitespaceInConfig:395->AbstractModuleTestSupport.verifyWithInlineConfigParser:233 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_16
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.modifier.ClassMemberImpliedModifierCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    ClassMemberImpliedModifierCheckTest.testClassMemberImpliedModifierRecords:127->AbstractModuleTestSupport.verifyWithInlineConfigParser:237->AbstractModuleTestSupport.verify:280->AbstractModuleTestSupport.verify:318->AbstractModuleTestSupport.verify:340->AbstractModuleTestSupport.verify:370->AbstractModuleTestSupport.lambda$verify$1:373 Violations for /root/framework/testing/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/modifier/classmemberimpliedmodifier/InputClassMemberImpliedModifierRecords.java differ.
+missing (1): 43:13: Implied modifier 'static' should be explicit.
+---
+expected   : [16:5: Implied modifier 'static' should be explicit., 20:5: Implied modifier 'static' should be explicit., 24:5: Implied modifier 'static' should be explicit., 29:9: Implied modifier 'static' should be explicit., 33:9: Implied modifier 'static' should be explicit., 37:9: Implied modifier 'static' should be explicit., 43:13: Implied modifier 'static' should be explicit.]
+but was    : [16:5: Implied modifier 'static' should be explicit., 20:5: Implied modifier 'static' should be explicit., 24:5: Implied modifier 'static' should be explicit., 29:9: Implied modifier 'static' should be explicit., 33:9: Implied modifier 'static' should be explicit., 37:9: Implied modifier 'static' should be explicit.]
+------------------------------------------------------------------------
+
+jackson-core_1
+
+[1mTEST: .com.fasterxml.jackson.core.filter.BasicParserFilteringTest[0m
+
+[91mFailure/Error info:[0m
+    BasicParserFilteringTest.testExcludeLastArrayInsideArray:764 expected:<[[][]]> but was:<[[][]>
+   BasicParserFilteringTest.testExcludeObjectAtTheEndOfArray:742 expected:<...t":[{"include":true}[]}]> but was:<...t":[{"include":true}[]>
+------------------------------------------------------------------------
+
+jackson-core_2
+
+[1mTEST: .com.fasterxml.jackson.core.util.ReadConstrainedTextBufferTest[0m
+
+[91mFailure/Error info:[0m
+    ReadConstrainedTextBufferTest.appendCharArray:20 Expected java.lang.IllegalStateException to be thrown, but nothing was thrown.
+   ReadConstrainedTextBufferTest.appendSingle:38 Expected java.lang.IllegalStateException to be thrown, but nothing was thrown.
+   ReadConstrainedTextBufferTest.appendString:29 Expected java.lang.IllegalStateException to be thrown, but nothing was thrown.
+------------------------------------------------------------------------
+
+jackson-core_3
+
+[1mTEST: .com.fasterxml.jackson.core.VersionTest[0m
+
+[91mFailure/Error info:[0m
+    VersionTest.testCompareToSnapshotDifferent:68
+   VersionTest.testCompareWhenOnlyFirstHasSnapshot:76 expected:<-1> but was:<0>
+   VersionTest.testCompareWhenOnlySecondHasSnapshot:84 expected:<1> but was:<0>
+------------------------------------------------------------------------
+
+dubbo_1
+
+[1mTEST: .org.apache.dubbo.config.ReferenceConfigTest.java[0m
+
+[91mFailure/Error info:[0m
+    ReferenceConfigTest.testClassLoader:1132 expected: <null> but was: <sun.misc.Launcher$AppClassLoader@7f31245a>
+   ReferenceConfigTest.testDifferentClassLoaderRequest:1097 expected: <org.apache.dubbo.config.ReferenceConfigTest$TestClassLoader1@28b46423> but was: <org.apache.dubbo.config.ReferenceConfigTest$TestClassLoader2@60afd40d>
+------------------------------------------------------------------------
+
+dubbo_2
+
+[1mTEST: .org.apache.dubbo.common.utils.SerializeSecurityConfiguratorTest.java[0m
+
+[91mFailure/Error info:[0m
+    SerializeSecurityConfiguratorTest.testGeneric » StackOverflow
+------------------------------------------------------------------------
+
+jackson-databind_1
+
+[1mTEST: .com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest[0m
+
+[91mFailure/Error info:[0m
+    AnnotatedMemberEqualityTest.testAnnotatedConstructorEquality:41 expected:<[constructor for `com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest$SomeBean` (1 arg), annotations: [null]> but was:<[constructor for `com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest$SomeBean` (1 arg), annotations: [null]>
+   AnnotatedMemberEqualityTest.testAnnotatedFieldEquality:77 expected:<[field com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest$SomeBean#value]> but was:<[field com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest$SomeBean#value]>
+   AnnotatedMemberEqualityTest.testAnnotatedMethodEquality:60 expected:<[method com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest$SomeBean#setValue(java.lang.String)]> but was:<[method com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest$SomeBean#setValue(java.lang.String)]>
+------------------------------------------------------------------------
+
+jackson-databind_2
+
+[1mTEST: .com.fasterxml.jackson.databind.deser.std.EmptyStringAsSingleValueTest[0m
+
+[91mFailure/Error info:[0m
+    EmptyStringAsSingleValueTest.coercedBlankToList:83 expected:<[]> but was:<[ ]>
+   EmptyStringAsSingleValueTest.coercedEmptyToList:47 expected: java.util.Collections$EmptyList<[]> but was: java.util.ArrayList<[]>
+ Errors: 
+   EmptyStringAsSingleValueTest.blankToListWrapper:77 » InvalidFormat Cannot coer...
+   EmptyStringAsSingleValueTest.emptyToListWrapper:41 » InvalidFormat Cannot coer...
+------------------------------------------------------------------------
+
+jackson-databind_3
+
+[1mTEST: .com.fasterxml.jackson.databind.deser.JsonIdentityInfoIdProperty3838Test[0m
+
+[91mFailure/Error info:[0m
+    JsonIdentityInfoIdProperty3838Test.testUniformHandlingForMissingObjectId:185 should not pass
+------------------------------------------------------------------------
+
+jackson-databind_4
+
+[1mTEST: .com.fasterxml.jackson.databind.convert.DisableCoercions3690Test[0m
+
+[91mFailure/Error info:[0m
+    DisableCoercions3690Test.testFailMessage3924:81->_verifyFailedCoercionWithInvalidFormat:98 expected:<class java.lang.String> but was:<class java.util.ArrayList>
+------------------------------------------------------------------------
+
+seata_1
+
+[1mTEST: .io.seata.common.util.DurationUtilTest.java[0m
+
+[91mFailure/Error info:[0m
+    DurationUtilTest.testParseThrowException:56 Expected java.lang.UnsupportedOperationException to be thrown, but nothing was thrown.
+ Errors: 
+   DurationUtilTest.testParse:35 » UnsupportedOperation P2D can't parse to durati...
+------------------------------------------------------------------------
+
+seata_2
+
+[1mTEST: .io.seata.spring.boot.autoconfigure.CorePropertiesTest.java[0m
+
+[91mFailure/Error info:[0m
+    CorePropertiesTest.testRegistryCustomProperties:152 expected: <null> but was: <>
+   CorePropertiesTest.testRegistryNacosProperties:108 expected: <null> but was: <>
+   CorePropertiesTest.testRegistryRedisProperties:126 expected: <null> but was: <>
+------------------------------------------------------------------------
+
+Apktool_1
+
+[1mTEST: brut.androlib.androlib.InvalidSdkBoundingTest[0m
+
+[91mFailure/Error info:[0m
+    brut.androlib.androlib.InvalidSdkBoundingTest > checkForSdkDevelopmentInsaneTestValue FAILED
+    java.lang.NumberFormatException: For input string: "VANILLAICECREAM"
+        at java.base/java.lang.NumberFormatException.forInputString(NumberFormatException.java:67)
+        at java.base/java.lang.Integer.parseInt(Integer.java:668)
+        at java.base/java.lang.Integer.parseInt(Integer.java:786)
+        at brut.androlib.res.AndrolibResources.mapSdkShorthandToVersion(AndrolibResources.java:704)
+        at brut.androlib.res.AndrolibResources.checkTargetSdkVersionBounds(AndrolibResources.java:326)
+        at brut.androlib.androlib.InvalidSdkBoundingTest.checkForSdkDevelopmentInsaneTestValue(InvalidSdkBoundingTest.java:107)
+Finished generating test XML results (0.009 secs) into: /root/framework/testing/brut.apktool/apktool-lib/build/test-results/test
+Generating HTML test report...
+------------------------------------------------------------------------
+
+openapi-generator_1
+
+[1mTEST: .org.openapitools.codegen.python.PythonClientTest.java[0m
+
+[91mFailure/Error info:[0m
+    PythonClientTest.testRegexObjects:463 expected [true] but found [false]
+   PythonClientTest.testUuidExampleWorksEvenIfPatternIsDefined:468 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_2
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.nonRequiredFieldShouldNotIncludeNotNullAnnotation_issue13365:1609->generateFiles:627 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotationWithBeanValidationTrue_issue13365:1632->generateFiles:627 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotation_issue13365:1580->generateFiles:627 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+openapi-generator_3
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.useBeanValidationGenerateAnnotationsForRequestBody_issue13932:1833 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+openapi-generator_4
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotationJakarta_issue13365_issue13885:1547 
+Expecting ListFromStream:
+  ["java.net.URI",
+    "java.util.Objects",
+    "com.fasterxml.jackson.annotation.JsonProperty",
+    "com.fasterxml.jackson.annotation.JsonCreator",
+    "java.time.OffsetDateTime",
+    "io.swagger.v3.oas.annotations.media.Schema",
+    "java.util",
+    "jakarta.annotation.Generated"]
+to contain:
+  ["jakarta.validation.constraints.NotNull"]
+but could not find the following element(s):
+  ["jakarta.validation.constraints.NotNull"]
+
+   SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotation_issue13365:1514 
+Expecting ListFromStream:
+  ["java.net.URI",
+    "java.util.Objects",
+    "com.fasterxml.jackson.annotation.JsonProperty",
+    "com.fasterxml.jackson.annotation.JsonCreator",
+    "java.time.OffsetDateTime",
+    "io.swagger.v3.oas.annotations.media.Schema",
+    "java.util",
+    "javax.annotation.Generated"]
+to contain:
+  ["javax.validation.constraints.NotNull"]
+but could not find the following element(s):
+  ["javax.validation.constraints.NotNull"]
+------------------------------------------------------------------------
+
+openapi-generator_5
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotationWithBeanValidationTrue_issue13365:1952 Should have annotation with name: javax.validation.constraints.Email
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationFalseJava8TrueForFormatEmail:824->beanValidationForFormatEmail:839->beanValidationForFormatEmail:875 File does not contain line [@javax.validation.constraints.Email] expected [true] but found [false]
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationFalseJava8TrueJakartaeeTrueForFormatEmail:834->beanValidationForFormatEmail:875 File does not contain line [@jakarta.validation.constraints.Email] expected [true] but found [false]
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationTrueJava8FalseForFormatEmail:829->beanValidationForFormatEmail:839->beanValidationForFormatEmail:875 File does not contain line [@javax.validation.constraints.Email] expected [true] but found [false]
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationTrueJava8TrueForFormatEmail:881->beanValidationForFormatEmail:839->beanValidationForFormatEmail:875 File does not contain line [@javax.validation.constraints.Email] expected [true] but found [false]
+------------------------------------------------------------------------
+
+openapi-generator_6
+
+[1mTEST: .org.openapitools.codegen.python.PythonClientTest.java[0m
+
+[91mFailure/Error info:[0m
+    PythonClientTest.testSpecWithTooLowVersionThrowsException » Test 
+Method PythonClientTest.testSpecWithTooLowVersionThrowsException()[pri:0, instance:org.openapitools.codegen.python.PythonClientTest@6c0e13b7] should have thrown an exception of type class java.lang.RuntimeException
+------------------------------------------------------------------------
+
+openapi-generator_7
+
+[1mTEST: .org.openapitools.codegen.go.GoClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    GoClientCodegenTest.verifyApiTestWithNullResponse:278 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_8
+
+[1mTEST: .org.openapitools.codegen.go.GoClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    GoClientCodegenTest.verifyReadOnlyAttributes:301 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_9
+
+[1mTEST: .org.openapitools.codegen.DefaultGeneratorTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultGeneratorTest.testIgnoreFileProcessing:90 expected [false] but found [true]
+------------------------------------------------------------------------
+
+openapi-generator_10
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testMultipartBoot:599 Expected to be a single method multipartMixed with parameter(s) [MultipartMixedStatus, MultipartFile, MultipartMixedRequestMarker, List<MultipartMixedStatus>], but found 0
+------------------------------------------------------------------------
+
+openapi-generator_11
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testMultipleSecuritySchemes:2556 expected [petstore_auth] but found [api_key]
+------------------------------------------------------------------------
+
+openapi-generator_12
+
+[1mTEST: .org.openapitools.codegen.java.JavaClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    JavaClientCodegenTest.testDiscriminatorWithMappingIssue14731:1792 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   JavaClientCodegenTest.testDiscriminatorWithoutMappingIssue14731:1832 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testDiscriminatorWithMappingIssue14731:1177 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   SpringCodegenTest.testDiscriminatorWithoutMappingIssue14731:1216 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+openapi-generator_13
+
+[1mTEST: .org.openapitools.codegen.swift5.Swift5ClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    Swift5ClientCodegenTest.prefixExceptionTest:175 expected [AnyCodable] but found [APIAnyCodable]
+   Swift5ClientCodegenTest.suffixExceptionTest:184 expected [AnyCodable] but found [AnyCodableAPI]
+------------------------------------------------------------------------
+
+openapi-generator_14
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testAllOfDefaultEnumType:4307 » IndexOutOfBounds Index 4 out of bounds for length 4
+------------------------------------------------------------------------
+
+openapi-generator_15
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testAddUnsignedToIntegerWithInvalidMaxValue:4502 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_16
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testAllOfDefaultEnumType:4587 » IndexOutOfBounds Index 5 out of bounds for length 5
+------------------------------------------------------------------------
+
+openapi-generator_17
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testReturnTypeVoidWithResponseEntity_issue12341:2290 » NullPointer
+   SpringCodegenTest.testReturnTypeVoidWithoutResponseEntityWithDelegate_issue12341:2333 » NullPointer
+   SpringCodegenTest.testReturnTypeVoidWithoutResponseEntityWithoutDelegateWithAsync_issue12341:2377 » NullPointer
+   SpringCodegenTest.testReturnTypeVoidWithoutResponseEntityWithoutDelegateWithoutAsync_issue12341:2414 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_18
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testDoesNotHasRestControllerHaveController_issue15264:2486 » NullPointer
+   SpringCodegenTest.testHasRestControllerDoesNotHaveController_issue15264:2450 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_19
+
+[1mTEST: .org.openapitools.codegen.java.JavaClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    JavaClientCodegenTest.testDeprecatedProperty:1996 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_20
+
+[1mTEST: .org.openapitools.codegen.InlineModelResolverTest.java[0m
+
+[91mFailure/Error info:[0m
+    InlineModelResolverTest.resolveOperationInlineEnum:1137 NullPointer
+   InlineModelResolverTest.resolveOperationInlineEnumFormParameters:1155 NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_21
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testInlineEnumType:4719 expected [false] but found [true]
+------------------------------------------------------------------------
+
+jsoup_1
+
+[1mTEST: .org.jsoup.helper.W3CDomTest[0m
+
+[91mFailure/Error info:[0m
+    W3CDomTest.htmlInputDocMaintainsHtmlAttributeNames:202 expected: <<!DOCTYPE html SYSTEM "about:legacy-compat"><html><head><META http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><p hành="1" hình="2">unicode attr names</p></body></html>> but was: <<!DOCTYPE html SYSTEM "about:legacy-compat"><html><head><META http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><p hnh="2">unicode attr names</p></body></html>>
+------------------------------------------------------------------------
+
+jsoup_2
+
+[1mTEST: .org.jsoup.safety.SafelistTest[0m
+
+[91mFailure/Error info:[0m
+    SafelistTest.testCopyConstructor_noSideEffectOnAttributes:33 expected: <false> but was: <true>
+   SafelistTest.testCopyConstructor_noSideEffectOnEnforcedAttributes:43 expected: not equal but was: <invalidValue>
+   SafelistTest.testCopyConstructor_noSideEffectOnProtocols:61 expected: <false> but was: <true>
+------------------------------------------------------------------------
+
+jsoup_3
+
+[1mTEST: .org.jsoup.helper.W3CDomTest[0m
+
+[91mFailure/Error info:[0m
+    W3CDomTest.handlesInvalidAttributeNames:153 expected: <<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head/><body name="" style="color: red"/></html>> but was: <<?xml version="1.0" encoding="UTF-8"?><html><head/><body name="" style="color: red"/></html>>
+   W3CDomTest.handlesInvalidTagAsText:187 expected: <<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head/><body>&lt;インセンティブで高収入！&gt;Text <p>More</p></body></html>> but was: <<?xml version="1.0" encoding="UTF-8"?><html><head/><body>&lt;インセンティブで高収入！&gt;Text <p>More</p></body></html>>
+   W3CDomTest.htmlInputDocMaintainsHtmlAttributeNames:165 expected: <<!DOCTYPE html SYSTEM "about:legacy-compat"><html xmlns="http://www.w3.org/1999/xhtml"><head><META http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><p hành="1" hình="2">unicode attr names</p></body></html>> but was: <<!DOCTYPE html SYSTEM "about:legacy-compat"><html><head><META http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><p hành="1" hình="2">unicode attr names</p></body></html>>
+   W3CDomTest.simpleConversion:65 expected: <<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head><title>W3c</title></head><body><p class="one" id="12">Text</p><!-- comment --><invalid>What<script>alert('!')</script></invalid></body></html>> but was: <<?xml version="1.0" encoding="UTF-8"?><html><head><title>W3c</title></head><body><p class="one" id="12">Text</p><!-- comment --><invalid>What<script>alert('!')</script></invalid></body></html>>
+   W3CDomTest.testRoundTripDoctype:279->assertEqualsIgnoreCase:309 expected: <<!doctype html system "about:legacy-compat"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body><p>one</p></body></html>> but was: <<!doctype html system "about:legacy-compat"><html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body><p>one</p></body></html>>
+   W3CDomTest.treatsUndeclaredNamespaceAsLocalName:198 expected: <http://www.w3.org/1999/xhtml> but was: <null>
+   W3CDomTest.xmlInputDocMaintainsHtmlAttributeNames:178 expected: <<!DOCTYPE html SYSTEM "about:legacy-compat"><html xmlns="http://www.w3.org/1999/xhtml"><head><META http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><p hnh="2">unicode attr names coerced</p></body></html>> but was: <<!DOCTYPE html SYSTEM "about:legacy-compat"><html><head><META http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><p hnh="2">unicode attr names coerced</p></body></html>>
+------------------------------------------------------------------------
+
+jsoup_4
+
+[1mTEST: .org.jsoup.safety.SafelistTest[0m
+
+[91mFailure/Error info:[0m
+    SafelistTest.testIsSafeAttribute:83 expected: <true> but was: <false>
+------------------------------------------------------------------------
+
+jsoup_5
+
+[1mTEST: .org.jsoup.parser.HtmlParserTest[0m
+
+[91mFailure/Error info:[0m
+    HtmlParserTest.dropsDuplicateAttributes:58 expected: <<img one="One" two="two">> but was: <<img one="One" one="Two" two="two" one="Three" one="Four" two="Five">>
+   HtmlParserTest.dropsDuplicateAttributes:58 expected: <<form one="One" two="two"></form>> but was: <<form one="One" one="Two" two="two" one="Three" one="Four" two="Five"></form>>
+------------------------------------------------------------------------
+
+gson_1
+
+[1mTEST: .com.google.gson.functional.PrimitiveTest[0m
+
+[91mFailure/Error info:[0m
+    PrimitiveTest.testLazilyParsedNumberSerialization:400 expected:<[1.5]> but was:<[{"value":"1.5"}]>
+ Errors: 
+   PrimitiveTest.testLazilyParsedNumberDeserialization:405 » JsonSyntax java.lang...
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.stream.JsonWriterTest[0m
+
+[91mFailure/Error info:[0m
+    JsonWriterTest.testMalformedNumbers:382 Should have failed writing malformed number: some text
+------------------------------------------------------------------------
+
+gson_2
+
+[1mTEST: com.google.gson.internal.bind.JsonTreeReaderTest[0m
+
+[91mFailure/Error info:[0m
+    JsonTreeReaderTest.testHasNext_endOfDocument:55
+------------------------------------------------------------------------
+
+[1mTEST: com.google.gson.stream.JsonReaderTest[0m
+
+[91mFailure/Error info:[0m
+    JsonReaderTest.testHasNextEndOfDocument:79
+------------------------------------------------------------------------
+
+gson_3
+
+[1mTEST: .com.google.gson.functional.EnumTest[0m
+
+[91mFailure/Error info:[0m
+    EnumTest.testEnumMap:172 ClassCast class java.util.LinkedHashMap cannot be cas...
+------------------------------------------------------------------------
+
+gson_4
+
+[1mTEST: .com.google.gson.stream.JsonWriterTest[0m
+
+[91mFailure/Error info:[0m
+    JsonWriterTest.testFloats:306 expected:<[-0.0,1.0,3.402823[5E38,1.4E-45,0.0,-0.5,2.2250739E-38,3.723379,3.1415927,2.7182817]]> but was:<[-0.0,1.0,3.402823[4663852886E38,1.401298464324817E-45,0.0,-0.5,2.225073907093897E-38,3.723378896713257,3.1415927410125732,2.7182817459106445]]>
+------------------------------------------------------------------------
+
+gson_5
+
+[1mTEST: .com.google.gson.internal.bind.util.ISO8601UtilsTest[0m
+
+[91mFailure/Error info:[0m
+    ISO8601UtilsTest.testDateParseInvalidDay:74 Expected parsing to fail
+   ISO8601UtilsTest.testDateParseInvalidMonth:84 Expected parsing to fail
+------------------------------------------------------------------------
+
+gson_6
+
+[1mTEST: .com.google.gson.GsonTest[0m
+
+[91mFailure/Error info:[0m
+    GsonTest.testGetAdapter_Concurrency:152 expected same:<com.google.gson.GsonTest$2$2@3c0ecd4b> was not:<com.google.gson.GsonTest$2$2@14bf9759>
+   GsonTest.testGetAdapter_Null:100 expected:<type must not be null> but was:<null>
+------------------------------------------------------------------------
+
+gson_7
+
+[1mTEST: .com.google.gson.functional.PrimitiveTest[0m
+
+[91mFailure/Error info:[0m
+    PrimitiveTest.testByteSerialization:70 expected:<[-]128> but was:<[]128>
+   PrimitiveTest.testDoubleSerialization:195 expected:<1[.0]> but was:<1[]>
+   PrimitiveTest.testFloatSerialization:181 expected:<1[.0]> but was:<1[]>
+   PrimitiveTest.testIntSerialization:160 expected:<[-]2147483648> but was:<[]2147483648>
+   PrimitiveTest.testLongSerialization:172 expected:<1[]> but was:<1[.5]>
+   PrimitiveTest.testShortSerialization:115 expected:<[-]32768> but was:<[]32768>
+------------------------------------------------------------------------
+
+gson_8
+
+[1mTEST: .com.google.gson.GsonBuilderTest[0m
+
+[91mFailure/Error info:[0m
+    GsonBuilderTest.testSetVersionInvalid:218
+------------------------------------------------------------------------
+
+gson_9
+
+[1mTEST: .com.google.gson.JsonPrimitiveTest[0m
+
+[91mFailure/Error info:[0m
+    JsonPrimitiveTest.testBigDecimalEquals:329 value of: equals(...)
+expected to be false
+------------------------------------------------------------------------
+
+gson_10
+
+[1mTEST: .com.google.gson.reflect.TypeTokenTest[0m
+
+[91mFailure/Error info:[0m
+    TypeTokenTest.testTypeTokenTypeVariable:309 expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown
+------------------------------------------------------------------------
+
+gson_11
+
+[1mTEST: .com.google.gson.ToNumberPolicyTest[0m
+
+[91mFailure/Error info:[0m
+    ToNumberPolicyTest.testDouble:40 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   ToNumberPolicyTest.testLongOrDouble:85 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   ToNumberPolicyTest.testNullsAreNeverExpected:128 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.functional.DefaultTypeAdaptersTest[0m
+
+[91mFailure/Error info:[0m
+    DefaultTypeAdaptersTest.testClassDeserialization:112 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   DefaultTypeAdaptersTest.testClassSerialization:98 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.functional.NamingPolicyTest[0m
+
+[91mFailure/Error info:[0m
+    NamingPolicyTest.testGsonDuplicateNameDueToBadNamingPolicy:160 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   NamingPolicyTest.testGsonDuplicateNameUsingSerializedNameFieldNamingPolicySerialization:139 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.functional.ObjectTest[0m
+
+[91mFailure/Error info:[0m
+    ObjectTest.testClassWithDuplicateFields:178 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.functional.ReflectionAccessTest[0m
+
+[91mFailure/Error info:[0m
+    ReflectionAccessTest.testInaccessibleField:152->assertInaccessibleException:118 value of:
+    throwable.getMessage()
+expected to end with:
+    
+    See https://github.com/google/gson/blob/main/Troubleshooting.md#reflection-inaccessible
+but was:
+    Failed making field 'java.lang.Throwable#detailMessage' accessible; either increase its visibility or write a custom TypeAdapter for its declaring type.
+    See https://github.com/google/gson/blob/master/Troubleshooting.md#reflection-inaccessible
+   ReflectionAccessTest.testSerializeInternalImplementationObject:143->assertInaccessibleException:118 value of:
+    throwable.getMessage()
+expected to end with:
+    
+    See https://github.com/google/gson/blob/main/Troubleshooting.md#reflection-inaccessible
+but was:
+    Failed making constructor 'java.util.Collections$EmptyList()' accessible; either increase its visibility or write a custom InstanceCreator or TypeAdapter for its declaring type: Unable to make private java.util.Collections$EmptyList() accessible: module java.base does not "opens java.util" to unnamed module @131276c2
+    See https://github.com/google/gson/blob/master/Troubleshooting.md#reflection-inaccessible
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.functional.StreamingTypeAdaptersTest[0m
+
+[91mFailure/Error info:[0m
+    StreamingTypeAdaptersTest.testNullSafe:198 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.reflect.TypeTokenTest[0m
+
+[91mFailure/Error info:[0m
+    TypeTokenTest.testTypeTokenRaw:263 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.stream.JsonReaderTest[0m
+
+[91mFailure/Error info:[0m
+    JsonReaderTest.testBomForbiddenAsOtherCharacterInDocument:1610->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testDocumentWithCommentEndingInSlash:1807 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithEscapedNewlineCharacter:1658->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPosition:1616->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionDeepPath:1707 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionGreaterThanBufferSize:1623->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionIsOffsetByBom:1663->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionOverCStyleComment:1641->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionOverHashEndOfLineComment:1635->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionOverQuotedString:1647->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionOverSlashSlashEndOfLineComment:1629->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionOverUnquotedString:1653->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testInvalidJsonInput:277 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testLenientExtraCommasInMaps:1981 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testLenientPartialNonExecutePrefix:1590 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testMissingValue:838 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testNextFailuresDoNotAdvance:898->assertUnexpectedStructureError:2077 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testNullLiteralIsNotAString:994->assertUnexpectedStructureError:2077 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testPeekingUnquotedStringsPrefixedWithBooleans:601->assertUnexpectedStructureError:2077 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictComments:1087->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictCommentsWithSkipValue:1135->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictExtraCommasInMaps:1965 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictMultipleTopLevelValues:1477->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictMultipleTopLevelValuesWithSkipValue:1502->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictNameValueSeparator:1007->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictNameValueSeparatorWithSkipValue:1045->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictNonExecutePrefix:1548->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictNonExecutePrefixWithSkipValue:1559->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictNonFiniteDoubles:457->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictNonFiniteDoublesWithSkipValue:508->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictQuotedNonFiniteDoubles:470 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSemicolonDelimitedArray:1293->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSemicolonDelimitedArrayWithSkipValue:1314->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSemicolonDelimitedNameValuePair:1327->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSemicolonDelimitedNameValuePairWithSkipValue:1350->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSingleQuotedNames:1197->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSingleQuotedNamesWithSkipValue:1217->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSingleQuotedStrings:1261->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSingleQuotedStringsWithSkipValue:1281->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictUnnecessaryArraySeparators:1363->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictUnnecessaryArraySeparatorsWithSkipValue:1436->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictUnquotedNames:1165->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictUnquotedNamesWithSkipValue:1185->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictUnquotedStrings:1229->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictUnquotedStringsWithSkipValue:1241->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictVeryLongNumber:1721->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStringEndingInSlash:1794 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStringNullIsNotNull:982->assertUnexpectedStructureError:2077 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStringWithLeadingSlash:1820 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testUnescapingInvalidCharacters:362 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testUnescapingTruncatedCharacters:376 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testUnescapingTruncatedSequence:390 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testUnterminatedObject:1836 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testUnterminatedStringFailure:2049 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+gson_12
+
+[1mTEST: .com.google.gson.internal.ConstructorConstructorTest[0m
+
+[91mFailure/Error info:[0m
+    ConstructorConstructorTest.testGet_AbstractClassNoArgConstructor:49 value of:
+    throwable.getMessage()
+expected:
+    Abstract classes can't be instantiated! Adjust the R8 configuration or register an InstanceCreator or a TypeAdapter for this type. Class name: com.google.gson.internal.ConstructorConstructorTest$AbstractClass
+    See https://github.com/google/gson/blob/main/Troubleshooting.md#r8-abstract-class
+but was:
+    Abstract classes can't be instantiated! Register an InstanceCreator or a TypeAdapter for this type. Class name: com.google.gson.internal.ConstructorConstructorTest$AbstractClass
+------------------------------------------------------------------------
+
+nacos_1
+
+[1mTEST: .com.alibaba.nacos.client.config.http.ServerHttpAgentTest.java[0m
+
+[91mFailure/Error info:[0m
+    ServerHttpAgentTest.testGetterAndSetter:62 expected:<[custom-aaa_8080_nacos_serverlist_]namespace1> but was:<[aaa-]namespace1>
+------------------------------------------------------------------------
+
+[1mTEST: .com.alibaba.nacos.client.config.impl.ClientWorkerTest.java[0m
+
+[91mFailure/Error info:[0m
+    ClientWorkerTest.testShutdown:175 expected:<null> but was:<config_rpc_client>
+------------------------------------------------------------------------
+
+[1mTEST: .com.alibaba.nacos.client.config.impl.ServerListManagerTest.java[0m
+
+[91mFailure/Error info:[0m
+    ServerListManagerTest.testStart:38 expected:<...env:custom-localhost[_0_nacos_serverlist], not connnect url:h...> but was:<...env:custom-localhost[-0], not connnect url:h...>
+------------------------------------------------------------------------
+
+nacos_2
+
+[1mTEST: .com.alibaba.nacos.plugin.encryption.handler.EncryptionHandlerTest.java[0m
+
+[91mFailure/Error info:[0m
+    EncryptionHandlerTest.testCornerCaseDataIdAlgoParse:86 » IndexOutOfBounds Inde...
+------------------------------------------------------------------------
+
+nacos_3
+
+[1mTEST: .com.alibaba.nacos.common.remote.client.RpcClientTest.java[0m
+
+[91mFailure/Error info:[0m
+    RpcClientTest.testHealthCheck:444 
+connection.request(<any>, <any long>);
+Wanted 4 times:
+-> at com.alibaba.nacos.common.remote.client.RpcClientTest.testHealthCheck(RpcClientTest.java:444)
+But was 3 times:
+-> at com.alibaba.nacos.common.remote.client.RpcClient.healthCheck(RpcClient.java:475)
+-> at com.alibaba.nacos.common.remote.client.RpcClient.healthCheck(RpcClient.java:475)
+-> at com.alibaba.nacos.common.remote.client.RpcClient.healthCheck(RpcClient.java:475)
+------------------------------------------------------------------------
+
+nacos_4
+
+[1mTEST: .com.alibaba.nacos.naming.core.v2.client.impl.ConnectionBasedClientTest.java[0m
+
+[91mFailure/Error info:[0m
+    ConnectionBasedClientTest.testRecalculateRevision:58 expected:<1> but was:<0>
+   ConnectionBasedClientTest.testRecalculateRevisionAsync:73 expected:<100> but was:<0>
+------------------------------------------------------------------------
+
+nacos_5
+
+[1mTEST: .com.alibaba.nacos.plugin.datasource.impl.derby.ConfigInfoMapperByDerbyTest.java[0m
+
+[91mFailure/Error info:[0m
+    ConfigInfoMapperByDerbyTest.testFindChangeConfig:163 expected:<SELECT [data_id, group_id, tenant_id, app_name, content, gmt_modified, encrypted_data_key FROM config_info WHERE gmt_modified >= ? AND gmt_modified <= ?]> but was:<SELECT [id, data_id, group_id, tenant_id, app_name, content, gmt_modified, encrypted_data_key FROM config_info WHERE gmt_modified >= ? and id > ? order by id  limit ? ]>
+------------------------------------------------------------------------
+
+[1mTEST: .com.alibaba.nacos.plugin.datasource.impl.derby.HistoryConfigInfoMapperByDerbyTest.java[0m
+
+[91mFailure/Error info:[0m
+    HistoryConfigInfoMapperByDerbyTest.testFindDeletedConfig:79 expected:<SELECT [DISTINCT data_id, group_id, tenant_id FROM his_config_info WHERE op_type = 'D' AND gmt_modified >= ? AND gmt_modified <= ?]> but was:<SELECT [data_id, group_id, tenant_id,gmt_modified,nid FROM his_config_info WHERE op_type = 'D' AND gmt_modified >= ? and nid > ? order by nid limit ? ]>
+------------------------------------------------------------------------
+
+[1mTEST: .com.alibaba.nacos.plugin.datasource.impl.mysql.ConfigInfoMapperByMySqlTest.java[0m
+
+[91mFailure/Error info:[0m
+    ConfigInfoMapperByMySqlTest.testFindChangeConfig:162 expected:<SELECT [data_id, group_id, tenant_id, app_name, content, gmt_modified, encrypted_data_key FROM config_info WHERE gmt_modified >= ? AND gmt_modified <= ?]> but was:<SELECT [id, data_id, group_id, tenant_id, app_name, content, gmt_modified, encrypted_data_key FROM config_info WHERE gmt_modified >= ? and id > ? order by id  limit ? ]>
+------------------------------------------------------------------------
+
+[1mTEST: .com.alibaba.nacos.plugin.datasource.impl.mysql.HistoryConfigInfoMapperByMySqlTest.java[0m
+
+[91mFailure/Error info:[0m
+    HistoryConfigInfoMapperByMySqlTest.testFindDeletedConfig:76 expected:<SELECT [DISTINCT data_id, group_id, tenant_id FROM his_config_info WHERE op_type = 'D' AND gmt_modified >= ? AND gmt_modified <= ?]> but was:<SELECT [data_id, group_id, tenant_id,gmt_modified,nid FROM his_config_info WHERE op_type = 'D' AND gmt_modified >= ? and nid > ? order by nid limit ? ]>
+------------------------------------------------------------------------
+
+fastjson_1
+
+[1mTEST: .com.alibaba.json.bvt.issue_3700.Issue3719[0m
+
+[91mFailure/Error info:[0m
+    Issue3719.test_for_issue_wrong_case1 »  Unexpected exception, expected<com.ali...
+   Issue3719.test_for_issue_wrong_case2 »  Unexpected exception, expected<com.ali...
+   Issue3719.test_for_issue_wrong_case3 »  Unexpected exception, expected<com.ali...
+   Issue3719.test_for_issue_wrong_case4 »  Unexpected exception, expected<com.ali...
+   Issue3719.test_for_issue_wrong_case5 »  Unexpected exception, expected<com.ali...
+   Issue3719.test_for_issue_wrong_case6 »  Unexpected exception, expected<com.ali...
+   Issue3719.test_for_issue_wrong_case7 »  Unexpected exception, expected<com.ali...
+------------------------------------------------------------------------
+
+assertj_1
+
+[1mTEST: .org.assertj.core.internal.classes.Classes_assertHasMethods_Test[0m
+
+[91mFailure/Error info:[0m
+    Classes_assertHasMethods_Test.should_pass_with_direct_default_method:108 
+Expecting
+  org.assertj.core.internal.classes.Classes_assertHasMethods_Test.ClassWithDirectDefaultMethod
+to have methods:
+  ["method"]
+but could not find:
+  ["method"]
+   Classes_assertHasMethods_Test.should_pass_with_indirect_default_method:127 
+Expecting
+  org.assertj.core.internal.classes.Classes_assertHasMethods_Test.ClassWithIndirectDefaultMethod
+to have methods:
+  ["method"]
+but could not find:
+  ["method"]
+------------------------------------------------------------------------
+
+assertj_2
+
+[1mTEST: .org.assertj.core.util.introspection.PropertyOrFieldSupport_getSimpleValue_with_Optional_input_Test[0m
+
+[91mFailure/Error info:[0m
+    PropertyOrFieldSupport_getSimpleValue_with_Optional_input_Test.should_fail_if_optional_is_empty:44 
+Expecting actual not to be null
+------------------------------------------------------------------------
+
+assertj_3
+
+[1mTEST: .org.assertj.core.presentation.StandardRepresentation_toStringOf_Test[0m
+
+[91mFailure/Error info:[0m
+    StandardRepresentation_toStringOf_Test.should_return_toString_of_anonymous_Class_array_with_generic_description:126 
+expected: "anonymous class array"
+ but was: null
+   StandardRepresentation_toStringOf_Test.should_return_toString_of_anonymous_Class_with_generic_description:119 
+expected: "anonymous class"
+ but was: null
+   StandardRepresentation_toStringOf_Test.should_return_toString_of_local_Class_array_with_its_simple_name:138 
+expected: "local class LocalClass[]"
+ but was: null
+   StandardRepresentation_toStringOf_Test.should_return_toString_of_local_Class_with_its_simple_name:132 
+expected: "local class LocalClass"
+ but was: null
+------------------------------------------------------------------------
+
+assertj_4
+
+[1mTEST: .org.assertj.core.internal.maps.Maps_assertContainsOnlyKeys_Test[0m
+
+[91mFailure/Error info:[0m
+    Maps_assertContainsOnlyKeys_Test.should_fail_with_MultiValueMapAdapter:251 
+Expected size: 2 but was: 1 in:
+{"job"=["Jedi"]}
+   Maps_assertContainsOnlyKeys_Test.should_pass_with_MultiValueMapAdapter:145 
+Expected size: 1 but was: 0 in:
+{}
+------------------------------------------------------------------------
+
+[1mTEST: .org.assertj.core.internal.maps.Maps_assertContainsOnly_Test[0m
+
+[91mFailure/Error info:[0m
+    Maps_assertContainsOnly_Test.should_fail_with_MultiValueMapAdapter:268 
+Expected size: 2 but was: 1 in:
+{"job"=["Jedi"]}
+   Maps_assertContainsOnly_Test.should_pass_with_MultiValueMapAdapter:161 
+Expected size: 1 but was: 0 in:
+{}
+------------------------------------------------------------------------
+
+assertj_5
+
+[1mTEST: .org.assertj.core.internal.strings.Strings_assertContainsIgnoringCase_Test[0m
+
+[91mFailure/Error info:[0m
+    Strings_assertContainsIgnoringCase_Test.should_pass_with_Turkish_default_locale 
+Expecting actual:
+  "Leia"
+to contain:
+  "IA"
+ (ignoring case)
+------------------------------------------------------------------------
+
+[1mTEST: .org.assertj.core.internal.strings.Strings_assertDoesNotContainIgnoringCase_Test[0m
+
+[91mFailure/Error info:[0m
+    Strings_assertDoesNotContainIgnoringCase_Test.should_fail_with_Turkish_default_locale:135 [The code under test should have raised an AssertionError] 
+Expecting actual not to be null
+------------------------------------------------------------------------
+
+[1mTEST: .org.assertj.core.internal.strings.Strings_assertDoesNotEndWithIgnoringCase_Test[0m
+
+[91mFailure/Error info:[0m
+    Strings_assertDoesNotEndWithIgnoringCase_Test.should_fail_with_Turkish_default_locale:83 [The code under test should have raised an AssertionError] 
+Expecting actual not to be null
+------------------------------------------------------------------------
+
+[1mTEST: .org.assertj.core.internal.strings.Strings_assertDoesNotStartWithIgnoringCase_Test[0m
+
+[91mFailure/Error info:[0m
+    Strings_assertDoesNotStartWithIgnoringCase_Test.should_fail_with_Turkish_default_locale:84 [The code under test should have raised an AssertionError] 
+Expecting actual not to be null
+------------------------------------------------------------------------
+
+[1mTEST: .org.assertj.core.internal.strings.Strings_assertEndsWithIgnoringCase_Test[0m
+
+[91mFailure/Error info:[0m
+    Strings_assertEndsWithIgnoringCase_Test.should_pass_with_Turkish_default_locale 
+Expecting actual:
+  "Leia"
+to end with (ignoring case):
+  "IA"
+------------------------------------------------------------------------
+
+[1mTEST: .org.assertj.core.internal.strings.Strings_assertStartsWithIgnoringCase_Test[0m
+
+[91mFailure/Error info:[0m
+    Strings_assertStartsWithIgnoringCase_Test.should_pass_with_Turkish_default_locale 
+Expecting actual:
+  "Leia"
+to start with (ignoring case):
+  "LEI"
+------------------------------------------------------------------------
+
+rocketmq_1
+
+[1mTEST: .org.apache.rocketmq.store.queue.BatchConsumeQueueTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  BatchConsumeQueueTest.testBuildAndSearchBatchConsumeQueuePerformance:164 expected:<199991> but was:<-1>
+------------------------------------------------------------------------
+
+rocketmq_2
+
+[1mTEST: .org.apache.rocketmq.acl.plain.PlainAccessValidatorTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  PlainAccessValidatorTest.validateConsumeMessageBackTest:258 » Acl No default p...
+------------------------------------------------------------------------
+
+rocketmq_3
+
+[1mTEST: .org.apache.rocketmq.store.ConsumeQueueTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  ConsumeQueueTest.testCorrectMinOffset:473 expected:<200000> but was:<199980>
+------------------------------------------------------------------------
+
+rocketmq_4
+
+[1mTEST: .org.apache.rocketmq.broker.processor.ChangeInvisibleTimeProcessorTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  ChangeInvisibleTimeProcessorTest.testProcessRequest_Success:131 » NullPointer
+------------------------------------------------------------------------
+
+[1mTEST: .org.apache.rocketmq.broker.processor.PopMessageProcessorTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  PopMessageProcessorTest.testProcessRequest_MsgWasRemoving:125 » NullPointer
+------------------------------------------------------------------------
+
+rocketmq_5
+
+[1mTEST: .org.apache.rocketmq.remoting.netty.NettyClientConfigTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  NettyClientConfigTest.testChangeConfigBySystemProperty:64 expected:<[tru]e> but was:<[fals]e>
+------------------------------------------------------------------------
+
+rocketmq_6
+
+[1mTEST: .org.apache.rocketmq.tieredstore.metadata.MetadataStoreTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  MetadataStoreTest.tearDown:60 » NullPointer
+------------------------------------------------------------------------
+
+[1mTEST: .org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsManagerTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  TieredStoreMetricsManagerTest.tearDown:32 » NullPointer
+------------------------------------------------------------------------
+
+[1mTEST: .org.apache.rocketmq.tieredstore.provider.posix.PosixFileSegmentTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  PosixFileSegmentTest.tearDown:52 » NullPointer
+------------------------------------------------------------------------
+
+rocketmq_7
+
+[1mTEST: .org.apache.rocketmq.broker.processor.PopMessageProcessorTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  PopMessageProcessorTest.testProcessRequest_whenTimerWheelIsFalse:149 
+Expecting actual not to be null
+------------------------------------------------------------------------
+
+rocketmq_8
+
+[1mTEST: .org.apache.rocketmq.broker.controller.ReplicasManagerTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  ReplicasManagerTest.unnecessary Mockito stubbings » UnnecessaryStubbing 
+Unnec...
+------------------------------------------------------------------------
+
+rocketmq_9
+
+[1mTEST: .org.apache.rocketmq.tieredstore.TieredMessageStoreTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  TieredMessageStoreTest.testGetMessageAsync:193 expected same:<GetMessageResult [status=MESSAGE_WAS_REMOVING, nextBeginOffset=0, minOffset=0, maxOffset=0, bufferTotalSize=0, messageCount=0, suggestPullingFromSlave=false]> was not:<GetMessageResult [status=OFFSET_OVERFLOW_BADLY, nextBeginOffset=0, minOffset=0, maxOffset=0, bufferTotalSize=0, messageCount=0, suggestPullingFromSlave=false]>
+------------------------------------------------------------------------
+
+rocketmq_10
+
+[1mTEST: .org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  HeartbeatSyncerTest.testSyncRemotingChannel:289 expected not same
+------------------------------------------------------------------------
+
+jackson-dataformat-xml_1
+
+[1mTEST: .com.fasterxml.jackson.dataformat.xml.misc.XmlTextTest[0m
+
+[91mFailure/Error info:[0m
+    XmlTextTest.testRawValue:95 expected:<<RawValue><[a>b</a]></RawValue>> but was:<<RawValue><[foo><a>b</a></foo]></RawValue>>
+------------------------------------------------------------------------
+
+[1mTEST: .com.fasterxml.jackson.dataformat.xml.stream.XmlGeneratorTest[0m
+
+[91mFailure/Error info:[0m
+    XmlGeneratorTest.testRawCharArrayValueUnwrapped:237 expected:<<root>[value]</root>> but was:<<root>[<elem>value</elem>]</root>>
+   XmlGeneratorTest.testRawOffsetValueUnwrapped:219 expected:<<root>[value]</root>> but was:<<root>[<elem>value</elem>]</root>>
+   XmlGeneratorTest.testRawSimpleValueUnwrapped:201 expected:<<root>[value]</root>> but was:<<root>[<elem>value</elem>]</root>>
+------------------------------------------------------------------------
+
+checkstyle_1
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.indentation.IndentationCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    IndentationCheckTest.testIndentationLineBreakVariableDeclaration:2922->verifyWarns:156->getLinesWithWarnAndCheckComments:68 » NoSuchFile
+   IndentationCheckTest.testIndentationLongConcatenatedString:2910->verifyWarns:156->getLinesWithWarnAndCheckComments:68 » NoSuchFile
+------------------------------------------------------------------------
+
+checkstyle_2
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.metrics.ClassFanOutComplexityCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    ClassFanOutComplexityCheckTest.testClassFanOutComplexityMultiCatchBitwiseOr:280->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+   ClassFanOutComplexityCheckTest.testImplementsAndNestedCount:239->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_3
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocMethodCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    JavadocMethodCheckTest.testAccessModifierEnum:474->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+   JavadocMethodCheckTest.testDefaultAccessModifier:465->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_4
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.imports.UnusedImportsCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    UnusedImportsCheckTest.testArrayRef:153->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_5
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.coding.IllegalTypeCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    IllegalTypeCheckTest.testRecordComponentsDefault:350->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+   IllegalTypeCheckTest.testRecordComponentsFinal:363->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+   IllegalTypeCheckTest.testRecordComponentsPrivateFinal:376->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+   IllegalTypeCheckTest.testRecordComponentsPublicProtectedStatic:387->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_6
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.coding.EqualsAvoidNullCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    EqualsAvoidNullCheckTest.testEqualsSuperClass:187->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_7
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.whitespace.OperatorWrapCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    OperatorWrapCheckTest.testArraysAssign:138->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_8
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.coding.SimplifyBooleanExpressionCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    SimplifyBooleanExpressionCheckTest.testIt:54->AbstractModuleTestSupport.verifyWithInlineConfigParser:271->AbstractModuleTestSupport.verify:287->AbstractModuleTestSupport.verify:325->AbstractModuleTestSupport.verify:347->AbstractModuleTestSupport.verify:377->AbstractModuleTestSupport.lambda$verify$1:380 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/coding/simplifybooleanexpression/InputSimplifyBooleanExpression.java differ.
+missing (8)
+#1      : 95:27: Expression can be simplified.
+#2      : 96:24: Expression can be simplified.
+#3      : 98:27: Expression can be simplified.
+#4      : 104:23: Expression can be simplified.
+#5      : 106:17: Expression can be simplified.
+#6      : 109:21: Expression can be simplified.
+#7      : 110:23: Expression can be simplified.
+#8      : 111:20: Expression can be simplified.
+---
+expected: [22:18: Expression can be simplified., 43:36: Expression can be simplified., 44:36: Expression can be simplified., 45:16: Expression can be simplified., 45:32: Expression can be simplified., 95:27: Expression can be simplified., 96:24: Expression can be simplified., 98:27: Expression can be simplified., 104:23: Expression can be simplified., 106:17: Expression can be simplified., 109:21: Expression can be simplified., 110:23: Expression can be simplified., 111:20: Expression can be simplified.]
+but was : [22:18: Expression can be simplified., 43:36: Expression can be simplified., 44:36: Expression can be simplified., 45:16: Expression can be simplified., 45:32: Expression can be simplified.]
+------------------------------------------------------------------------
+
+checkstyle_9
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.coding.StringLiteralEqualityCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    StringLiteralEqualityCheckTest.testConcatenatedStringLiterals:76->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+   StringLiteralEqualityCheckTest.testConcatenatedTextBlocks:93->AbstractModuleTestSupport.verifyWithInlineConfigParser:267 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_10
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.modifier.RedundantModifierCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    RedundantModifierCheckTest.testGetAcceptableTokens:159 Invalid acceptable tokens
+value of: getAcceptableTokens()
+expected: [9, 10, 161, 15, 8, 14, 154, 178, 157]
+but was : [9, 10, 161, 15, 8, 14, 154, 178]
+wrong length
+expected: 9
+but was : 8
+   RedundantModifierCheckTest.testNestedClassConsInPublicInterfaceHasValidPublicModifier:137->AbstractModuleTestSupport.verifyWithInlineConfigParser:271->AbstractModuleTestSupport.verify:287->AbstractModuleTestSupport.verify:325->AbstractModuleTestSupport.verify:347->AbstractModuleTestSupport.verify:377->AbstractModuleTestSupport.lambda$verify$1:380 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/modifier/redundantmodifier/InputRedundantModifierNestedClassInPublicInterfaceRedundantModifiers.java differ.
+missing (1): 24:13: Redundant 'public' modifier.
+---
+expected   : [22:17: Redundant 'public' modifier., 24:13: Redundant 'public' modifier., 26:21: Redundant 'public' modifier., 37:12: Redundant 'public' modifier., 45:17: Redundant 'public' modifier.]
+but was    : [22:17: Redundant 'public' modifier., 26:21: Redundant 'public' modifier., 37:12: Redundant 'public' modifier., 45:17: Redundant 'public' modifier.]
+   RedundantModifierCheckTest.testNestedDef:312->AbstractModuleTestSupport.verifyWithInlineConfigParser:271->AbstractModuleTestSupport.verify:287->AbstractModuleTestSupport.verify:325->AbstractModuleTestSupport.verify:347->AbstractModuleTestSupport.verify:377->AbstractModuleTestSupport.lambda$verify$1:380 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/modifier/redundantmodifier/InputRedundantModifierNestedDef.java differ.
+missing (16)
+#1      : 19:5: Redundant 'public' modifier.
+#2      : 19:12: Redundant 'static' modifier.
+#3      : 22:5: Redundant 'public' modifier.
+#4      : 22:12: Redundant 'abstract' modifier.
+#5      : 22:21: Redundant 'static' modifier.
+#6      : 26:1: Redundant 'abstract' modifier.
+#7      : 28:5: Redundant 'public' modifier.
+#8      : 28:12: Redundant 'static' modifier.
+#9      : 32:9: Redundant 'public' modifier.
+#10     : 32:16: Redundant 'static' modifier.
+#11     : 34:13: Redundant 'public' modifier.
+#12     : 34:20: Redundant 'static' modifier.
+#13     : 37:13: Redundant 'public' modifier.
+#14     : 37:20: Redundant 'static' modifier.
+#15     : 40:13: Redundant 'public' modifier.
+#16     : 40:20: Redundant 'static' modifier.
+---
+expected: [10:5: Redundant 'public' modifier., 11:5: Redundant 'static' modifier., 12:5: Redundant 'public' modifier., 12:12: Redundant 'static' modifier., 13:5: Redundant 'static' modifier., 13:12: Redundant 'public' modifier., 16:9: Redundant 'public' modifier., 19:5: Redundant 'public' modifier., 19:12: Redundant 'static' modifier., 22:5: Redundant 'public' modifier., 22:12: Redundant 'abstract' modifier., 22:21: Redundant 'static' modifier., 26:1: Redundant 'abstract' modifier., 28:5: Redundant 'public' modifier., 28:12: Redundant 'static' modifier., 32:9: Redundant 'public' modifier., 32:16: Redundant 'static' modifier., 34:13: Redundant 'public' modifier., 34:20: Redundant 'static' modifier., 37:13: Redundant 'public' modifier., 37:20: Redundant 'static' modifier., 40:13: Redundant 'public' modifier., 40:20: Redundant 'static' modifier.]
+but was : [10:5: Redundant 'public' modifier., 11:5: Redundant 'static' modifier., 12:5: Redundant 'public' modifier., 12:12: Redundant 'static' modifier., 13:5: Redundant 'static' modifier., 13:12: Redundant 'public' modifier., 16:9: Redundant 'public' modifier.]
+   RedundantModifierCheckTest.testWrongTokenType:168 IllegalStateException was expected ==> Unexpected exception type thrown ==> expected: <java.lang.IllegalStateException> but was: <java.lang.NullPointerException>
+------------------------------------------------------------------------
+
+checkstyle_11
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    SummaryJavadocCheckTest.testIncorrect:87->AbstractModuleTestSupport.verifyWithInlineConfigParser:272->AbstractModuleTestSupport.verify:288->AbstractModuleTestSupport.verify:326->AbstractModuleTestSupport.verify:348->AbstractModuleTestSupport.verify:378->AbstractModuleTestSupport.lambda$verify$1:381 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocIncorrect.java differ.
+unexpected (1): 155: Summary of Javadoc is missing an ending period.
+---
+expected      : [24: Summary javadoc is missing., 42: Summary javadoc is missing., 47: First sentence of Javadoc is missing an ending period., 57: Forbidden summary fragment., 63: Summary javadoc is missing., 68: Summary javadoc is missing., 79: Summary javadoc is missing., 93: Forbidden summary fragment., 113: Summary javadoc is missing., 126: First sentence of Javadoc is missing an ending period., 131: Summary javadoc is missing., 136: Summary javadoc is missing., 142: First sentence of Javadoc is missing an ending period., 147: Summary javadoc is missing., 150: Summary javadoc is missing.]
+but was       : [24: Summary javadoc is missing., 42: Summary javadoc is missing., 47: First sentence of Javadoc is missing an ending period., 57: Forbidden summary fragment., 63: Summary javadoc is missing., 68: Summary javadoc is missing., 79: Summary javadoc is missing., 93: Forbidden summary fragment., 113: Summary javadoc is missing., 126: First sentence of Javadoc is missing an ending period., 131: Summary javadoc is missing., 136: Summary javadoc is missing., 142: First sentence of Javadoc is missing an ending period., 147: Summary javadoc is missing., 150: Summary javadoc is missing., 155: Summary of Javadoc is missing an ending period.]
+   SummaryJavadocCheckTest.testInlineCorrect:64->AbstractModuleTestSupport.verifyWithInlineConfigParser:272->AbstractModuleTestSupport.verify:288->AbstractModuleTestSupport.verify:326->AbstractModuleTestSupport.verify:348->AbstractModuleTestSupport.verify:376 Files with expected violations and actual violations differ.
+value of   : keySet()
+missing (1): /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineCorrect.java
+---
+expected   : [/root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineCorrect.java]
+but was    : []
+   SummaryJavadocCheckTest.testInlineForbidden:106->AbstractModuleTestSupport.verifyWithInlineConfigParser:272->AbstractModuleTestSupport.verify:288->AbstractModuleTestSupport.verify:326->AbstractModuleTestSupport.verify:348->AbstractModuleTestSupport.verify:378->AbstractModuleTestSupport.lambda$verify$1:381 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/summaryjavadoc/InputSummaryJavadocInlineForbidden.java differ.
+missing (1)   : 114: First sentence of Javadoc is missing an ending period.
+unexpected (1): 115: Summary of Javadoc is missing an ending period.
+---
+expected      : [26: Summary of Javadoc is missing an ending period., 31: Summary of Javadoc is missing an ending period., 36: Summary of Javadoc is missing an ending period., 41: Forbidden summary fragment., 45: Summary javadoc is missing., 49: Summary of Javadoc is missing an ending period., 59: Forbidden summary fragment., 80: First sentence of Javadoc is missing an ending period., 94: Summary of Javadoc is missing an ending period., 108: Summary javadoc is missing., 114: First sentence of Javadoc is missing an ending period.]
+but was       : [26: Summary of Javadoc is missing an ending period., 31: Summary of Javadoc is missing an ending period., 36: Summary of Javadoc is missing an ending period., 41: Forbidden summary fragment., 45: Summary javadoc is missing., 49: Summary of Javadoc is missing an ending period., 59: Forbidden summary fragment., 80: First sentence of Javadoc is missing an ending period., 94: Summary of Javadoc is missing an ending period., 108: Summary javadoc is missing., 115: Summary of Javadoc is missing an ending period.]
+ Errors: 
+   SummaryJavadocCheckTest.testIncorrectUsageOfSummaryTag:165->AbstractModuleTestSupport.verifyWithInlineConfigParser:268 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_12
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.design.FinalClassCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    FinalClassCheckTest.testFinalClassInnerAndNestedClasses:148->AbstractModuleTestSupport.verifyWithInlineConfigParser:237->AbstractModuleTestSupport.verify:253->AbstractModuleTestSupport.verify:291->AbstractModuleTestSupport.verify:313->AbstractModuleTestSupport.verify:343->AbstractModuleTestSupport.lambda$verify$1:346 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/design/finalclass/InputFinalClassInnerAndNestedClass.java differ.
+missing (1): 84:9: Class c should be declared as final.
+---
+expected   : [19:5: Class SameName should be declared as final., 45:9: Class SameName should be declared as final., 69:13: Class B should be declared as final., 84:9: Class c should be declared as final.]
+but was    : [19:5: Class SameName should be declared as final., 45:9: Class SameName should be declared as final., 69:13: Class B should be declared as final.]
+ Errors: 
+   FinalClassCheckTest.testFinalClassAnonymousInnerClass:204->AbstractModuleTestSupport.verifyWithInlineConfigParser:233 » Checkstyle
+   FinalClassCheckTest.testFinalClassNestedInEnum:224->AbstractModuleTestSupport.verifyWithInlineConfigParser:233 » Checkstyle
+   FinalClassCheckTest.testFinalClassNestedInInterface:214->AbstractModuleTestSupport.verifyWithInlineConfigParser:233 » Checkstyle
+   FinalClassCheckTest.testFinalClassNestedInRecord:234->AbstractModuleTestSupport.verifyWithInlineConfigParser:233 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_13
+
+[1mTEST: com.puppycrawl.tools.checkstyle.checks.javadoc.InvalidJavadocPositionCheckTest[0m
+
+[91mFailure/Error info:[0m
+    InvalidJavadocPositionCheckTest.testDefault:93->AbstractModuleTestSupport.verifyWithInlineConfigParser:237->AbstractModuleTestSupport.verify:253->AbstractModuleTestSupport.verify:291->AbstractModuleTestSupport.verify:313->AbstractModuleTestSupport.verify:343->AbstractModuleTestSupport.lambda$verify$1:346 Violations for /root/framework/testing/src/test/resources/com/puppycrawl/tools/checkstyle/checks/javadoc/invalidjavadocposition/InputInvalidJavadocPosition.java differ.
+missing (5)
+#1      : 73:6: Javadoc comment is placed in the wrong location.
+#2      : 76:24: Javadoc comment is placed in the wrong location.
+#3      : 79:43: Javadoc comment is placed in the wrong location.
+#4      : 82:69: Javadoc comment is placed in the wrong location.
+#5      : 94:1: Javadoc comment is placed in the wrong location.
+
+unexpected (1)
+#1      : 68:1: Javadoc comment is placed in the wrong location.
+---
+expected: [7:9: Javadoc comment is placed in the wrong location., 10:1: Javadoc comment is placed in the wrong location., 13:1: Javadoc comment is placed in the wrong location., 16:5: Javadoc comment is placed in the wrong location., 21:5: Javadoc comment is placed in the wrong location., 24:5: Javadoc comment is placed in the wrong location., 34:9: Javadoc comment is placed in the wrong location., 35:17: Javadoc comment is placed in the wrong location., 36:17: Javadoc comment is placed in the wrong location., 46:10: Javadoc comment is placed in the wrong location., 47:19: Javadoc comment is placed in the wrong location., 48:19: Javadoc comment is placed in the wrong location., 49:21: Javadoc comment is placed in the wrong location., 50:23: Javadoc comment is placed in the wrong location., 51:23: Javadoc comment is placed in the wrong location., 54:1: Javadoc comment is placed in the wrong location., 59:7: Javadoc comment is placed in the wrong location., 60:36: Javadoc comment is placed in the wrong location., 63:9: Javadoc comment is placed in the wrong location., 64:9: Javadoc comment is placed in the wrong location., 65:9: Javadoc comment is placed in the wrong location., 73:6: Javadoc comment is placed in the wrong location., 76:24: Javadoc comment is placed in the wrong location., 79:43: Javadoc comment is placed in the wrong location., 82:69: Javadoc comment is placed in the wrong location., 94:1: Javadoc comment is placed in the wrong location.]
+but was : [7:9: Javadoc comment is placed in the wrong location., 10:1: Javadoc comment is placed in the wrong location., 13:1: Javadoc comment is placed in the wrong location., 16:5: Javadoc comment is placed in the wrong location., 21:5: Javadoc comment is placed in the wrong location., 24:5: Javadoc comment is placed in the wrong location., 34:9: Javadoc comment is placed in the wrong location., 35:17: Javadoc comment is placed in the wrong location., 36:17: Javadoc comment is placed in the wrong location., 46:10: Javadoc comment is placed in the wrong location., 47:19: Javadoc comment is placed in the wrong location., 48:19: Javadoc comment is placed in the wrong location., 49:21: Javadoc comment is placed in the wrong location., 50:23: Javadoc comment is placed in the wrong location., 51:23: Javadoc comment is placed in the wrong location., 54:1: Javadoc comment is placed in the wrong location., 59:7: Javadoc comment is placed in the wrong location., 60:36: Javadoc comment is placed in the wrong location., 63:9: Javadoc comment is placed in the wrong location., 64:9: Javadoc comment is placed in the wrong location., 65:9: Javadoc comment is placed in the wrong location., 68:1: Javadoc comment is placed in the wrong location.]
+------------------------------------------------------------------------
+
+checkstyle_14
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.whitespace.NoWhitespaceAfterCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    NoWhitespaceAfterCheckTest.testAssignment:69->AbstractModuleTestSupport.verifyWithInlineConfigParser:233 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_15
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.coding.IllegalTypeCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    IllegalTypeCheckTest.testTrailingWhitespaceInConfig:395->AbstractModuleTestSupport.verifyWithInlineConfigParser:233 » Checkstyle
+------------------------------------------------------------------------
+
+checkstyle_16
+
+[1mTEST: .com.puppycrawl.tools.checkstyle.checks.modifier.ClassMemberImpliedModifierCheckTest.java[0m
+
+[91mFailure/Error info:[0m
+    ClassMemberImpliedModifierCheckTest.testClassMemberImpliedModifierRecords:127->AbstractModuleTestSupport.verifyWithInlineConfigParser:237->AbstractModuleTestSupport.verify:280->AbstractModuleTestSupport.verify:318->AbstractModuleTestSupport.verify:340->AbstractModuleTestSupport.verify:370->AbstractModuleTestSupport.lambda$verify$1:373 Violations for /root/framework/testing/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/modifier/classmemberimpliedmodifier/InputClassMemberImpliedModifierRecords.java differ.
+missing (1): 43:13: Implied modifier 'static' should be explicit.
+---
+expected   : [16:5: Implied modifier 'static' should be explicit., 20:5: Implied modifier 'static' should be explicit., 24:5: Implied modifier 'static' should be explicit., 29:9: Implied modifier 'static' should be explicit., 33:9: Implied modifier 'static' should be explicit., 37:9: Implied modifier 'static' should be explicit., 43:13: Implied modifier 'static' should be explicit.]
+but was    : [16:5: Implied modifier 'static' should be explicit., 20:5: Implied modifier 'static' should be explicit., 24:5: Implied modifier 'static' should be explicit., 29:9: Implied modifier 'static' should be explicit., 33:9: Implied modifier 'static' should be explicit., 37:9: Implied modifier 'static' should be explicit.]
+------------------------------------------------------------------------
+
+jackson-core_1
+
+[1mTEST: .com.fasterxml.jackson.core.filter.BasicParserFilteringTest[0m
+
+[91mFailure/Error info:[0m
+    BasicParserFilteringTest.testExcludeLastArrayInsideArray:764 expected:<[[][]]> but was:<[[][]>
+   BasicParserFilteringTest.testExcludeObjectAtTheEndOfArray:742 expected:<...t":[{"include":true}[]}]> but was:<...t":[{"include":true}[]>
+------------------------------------------------------------------------
+
+jackson-core_2
+
+[1mTEST: .com.fasterxml.jackson.core.util.ReadConstrainedTextBufferTest[0m
+
+[91mFailure/Error info:[0m
+    ReadConstrainedTextBufferTest.appendCharArray:20 Expected java.lang.IllegalStateException to be thrown, but nothing was thrown.
+   ReadConstrainedTextBufferTest.appendSingle:38 Expected java.lang.IllegalStateException to be thrown, but nothing was thrown.
+   ReadConstrainedTextBufferTest.appendString:29 Expected java.lang.IllegalStateException to be thrown, but nothing was thrown.
+------------------------------------------------------------------------
+
+jackson-core_3
+
+[1mTEST: .com.fasterxml.jackson.core.VersionTest[0m
+
+[91mFailure/Error info:[0m
+    VersionTest.testCompareToSnapshotDifferent:68
+   VersionTest.testCompareWhenOnlyFirstHasSnapshot:76 expected:<-1> but was:<0>
+   VersionTest.testCompareWhenOnlySecondHasSnapshot:84 expected:<1> but was:<0>
+------------------------------------------------------------------------
+
+dubbo_1
+
+[1mTEST: .org.apache.dubbo.config.ReferenceConfigTest.java[0m
+
+[91mFailure/Error info:[0m
+    ReferenceConfigTest.testClassLoader:1132 expected: <null> but was: <sun.misc.Launcher$AppClassLoader@7f31245a>
+   ReferenceConfigTest.testDifferentClassLoaderRequest:1097 expected: <org.apache.dubbo.config.ReferenceConfigTest$TestClassLoader1@36fc695d> but was: <org.apache.dubbo.config.ReferenceConfigTest$TestClassLoader2@33352f32>
+------------------------------------------------------------------------
+
+dubbo_2
+
+[1mTEST: .org.apache.dubbo.common.utils.SerializeSecurityConfiguratorTest.java[0m
+
+[91mFailure/Error info:[0m
+    SerializeSecurityConfiguratorTest.testGeneric » StackOverflow
+------------------------------------------------------------------------
+
+jackson-databind_1
+
+[1mTEST: .com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest[0m
+
+[91mFailure/Error info:[0m
+    AnnotatedMemberEqualityTest.testAnnotatedConstructorEquality:41 expected:<[constructor for `com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest$SomeBean` (1 arg), annotations: [null]> but was:<[constructor for `com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest$SomeBean` (1 arg), annotations: [null]>
+   AnnotatedMemberEqualityTest.testAnnotatedFieldEquality:77 expected:<[field com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest$SomeBean#value]> but was:<[field com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest$SomeBean#value]>
+   AnnotatedMemberEqualityTest.testAnnotatedMethodEquality:60 expected:<[method com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest$SomeBean#setValue(java.lang.String)]> but was:<[method com.fasterxml.jackson.databind.introspect.AnnotatedMemberEqualityTest$SomeBean#setValue(java.lang.String)]>
+------------------------------------------------------------------------
+
+jackson-databind_2
+
+[1mTEST: .com.fasterxml.jackson.databind.deser.std.EmptyStringAsSingleValueTest[0m
+
+[91mFailure/Error info:[0m
+    EmptyStringAsSingleValueTest.coercedBlankToList:83 expected:<[]> but was:<[ ]>
+   EmptyStringAsSingleValueTest.coercedEmptyToList:47 expected: java.util.Collections$EmptyList<[]> but was: java.util.ArrayList<[]>
+ Errors: 
+   EmptyStringAsSingleValueTest.blankToListWrapper:77 » InvalidFormat Cannot coer...
+   EmptyStringAsSingleValueTest.emptyToListWrapper:41 » InvalidFormat Cannot coer...
+------------------------------------------------------------------------
+
+jackson-databind_3
+
+[1mTEST: .com.fasterxml.jackson.databind.deser.JsonIdentityInfoIdProperty3838Test[0m
+
+[91mFailure/Error info:[0m
+    JsonIdentityInfoIdProperty3838Test.testUniformHandlingForMissingObjectId:185 should not pass
+------------------------------------------------------------------------
+
+jackson-databind_4
+
+[1mTEST: .com.fasterxml.jackson.databind.convert.DisableCoercions3690Test[0m
+
+[91mFailure/Error info:[0m
+    DisableCoercions3690Test.testFailMessage3924:81->_verifyFailedCoercionWithInvalidFormat:98 expected:<class java.lang.String> but was:<class java.util.ArrayList>
+------------------------------------------------------------------------
+
+seata_1
+
+[1mTEST: .io.seata.common.util.DurationUtilTest.java[0m
+
+[91mFailure/Error info:[0m
+    DurationUtilTest.testParseThrowException:56 Expected java.lang.UnsupportedOperationException to be thrown, but nothing was thrown.
+ Errors: 
+   DurationUtilTest.testParse:35 » UnsupportedOperation P2D can't parse to durati...
+------------------------------------------------------------------------
+
+seata_2
+
+[1mTEST: .io.seata.spring.boot.autoconfigure.CorePropertiesTest.java[0m
+
+[91mFailure/Error info:[0m
+    CorePropertiesTest.testRegistryCustomProperties:152 expected: <null> but was: <>
+   CorePropertiesTest.testRegistryNacosProperties:108 expected: <null> but was: <>
+   CorePropertiesTest.testRegistryRedisProperties:126 expected: <null> but was: <>
+------------------------------------------------------------------------
+
+Apktool_1
+
+[1mTEST: brut.androlib.androlib.InvalidSdkBoundingTest[0m
+
+[91mFailure/Error info:[0m
+    brut.androlib.androlib.InvalidSdkBoundingTest > checkForSdkDevelopmentInsaneTestValue FAILED
+    java.lang.NumberFormatException: For input string: "VANILLAICECREAM"
+        at java.base/java.lang.NumberFormatException.forInputString(NumberFormatException.java:67)
+        at java.base/java.lang.Integer.parseInt(Integer.java:668)
+        at java.base/java.lang.Integer.parseInt(Integer.java:786)
+        at brut.androlib.res.AndrolibResources.mapSdkShorthandToVersion(AndrolibResources.java:704)
+        at brut.androlib.res.AndrolibResources.checkTargetSdkVersionBounds(AndrolibResources.java:326)
+        at brut.androlib.androlib.InvalidSdkBoundingTest.checkForSdkDevelopmentInsaneTestValue(InvalidSdkBoundingTest.java:107)
+Finished generating test XML results (0.0 secs) into: /root/framework/testing/brut.apktool/apktool-lib/build/test-results/test
+Generating HTML test report...
+------------------------------------------------------------------------
+
+openapi-generator_1
+
+[1mTEST: .org.openapitools.codegen.python.PythonClientTest.java[0m
+
+[91mFailure/Error info:[0m
+    PythonClientTest.testRegexObjects:463 expected [true] but found [false]
+   PythonClientTest.testUuidExampleWorksEvenIfPatternIsDefined:468 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_2
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.nonRequiredFieldShouldNotIncludeNotNullAnnotation_issue13365:1609->generateFiles:627 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotationWithBeanValidationTrue_issue13365:1632->generateFiles:627 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotation_issue13365:1580->generateFiles:627 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+openapi-generator_3
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.useBeanValidationGenerateAnnotationsForRequestBody_issue13932:1833 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+openapi-generator_4
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotationJakarta_issue13365_issue13885:1547 
+Expecting ListFromStream:
+  ["java.net.URI",
+    "java.util.Objects",
+    "com.fasterxml.jackson.annotation.JsonProperty",
+    "com.fasterxml.jackson.annotation.JsonCreator",
+    "java.time.OffsetDateTime",
+    "io.swagger.v3.oas.annotations.media.Schema",
+    "java.util",
+    "jakarta.annotation.Generated"]
+to contain:
+  ["jakarta.validation.constraints.NotNull"]
+but could not find the following element(s):
+  ["jakarta.validation.constraints.NotNull"]
+
+   SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotation_issue13365:1514 
+Expecting ListFromStream:
+  ["java.net.URI",
+    "java.util.Objects",
+    "com.fasterxml.jackson.annotation.JsonProperty",
+    "com.fasterxml.jackson.annotation.JsonCreator",
+    "java.time.OffsetDateTime",
+    "io.swagger.v3.oas.annotations.media.Schema",
+    "java.util",
+    "javax.annotation.Generated"]
+to contain:
+  ["javax.validation.constraints.NotNull"]
+but could not find the following element(s):
+  ["javax.validation.constraints.NotNull"]
+------------------------------------------------------------------------
+
+openapi-generator_5
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotationWithBeanValidationTrue_issue13365:1952 Should have annotation with name: javax.validation.constraints.Email
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationFalseJava8TrueForFormatEmail:824->beanValidationForFormatEmail:839->beanValidationForFormatEmail:875 File does not contain line [@javax.validation.constraints.Email] expected [true] but found [false]
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationFalseJava8TrueJakartaeeTrueForFormatEmail:834->beanValidationForFormatEmail:875 File does not contain line [@jakarta.validation.constraints.Email] expected [true] but found [false]
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationTrueJava8FalseForFormatEmail:829->beanValidationForFormatEmail:839->beanValidationForFormatEmail:875 File does not contain line [@javax.validation.constraints.Email] expected [true] but found [false]
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationTrueJava8TrueForFormatEmail:881->beanValidationForFormatEmail:839->beanValidationForFormatEmail:875 File does not contain line [@javax.validation.constraints.Email] expected [true] but found [false]
+------------------------------------------------------------------------
+
+openapi-generator_6
+
+[1mTEST: .org.openapitools.codegen.python.PythonClientTest.java[0m
+
+[91mFailure/Error info:[0m
+    PythonClientTest.testSpecWithTooLowVersionThrowsException » Test 
+Method PythonClientTest.testSpecWithTooLowVersionThrowsException()[pri:0, instance:org.openapitools.codegen.python.PythonClientTest@6c0e13b7] should have thrown an exception of type class java.lang.RuntimeException
+------------------------------------------------------------------------
+
+openapi-generator_7
+
+[1mTEST: .org.openapitools.codegen.go.GoClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    GoClientCodegenTest.verifyApiTestWithNullResponse:278 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_8
+
+[1mTEST: .org.openapitools.codegen.go.GoClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    GoClientCodegenTest.verifyReadOnlyAttributes:301 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_9
+
+[1mTEST: .org.openapitools.codegen.DefaultGeneratorTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultGeneratorTest.testIgnoreFileProcessing:90 expected [false] but found [true]
+------------------------------------------------------------------------
+
+openapi-generator_10
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testMultipartBoot:599 Expected to be a single method multipartMixed with parameter(s) [MultipartMixedStatus, MultipartFile, MultipartMixedRequestMarker, List<MultipartMixedStatus>], but found 0
+------------------------------------------------------------------------
+
+openapi-generator_11
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testMultipleSecuritySchemes:2556 expected [petstore_auth] but found [api_key]
+------------------------------------------------------------------------
+
+openapi-generator_12
+
+[1mTEST: .org.openapitools.codegen.java.JavaClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    JavaClientCodegenTest.testDiscriminatorWithMappingIssue14731:1792 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   JavaClientCodegenTest.testDiscriminatorWithoutMappingIssue14731:1832 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testDiscriminatorWithMappingIssue14731:1177 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   SpringCodegenTest.testDiscriminatorWithoutMappingIssue14731:1216 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+openapi-generator_13
+
+[1mTEST: .org.openapitools.codegen.swift5.Swift5ClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    Swift5ClientCodegenTest.prefixExceptionTest:175 expected [AnyCodable] but found [APIAnyCodable]
+   Swift5ClientCodegenTest.suffixExceptionTest:184 expected [AnyCodable] but found [AnyCodableAPI]
+------------------------------------------------------------------------
+
+openapi-generator_14
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testAllOfDefaultEnumType:4307 » IndexOutOfBounds Index 4 out of bounds for length 4
+------------------------------------------------------------------------
+
+openapi-generator_15
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testAddUnsignedToIntegerWithInvalidMaxValue:4502 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_16
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testAllOfDefaultEnumType:4587 » IndexOutOfBounds Index 5 out of bounds for length 5
+------------------------------------------------------------------------
+
+openapi-generator_17
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testReturnTypeVoidWithResponseEntity_issue12341:2290 » NullPointer
+   SpringCodegenTest.testReturnTypeVoidWithoutResponseEntityWithDelegate_issue12341:2333 » NullPointer
+   SpringCodegenTest.testReturnTypeVoidWithoutResponseEntityWithoutDelegateWithAsync_issue12341:2377 » NullPointer
+   SpringCodegenTest.testReturnTypeVoidWithoutResponseEntityWithoutDelegateWithoutAsync_issue12341:2414 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_18
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testDoesNotHasRestControllerHaveController_issue15264:2486 » NullPointer
+   SpringCodegenTest.testHasRestControllerDoesNotHaveController_issue15264:2450 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_19
+
+[1mTEST: .org.openapitools.codegen.java.JavaClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    JavaClientCodegenTest.testDeprecatedProperty:1996 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_20
+
+[1mTEST: .org.openapitools.codegen.InlineModelResolverTest.java[0m
+
+[91mFailure/Error info:[0m
+    InlineModelResolverTest.resolveOperationInlineEnum:1137 NullPointer
+   InlineModelResolverTest.resolveOperationInlineEnumFormParameters:1155 NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_21
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testInlineEnumType:4719 expected [false] but found [true]
+------------------------------------------------------------------------
+
+jsoup_1
+
+[1mTEST: .org.jsoup.helper.W3CDomTest[0m
+
+[91mFailure/Error info:[0m
+    W3CDomTest.htmlInputDocMaintainsHtmlAttributeNames:202 expected: <<!DOCTYPE html SYSTEM "about:legacy-compat"><html><head><META http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><p hành="1" hình="2">unicode attr names</p></body></html>> but was: <<!DOCTYPE html SYSTEM "about:legacy-compat"><html><head><META http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><p hnh="2">unicode attr names</p></body></html>>
+------------------------------------------------------------------------
+
+jsoup_2
+
+[1mTEST: .org.jsoup.safety.SafelistTest[0m
+
+[91mFailure/Error info:[0m
+    SafelistTest.testCopyConstructor_noSideEffectOnAttributes:33 expected: <false> but was: <true>
+   SafelistTest.testCopyConstructor_noSideEffectOnEnforcedAttributes:43 expected: not equal but was: <invalidValue>
+   SafelistTest.testCopyConstructor_noSideEffectOnProtocols:61 expected: <false> but was: <true>
+------------------------------------------------------------------------
+
+jsoup_3
+
+[1mTEST: .org.jsoup.helper.W3CDomTest[0m
+
+[91mFailure/Error info:[0m
+    W3CDomTest.handlesInvalidAttributeNames:153 expected: <<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head/><body name="" style="color: red"/></html>> but was: <<?xml version="1.0" encoding="UTF-8"?><html><head/><body name="" style="color: red"/></html>>
+   W3CDomTest.handlesInvalidTagAsText:187 expected: <<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head/><body>&lt;インセンティブで高収入！&gt;Text <p>More</p></body></html>> but was: <<?xml version="1.0" encoding="UTF-8"?><html><head/><body>&lt;インセンティブで高収入！&gt;Text <p>More</p></body></html>>
+   W3CDomTest.htmlInputDocMaintainsHtmlAttributeNames:165 expected: <<!DOCTYPE html SYSTEM "about:legacy-compat"><html xmlns="http://www.w3.org/1999/xhtml"><head><META http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><p hành="1" hình="2">unicode attr names</p></body></html>> but was: <<!DOCTYPE html SYSTEM "about:legacy-compat"><html><head><META http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><p hành="1" hình="2">unicode attr names</p></body></html>>
+   W3CDomTest.simpleConversion:65 expected: <<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head><title>W3c</title></head><body><p class="one" id="12">Text</p><!-- comment --><invalid>What<script>alert('!')</script></invalid></body></html>> but was: <<?xml version="1.0" encoding="UTF-8"?><html><head><title>W3c</title></head><body><p class="one" id="12">Text</p><!-- comment --><invalid>What<script>alert('!')</script></invalid></body></html>>
+   W3CDomTest.testRoundTripDoctype:279->assertEqualsIgnoreCase:309 expected: <<!doctype html system "about:legacy-compat"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body><p>one</p></body></html>> but was: <<!doctype html system "about:legacy-compat"><html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body><p>one</p></body></html>>
+   W3CDomTest.treatsUndeclaredNamespaceAsLocalName:198 expected: <http://www.w3.org/1999/xhtml> but was: <null>
+   W3CDomTest.xmlInputDocMaintainsHtmlAttributeNames:178 expected: <<!DOCTYPE html SYSTEM "about:legacy-compat"><html xmlns="http://www.w3.org/1999/xhtml"><head><META http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><p hnh="2">unicode attr names coerced</p></body></html>> but was: <<!DOCTYPE html SYSTEM "about:legacy-compat"><html><head><META http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><p hnh="2">unicode attr names coerced</p></body></html>>
+------------------------------------------------------------------------
+
+jsoup_4
+
+[1mTEST: .org.jsoup.safety.SafelistTest[0m
+
+[91mFailure/Error info:[0m
+    SafelistTest.testIsSafeAttribute:83 expected: <true> but was: <false>
+------------------------------------------------------------------------
+
+jsoup_5
+
+[1mTEST: .org.jsoup.parser.HtmlParserTest[0m
+
+[91mFailure/Error info:[0m
+    HtmlParserTest.dropsDuplicateAttributes:58 expected: <<img one="One" two="two">> but was: <<img one="One" one="Two" two="two" one="Three" one="Four" two="Five">>
+   HtmlParserTest.dropsDuplicateAttributes:58 expected: <<form one="One" two="two"></form>> but was: <<form one="One" one="Two" two="two" one="Three" one="Four" two="Five"></form>>
+------------------------------------------------------------------------
+
+gson_1
+
+[1mTEST: .com.google.gson.functional.PrimitiveTest[0m
+
+[91mFailure/Error info:[0m
+    PrimitiveTest.testLazilyParsedNumberSerialization:400 expected:<[1.5]> but was:<[{"value":"1.5"}]>
+ Errors: 
+   PrimitiveTest.testLazilyParsedNumberDeserialization:405 » JsonSyntax java.lang...
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.stream.JsonWriterTest[0m
+
+[91mFailure/Error info:[0m
+    JsonWriterTest.testMalformedNumbers:382 Should have failed writing malformed number: some text
+------------------------------------------------------------------------
+
+gson_2
+
+[1mTEST: com.google.gson.internal.bind.JsonTreeReaderTest[0m
+
+[91mFailure/Error info:[0m
+    JsonTreeReaderTest.testHasNext_endOfDocument:55
+------------------------------------------------------------------------
+
+[1mTEST: com.google.gson.stream.JsonReaderTest[0m
+
+[91mFailure/Error info:[0m
+    JsonReaderTest.testHasNextEndOfDocument:79
+------------------------------------------------------------------------
+
+gson_3
+
+[1mTEST: .com.google.gson.functional.EnumTest[0m
+
+[91mFailure/Error info:[0m
+    EnumTest.testEnumMap:172 ClassCast class java.util.LinkedHashMap cannot be cas...
+------------------------------------------------------------------------
+
+gson_4
+
+[1mTEST: .com.google.gson.stream.JsonWriterTest[0m
+
+[91mFailure/Error info:[0m
+    JsonWriterTest.testFloats:306 expected:<[-0.0,1.0,3.402823[5E38,1.4E-45,0.0,-0.5,2.2250739E-38,3.723379,3.1415927,2.7182817]]> but was:<[-0.0,1.0,3.402823[4663852886E38,1.401298464324817E-45,0.0,-0.5,2.225073907093897E-38,3.723378896713257,3.1415927410125732,2.7182817459106445]]>
+------------------------------------------------------------------------
+
+gson_5
+
+[1mTEST: .com.google.gson.internal.bind.util.ISO8601UtilsTest[0m
+
+[91mFailure/Error info:[0m
+    ISO8601UtilsTest.testDateParseInvalidDay:74 Expected parsing to fail
+   ISO8601UtilsTest.testDateParseInvalidMonth:84 Expected parsing to fail
+------------------------------------------------------------------------
+
+gson_6
+
+[1mTEST: .com.google.gson.GsonTest[0m
+
+[91mFailure/Error info:[0m
+    GsonTest.testGetAdapter_Concurrency:152 expected same:<com.google.gson.GsonTest$2$2@3c0ecd4b> was not:<com.google.gson.GsonTest$2$2@14bf9759>
+   GsonTest.testGetAdapter_Null:100 expected:<type must not be null> but was:<null>
+------------------------------------------------------------------------
+
+gson_7
+
+[1mTEST: .com.google.gson.functional.PrimitiveTest[0m
+
+[91mFailure/Error info:[0m
+    PrimitiveTest.testByteSerialization:70 expected:<[-]128> but was:<[]128>
+   PrimitiveTest.testDoubleSerialization:195 expected:<1[.0]> but was:<1[]>
+   PrimitiveTest.testFloatSerialization:181 expected:<1[.0]> but was:<1[]>
+   PrimitiveTest.testIntSerialization:160 expected:<[-]2147483648> but was:<[]2147483648>
+   PrimitiveTest.testLongSerialization:172 expected:<1[]> but was:<1[.5]>
+   PrimitiveTest.testShortSerialization:115 expected:<[-]32768> but was:<[]32768>
+------------------------------------------------------------------------
+
+gson_8
+
+[1mTEST: .com.google.gson.GsonBuilderTest[0m
+
+[91mFailure/Error info:[0m
+    GsonBuilderTest.testSetVersionInvalid:218
+------------------------------------------------------------------------
+
+gson_9
+
+[1mTEST: .com.google.gson.JsonPrimitiveTest[0m
+
+[91mFailure/Error info:[0m
+    JsonPrimitiveTest.testBigDecimalEquals:329 value of: equals(...)
+expected to be false
+------------------------------------------------------------------------
+
+gson_10
+
+[1mTEST: .com.google.gson.reflect.TypeTokenTest[0m
+
+[91mFailure/Error info:[0m
+    TypeTokenTest.testTypeTokenTypeVariable:309 expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown
+------------------------------------------------------------------------
+
+gson_11
+
+[1mTEST: .com.google.gson.ToNumberPolicyTest[0m
+
+[91mFailure/Error info:[0m
+    ToNumberPolicyTest.testDouble:40 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   ToNumberPolicyTest.testLongOrDouble:85 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   ToNumberPolicyTest.testNullsAreNeverExpected:128 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.functional.DefaultTypeAdaptersTest[0m
+
+[91mFailure/Error info:[0m
+    DefaultTypeAdaptersTest.testClassDeserialization:112 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   DefaultTypeAdaptersTest.testClassSerialization:98 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.functional.NamingPolicyTest[0m
+
+[91mFailure/Error info:[0m
+    NamingPolicyTest.testGsonDuplicateNameDueToBadNamingPolicy:160 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   NamingPolicyTest.testGsonDuplicateNameUsingSerializedNameFieldNamingPolicySerialization:139 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.functional.ObjectTest[0m
+
+[91mFailure/Error info:[0m
+    ObjectTest.testClassWithDuplicateFields:178 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.functional.ReflectionAccessTest[0m
+
+[91mFailure/Error info:[0m
+    ReflectionAccessTest.testInaccessibleField:152->assertInaccessibleException:118 value of:
+    throwable.getMessage()
+expected to end with:
+    
+    See https://github.com/google/gson/blob/main/Troubleshooting.md#reflection-inaccessible
+but was:
+    Failed making field 'java.lang.Throwable#detailMessage' accessible; either increase its visibility or write a custom TypeAdapter for its declaring type.
+    See https://github.com/google/gson/blob/master/Troubleshooting.md#reflection-inaccessible
+   ReflectionAccessTest.testSerializeInternalImplementationObject:143->assertInaccessibleException:118 value of:
+    throwable.getMessage()
+expected to end with:
+    
+    See https://github.com/google/gson/blob/main/Troubleshooting.md#reflection-inaccessible
+but was:
+    Failed making constructor 'java.util.Collections$EmptyList()' accessible; either increase its visibility or write a custom InstanceCreator or TypeAdapter for its declaring type: Unable to make private java.util.Collections$EmptyList() accessible: module java.base does not "opens java.util" to unnamed module @131276c2
+    See https://github.com/google/gson/blob/master/Troubleshooting.md#reflection-inaccessible
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.functional.StreamingTypeAdaptersTest[0m
+
+[91mFailure/Error info:[0m
+    StreamingTypeAdaptersTest.testNullSafe:198 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.reflect.TypeTokenTest[0m
+
+[91mFailure/Error info:[0m
+    TypeTokenTest.testTypeTokenRaw:263 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+[1mTEST: .com.google.gson.stream.JsonReaderTest[0m
+
+[91mFailure/Error info:[0m
+    JsonReaderTest.testBomForbiddenAsOtherCharacterInDocument:1610->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testDocumentWithCommentEndingInSlash:1807 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithEscapedNewlineCharacter:1658->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPosition:1616->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionDeepPath:1707 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionGreaterThanBufferSize:1623->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionIsOffsetByBom:1663->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionOverCStyleComment:1641->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionOverHashEndOfLineComment:1635->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionOverQuotedString:1647->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionOverSlashSlashEndOfLineComment:1629->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testFailWithPositionOverUnquotedString:1653->testFailWithPosition:1677 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testInvalidJsonInput:277 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testLenientExtraCommasInMaps:1981 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testLenientPartialNonExecutePrefix:1590 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testMissingValue:838 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testNextFailuresDoNotAdvance:898->assertUnexpectedStructureError:2077 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testNullLiteralIsNotAString:994->assertUnexpectedStructureError:2077 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testPeekingUnquotedStringsPrefixedWithBooleans:601->assertUnexpectedStructureError:2077 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictComments:1087->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictCommentsWithSkipValue:1135->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictExtraCommasInMaps:1965 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictMultipleTopLevelValues:1477->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictMultipleTopLevelValuesWithSkipValue:1502->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictNameValueSeparator:1007->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictNameValueSeparatorWithSkipValue:1045->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictNonExecutePrefix:1548->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictNonExecutePrefixWithSkipValue:1559->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictNonFiniteDoubles:457->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictNonFiniteDoublesWithSkipValue:508->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictQuotedNonFiniteDoubles:470 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSemicolonDelimitedArray:1293->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSemicolonDelimitedArrayWithSkipValue:1314->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSemicolonDelimitedNameValuePair:1327->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSemicolonDelimitedNameValuePairWithSkipValue:1350->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSingleQuotedNames:1197->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSingleQuotedNamesWithSkipValue:1217->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSingleQuotedStrings:1261->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictSingleQuotedStringsWithSkipValue:1281->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictUnnecessaryArraySeparators:1363->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictUnnecessaryArraySeparatorsWithSkipValue:1436->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictUnquotedNames:1165->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictUnquotedNamesWithSkipValue:1185->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictUnquotedStrings:1229->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictUnquotedStringsWithSkipValue:1241->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStrictVeryLongNumber:1721->assertStrictError:2071 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStringEndingInSlash:1794 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStringNullIsNotNull:982->assertUnexpectedStructureError:2077 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testStringWithLeadingSlash:1820 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testUnescapingInvalidCharacters:362 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testUnescapingTruncatedCharacters:376 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testUnescapingTruncatedSequence:390 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testUnterminatedObject:1836 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+   JsonReaderTest.testUnterminatedStringFailure:2049 value of: throwable.getMessage()
+expected: …/google/gson/blob/main/Troubleshooting.md#…
+but was : …/google/gson/blob/master/Troubleshooting.md#…
+------------------------------------------------------------------------
+
+gson_12
+
+[1mTEST: .com.google.gson.internal.ConstructorConstructorTest[0m
+
+[91mFailure/Error info:[0m
+    ConstructorConstructorTest.testGet_AbstractClassNoArgConstructor:49 value of:
+    throwable.getMessage()
+expected:
+    Abstract classes can't be instantiated! Adjust the R8 configuration or register an InstanceCreator or a TypeAdapter for this type. Class name: com.google.gson.internal.ConstructorConstructorTest$AbstractClass
+    See https://github.com/google/gson/blob/main/Troubleshooting.md#r8-abstract-class
+but was:
+    Abstract classes can't be instantiated! Register an InstanceCreator or a TypeAdapter for this type. Class name: com.google.gson.internal.ConstructorConstructorTest$AbstractClass
+------------------------------------------------------------------------
+
+nacos_1
+
+[1mTEST: .com.alibaba.nacos.client.config.http.ServerHttpAgentTest.java[0m
+
+[91mFailure/Error info:[0m
+    ServerHttpAgentTest.testGetterAndSetter:62 expected:<[custom-aaa_8080_nacos_serverlist_]namespace1> but was:<[aaa-]namespace1>
+------------------------------------------------------------------------
+
+[1mTEST: .com.alibaba.nacos.client.config.impl.ClientWorkerTest.java[0m
+
+[91mFailure/Error info:[0m
+    ClientWorkerTest.testShutdown:175 expected:<null> but was:<config_rpc_client>
+------------------------------------------------------------------------
+
+[1mTEST: .com.alibaba.nacos.client.config.impl.ServerListManagerTest.java[0m
+
+[91mFailure/Error info:[0m
+    ServerListManagerTest.testStart:38 expected:<...env:custom-localhost[_0_nacos_serverlist], not connnect url:h...> but was:<...env:custom-localhost[-0], not connnect url:h...>
+------------------------------------------------------------------------
+
+nacos_2
+
+[1mTEST: .com.alibaba.nacos.plugin.encryption.handler.EncryptionHandlerTest.java[0m
+
+[91mFailure/Error info:[0m
+    EncryptionHandlerTest.testCornerCaseDataIdAlgoParse:86 » IndexOutOfBounds Inde...
+------------------------------------------------------------------------
+
+nacos_3
+
+[1mTEST: .com.alibaba.nacos.common.remote.client.RpcClientTest.java[0m
+
+[91mFailure/Error info:[0m
+    RpcClientTest.testHealthCheck:444 
+connection.request(<any>, <any long>);
+Wanted 4 times:
+-> at com.alibaba.nacos.common.remote.client.RpcClientTest.testHealthCheck(RpcClientTest.java:444)
+But was 3 times:
+-> at com.alibaba.nacos.common.remote.client.RpcClient.healthCheck(RpcClient.java:475)
+-> at com.alibaba.nacos.common.remote.client.RpcClient.healthCheck(RpcClient.java:475)
+-> at com.alibaba.nacos.common.remote.client.RpcClient.healthCheck(RpcClient.java:475)
+------------------------------------------------------------------------
+
+nacos_4
+
+[1mTEST: .com.alibaba.nacos.naming.core.v2.client.impl.ConnectionBasedClientTest.java[0m
+
+[91mFailure/Error info:[0m
+    ConnectionBasedClientTest.testRecalculateRevision:58 expected:<1> but was:<0>
+   ConnectionBasedClientTest.testRecalculateRevisionAsync:73 expected:<100> but was:<0>
+------------------------------------------------------------------------
+
+nacos_5
+
+[1mTEST: .com.alibaba.nacos.plugin.datasource.impl.derby.ConfigInfoMapperByDerbyTest.java[0m
+
+[91mFailure/Error info:[0m
+    ConfigInfoMapperByDerbyTest.testFindChangeConfig:163 expected:<SELECT [data_id, group_id, tenant_id, app_name, content, gmt_modified, encrypted_data_key FROM config_info WHERE gmt_modified >= ? AND gmt_modified <= ?]> but was:<SELECT [id, data_id, group_id, tenant_id, app_name, content, gmt_modified, encrypted_data_key FROM config_info WHERE gmt_modified >= ? and id > ? order by id  limit ? ]>
+------------------------------------------------------------------------
+
+[1mTEST: .com.alibaba.nacos.plugin.datasource.impl.derby.HistoryConfigInfoMapperByDerbyTest.java[0m
+
+[91mFailure/Error info:[0m
+    HistoryConfigInfoMapperByDerbyTest.testFindDeletedConfig:79 expected:<SELECT [DISTINCT data_id, group_id, tenant_id FROM his_config_info WHERE op_type = 'D' AND gmt_modified >= ? AND gmt_modified <= ?]> but was:<SELECT [data_id, group_id, tenant_id,gmt_modified,nid FROM his_config_info WHERE op_type = 'D' AND gmt_modified >= ? and nid > ? order by nid limit ? ]>
+------------------------------------------------------------------------
+
+[1mTEST: .com.alibaba.nacos.plugin.datasource.impl.mysql.ConfigInfoMapperByMySqlTest.java[0m
+
+[91mFailure/Error info:[0m
+    ConfigInfoMapperByMySqlTest.testFindChangeConfig:162 expected:<SELECT [data_id, group_id, tenant_id, app_name, content, gmt_modified, encrypted_data_key FROM config_info WHERE gmt_modified >= ? AND gmt_modified <= ?]> but was:<SELECT [id, data_id, group_id, tenant_id, app_name, content, gmt_modified, encrypted_data_key FROM config_info WHERE gmt_modified >= ? and id > ? order by id  limit ? ]>
+------------------------------------------------------------------------
+
+[1mTEST: .com.alibaba.nacos.plugin.datasource.impl.mysql.HistoryConfigInfoMapperByMySqlTest.java[0m
+
+[91mFailure/Error info:[0m
+    HistoryConfigInfoMapperByMySqlTest.testFindDeletedConfig:76 expected:<SELECT [DISTINCT data_id, group_id, tenant_id FROM his_config_info WHERE op_type = 'D' AND gmt_modified >= ? AND gmt_modified <= ?]> but was:<SELECT [data_id, group_id, tenant_id,gmt_modified,nid FROM his_config_info WHERE op_type = 'D' AND gmt_modified >= ? and nid > ? order by nid limit ? ]>
+------------------------------------------------------------------------
+
+fastjson_1
+
+[1mTEST: .com.alibaba.json.bvt.issue_3700.Issue3719[0m
+
+[91mFailure/Error info:[0m
+    Issue3719.test_for_issue_wrong_case1 »  Unexpected exception, expected<com.ali...
+   Issue3719.test_for_issue_wrong_case2 »  Unexpected exception, expected<com.ali...
+   Issue3719.test_for_issue_wrong_case3 »  Unexpected exception, expected<com.ali...
+   Issue3719.test_for_issue_wrong_case4 »  Unexpected exception, expected<com.ali...
+   Issue3719.test_for_issue_wrong_case5 »  Unexpected exception, expected<com.ali...
+   Issue3719.test_for_issue_wrong_case6 »  Unexpected exception, expected<com.ali...
+   Issue3719.test_for_issue_wrong_case7 »  Unexpected exception, expected<com.ali...
+------------------------------------------------------------------------
+
+assertj_1
+
+[1mTEST: .org.assertj.core.internal.classes.Classes_assertHasMethods_Test[0m
+
+[91mFailure/Error info:[0m
+    Classes_assertHasMethods_Test.should_pass_with_direct_default_method:108 
+Expecting
+  org.assertj.core.internal.classes.Classes_assertHasMethods_Test.ClassWithDirectDefaultMethod
+to have methods:
+  ["method"]
+but could not find:
+  ["method"]
+   Classes_assertHasMethods_Test.should_pass_with_indirect_default_method:127 
+Expecting
+  org.assertj.core.internal.classes.Classes_assertHasMethods_Test.ClassWithIndirectDefaultMethod
+to have methods:
+  ["method"]
+but could not find:
+  ["method"]
+------------------------------------------------------------------------
+
+assertj_2
+
+[1mTEST: .org.assertj.core.util.introspection.PropertyOrFieldSupport_getSimpleValue_with_Optional_input_Test[0m
+
+[91mFailure/Error info:[0m
+    PropertyOrFieldSupport_getSimpleValue_with_Optional_input_Test.should_fail_if_optional_is_empty:44 
+Expecting actual not to be null
+------------------------------------------------------------------------
+
+assertj_3
+
+[1mTEST: .org.assertj.core.presentation.StandardRepresentation_toStringOf_Test[0m
+
+[91mFailure/Error info:[0m
+    StandardRepresentation_toStringOf_Test.should_return_toString_of_anonymous_Class_array_with_generic_description:126 
+expected: "anonymous class array"
+ but was: null
+   StandardRepresentation_toStringOf_Test.should_return_toString_of_anonymous_Class_with_generic_description:119 
+expected: "anonymous class"
+ but was: null
+   StandardRepresentation_toStringOf_Test.should_return_toString_of_local_Class_array_with_its_simple_name:138 
+expected: "local class LocalClass[]"
+ but was: null
+   StandardRepresentation_toStringOf_Test.should_return_toString_of_local_Class_with_its_simple_name:132 
+expected: "local class LocalClass"
+ but was: null
+------------------------------------------------------------------------
+
+assertj_4
+
+[1mTEST: .org.assertj.core.internal.maps.Maps_assertContainsOnlyKeys_Test[0m
+
+[91mFailure/Error info:[0m
+    Maps_assertContainsOnlyKeys_Test.should_fail_with_MultiValueMapAdapter:251 
+Expected size: 2 but was: 1 in:
+{"job"=["Jedi"]}
+   Maps_assertContainsOnlyKeys_Test.should_pass_with_MultiValueMapAdapter:145 
+Expected size: 1 but was: 0 in:
+{}
+------------------------------------------------------------------------
+
+[1mTEST: .org.assertj.core.internal.maps.Maps_assertContainsOnly_Test[0m
+
+[91mFailure/Error info:[0m
+    Maps_assertContainsOnly_Test.should_fail_with_MultiValueMapAdapter:268 
+Expected size: 2 but was: 1 in:
+{"job"=["Jedi"]}
+   Maps_assertContainsOnly_Test.should_pass_with_MultiValueMapAdapter:161 
+Expected size: 1 but was: 0 in:
+{}
+------------------------------------------------------------------------
+
+assertj_5
+
+[1mTEST: .org.assertj.core.internal.strings.Strings_assertContainsIgnoringCase_Test[0m
+
+[91mFailure/Error info:[0m
+    Strings_assertContainsIgnoringCase_Test.should_pass_with_Turkish_default_locale 
+Expecting actual:
+  "Leia"
+to contain:
+  "IA"
+ (ignoring case)
+------------------------------------------------------------------------
+
+[1mTEST: .org.assertj.core.internal.strings.Strings_assertDoesNotContainIgnoringCase_Test[0m
+
+[91mFailure/Error info:[0m
+    Strings_assertDoesNotContainIgnoringCase_Test.should_fail_with_Turkish_default_locale:135 [The code under test should have raised an AssertionError] 
+Expecting actual not to be null
+------------------------------------------------------------------------
+
+[1mTEST: .org.assertj.core.internal.strings.Strings_assertDoesNotEndWithIgnoringCase_Test[0m
+
+[91mFailure/Error info:[0m
+    Strings_assertDoesNotEndWithIgnoringCase_Test.should_fail_with_Turkish_default_locale:83 [The code under test should have raised an AssertionError] 
+Expecting actual not to be null
+------------------------------------------------------------------------
+
+[1mTEST: .org.assertj.core.internal.strings.Strings_assertDoesNotStartWithIgnoringCase_Test[0m
+
+[91mFailure/Error info:[0m
+    Strings_assertDoesNotStartWithIgnoringCase_Test.should_fail_with_Turkish_default_locale:84 [The code under test should have raised an AssertionError] 
+Expecting actual not to be null
+------------------------------------------------------------------------
+
+[1mTEST: .org.assertj.core.internal.strings.Strings_assertEndsWithIgnoringCase_Test[0m
+
+[91mFailure/Error info:[0m
+    Strings_assertEndsWithIgnoringCase_Test.should_pass_with_Turkish_default_locale 
+Expecting actual:
+  "Leia"
+to end with (ignoring case):
+  "IA"
+------------------------------------------------------------------------
+
+[1mTEST: .org.assertj.core.internal.strings.Strings_assertStartsWithIgnoringCase_Test[0m
+
+[91mFailure/Error info:[0m
+    Strings_assertStartsWithIgnoringCase_Test.should_pass_with_Turkish_default_locale 
+Expecting actual:
+  "Leia"
+to start with (ignoring case):
+  "LEI"
+------------------------------------------------------------------------
+
+rocketmq_1
+
+[1mTEST: .org.apache.rocketmq.store.queue.BatchConsumeQueueTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  BatchConsumeQueueTest.testBuildAndSearchBatchConsumeQueuePerformance:164 expected:<199991> but was:<-1>
+------------------------------------------------------------------------
+
+rocketmq_2
+
+[1mTEST: .org.apache.rocketmq.acl.plain.PlainAccessValidatorTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  PlainAccessValidatorTest.validateConsumeMessageBackTest:258 » Acl No default p...
+------------------------------------------------------------------------
+
+rocketmq_3
+
+[1mTEST: .org.apache.rocketmq.store.ConsumeQueueTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  ConsumeQueueTest.testCorrectMinOffset:473 expected:<200000> but was:<199980>
+------------------------------------------------------------------------
+
+rocketmq_4
+
+[1mTEST: .org.apache.rocketmq.broker.processor.ChangeInvisibleTimeProcessorTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  ChangeInvisibleTimeProcessorTest.testProcessRequest_Success:131 » NullPointer
+------------------------------------------------------------------------
+
+[1mTEST: .org.apache.rocketmq.broker.processor.PopMessageProcessorTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  PopMessageProcessorTest.testProcessRequest_MsgWasRemoving:125 » NullPointer
+------------------------------------------------------------------------
+
+rocketmq_5
+
+[1mTEST: .org.apache.rocketmq.remoting.netty.NettyClientConfigTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  NettyClientConfigTest.testChangeConfigBySystemProperty:64 expected:<[tru]e> but was:<[fals]e>
+------------------------------------------------------------------------
+
+rocketmq_6
+
+[1mTEST: .org.apache.rocketmq.tieredstore.metadata.MetadataStoreTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  MetadataStoreTest.tearDown:60 » NullPointer
+------------------------------------------------------------------------
+
+[1mTEST: .org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsManagerTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  TieredStoreMetricsManagerTest.tearDown:32 » NullPointer
+------------------------------------------------------------------------
+
+[1mTEST: .org.apache.rocketmq.tieredstore.provider.posix.PosixFileSegmentTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  PosixFileSegmentTest.tearDown:52 » NullPointer
+------------------------------------------------------------------------
+
+rocketmq_7
+
+[1mTEST: .org.apache.rocketmq.broker.processor.PopMessageProcessorTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  PopMessageProcessorTest.testProcessRequest_whenTimerWheelIsFalse:149 
+Expecting actual not to be null
+------------------------------------------------------------------------
+
+rocketmq_8
+
+[1mTEST: .org.apache.rocketmq.broker.controller.ReplicasManagerTest.java[0m
+
+[91mFailure/Error info:[0m
+    Tests in error: 
+  ReplicasManagerTest.unnecessary Mockito stubbings » UnnecessaryStubbing 
+Unnec...
+------------------------------------------------------------------------
+
+rocketmq_9
+
+[1mTEST: .org.apache.rocketmq.tieredstore.TieredMessageStoreTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  TieredMessageStoreTest.testGetMessageAsync:193 expected same:<GetMessageResult [status=MESSAGE_WAS_REMOVING, nextBeginOffset=0, minOffset=0, maxOffset=0, bufferTotalSize=0, messageCount=0, suggestPullingFromSlave=false]> was not:<GetMessageResult [status=OFFSET_OVERFLOW_BADLY, nextBeginOffset=0, minOffset=0, maxOffset=0, bufferTotalSize=0, messageCount=0, suggestPullingFromSlave=false]>
+------------------------------------------------------------------------
+
+rocketmq_10
+
+[1mTEST: .org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  HeartbeatSyncerTest.testSyncRemotingChannel:289 expected not same
+------------------------------------------------------------------------
+
+rocketmq_11
+
+[1mTEST: .org.apache.rocketmq.proxy.grpc.v2.route.RouteActivityTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  RouteActivityTest.testQueryFifoAssignment:213 expected:<2> but was:<1>
+------------------------------------------------------------------------
+
+rocketmq_12
+
+[1mTEST: .org.apache.rocketmq.proxy.service.route.ClusterTopicRouteServiceTest.java[0m
+
+[91mFailure/Error info:[0m
+    Failed tests: 
+  ClusterTopicRouteServiceTest.testGetBrokerAddr:116 expected:<127.0.0.[2]:10911> but was:<127.0.0.[1]:10911>
+------------------------------------------------------------------------
+
+retrofit_1
+
+[1mTEST: retrofit2.RequestFactoryTest[0m
+
+[91mFailure/Error info:[0m
+    retrofit2.RequestFactoryTest > headerMapMustBeAMapOrHeaders FAILED
+    java.lang.AssertionError: 
+    Expecting message to be:
+      <"@HeaderMap parameter type must be Map or Headers. (parameter #2)
+        for method Example.method">
+    but was:
+      <"@HeaderMap parameter type must be Map. (parameter #2)
+        for method Example.method">
+------------------------------------------------------------------------
+
+sslcontext-kickstart_1
+
+[1mTEST: .nl.altindag.ssl.hostnameverifier.UnsafeHostnameVerifierShould[0m
+
+[91mFailure/Error info:[0m
+    UnsafeHostnameVerifierShould.verifyReturnsAlwaysTrue:34 » NullPointer Cannot i...
+------------------------------------------------------------------------
+
+sslcontext-kickstart_2
+
+[1mTEST: .nl.altindag.ssl.util.CertificateUtilsShould[0m
+
+[91mFailure/Error info:[0m
+    CertificateUtilsShould.generateAliasForX509Certificate:79 
+expected: "cn=*.google.com,o=google llc,l=mountain view,st=california,c=us"
+ but was: "CN=*.google.com,O=Google LLC,L=Mountain View,ST=California,C=US"
+------------------------------------------------------------------------
+
+sslcontext-kickstart_3
+
+[1mTEST: .nl.altindag.ssl.util.TrustManagerUtilsShould[0m
+
+[91mFailure/Error info:[0m
+    TrustManagerUtilsShould.createOnlyUnsafeTrustManagerWhileProvidingMultipleTrustManagers:380 
+Expecting actual:
+  nl.altindag.ssl.trustmanager.CompositeX509ExtendedTrustManager@7f13811b
+to be an instance of:
+  nl.altindag.ssl.trustmanager.UnsafeX509ExtendedTrustManager
+but was instance of:
+  nl.altindag.ssl.trustmanager.CompositeX509ExtendedTrustManager
+   TrustManagerUtilsShould.notIncludeTrustManagerWhichDoesNotContainTrustedCertificates:394 
+Expected size: 2 but was: 3 in:
+[sun.security.ssl.X509TrustManagerImpl@59b32539,
+    sun.security.ssl.X509TrustManagerImpl@5b47731f,
+    sun.security.ssl.X509TrustManagerImpl@233db8e9]
+------------------------------------------------------------------------
+
+sslcontext-kickstart_4
+
+[1mTEST: .nl.altindag.ssl.util.KeyStoreUtilsShould[0m
+
+[91mFailure/Error info:[0m
+    KeyStoreUtilsShould.loadAndroidSystemKeyStoreWithOsNameAndJavaRuntimeNameProperty:212 
+Expecting actual:
+  []
+to contain exactly (and in same order):
+  [Mock for KeyStore, hashCode: 2024814472]
+but could not find the following elements:
+  [Mock for KeyStore, hashCode: 2024814472]
+
+   KeyStoreUtilsShould.loadAndroidSystemKeyStoreWithOsNameAndJavaVendorProperty:162 
+Expecting actual:
+  []
+to contain exactly (and in same order):
+  [Mock for KeyStore, hashCode: 1796154990]
+but could not find the following elements:
+  [Mock for KeyStore, hashCode: 1796154990]
+
+   KeyStoreUtilsShould.loadAndroidSystemKeyStoreWithOsNameAndJavaVmVendorProperty:187 
+Expecting actual:
+  []
+to contain exactly (and in same order):
+  [Mock for KeyStore, hashCode: 1641418296]
+but could not find the following elements:
+  [Mock for KeyStore, hashCode: 1641418296]
+------------------------------------------------------------------------
+
+sslcontext-kickstart_5
+
+sslcontext-kickstart_6
+
+[1mTEST: .nl.altindag.ssl.hostnameverifier.FenixHostnameVerifierShould[0m
+
+[91mFailure/Error info:[0m
+    FenixHostnameVerifierShould.verifySubjectAlt:132 
+Expecting value to be true but was false
+------------------------------------------------------------------------
+

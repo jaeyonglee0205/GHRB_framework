@@ -5,6 +5,11 @@ if [ $BID == "bug_id" ]
     then
         continue
 fi
+
+if [ $PID == "javaparser" ]
+    then
+        continue
+fi
     rm -rf testing
     ./cli.py checkout -p $PID -v "${BID}"b -w /root/framework/testing
     ./cli.py compile -w /root/framework/testing

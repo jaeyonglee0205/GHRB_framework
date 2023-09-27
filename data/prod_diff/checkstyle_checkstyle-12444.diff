@@ -1,18 +1,3 @@
-diff --git a/pom.xml b/pom.xml
-index f00bc7f01..0b0064262 100644
---- a/pom.xml
-+++ b/pom.xml
-@@ -4571,6 +4571,10 @@
-                 <param>com.puppycrawl.tools.checkstyle.filters.SuppressWithPlainTextCommentFilterTest</param>
-                 <param>com.puppycrawl.tools.checkstyle.checks.whitespace.FileTabCharacterCheckTest</param>
-                 <param>com.puppycrawl.tools.checkstyle.checks.NewlineAtEndOfFileCheckTest</param>
-+                <!-- kills mutation in AutomaticBean -->
-+                <param>com.puppycrawl.tools.checkstyle.checks.naming.ParameterNameCheckTest</param>
-+                <!-- kills mutation in AutomaticBean -->
-+                <param>com.puppycrawl.tools.checkstyle.checks.coding.IllegalTypeCheckTest</param>
-               </targetTests>
-               <excludedTestClasses>
-                 <param>*.Input*</param>
 diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/api/AutomaticBean.java b/src/main/java/com/puppycrawl/tools/checkstyle/api/AutomaticBean.java
 index c9a23ef4b..31df6e3ed 100644
 --- a/src/main/java/com/puppycrawl/tools/checkstyle/api/AutomaticBean.java

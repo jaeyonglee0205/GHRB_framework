@@ -1,24 +1,3 @@
-diff --git a/sslcontext-kickstart-for-apache4/src/test/java/nl/altindag/ssl/SSLFactoryIT.java b/sslcontext-kickstart-for-apache4/src/test/java/nl/altindag/ssl/SSLFactoryIT.java
-index cb77f8a..9f65983 100644
---- a/sslcontext-kickstart-for-apache4/src/test/java/nl/altindag/ssl/SSLFactoryIT.java
-+++ b/sslcontext-kickstart-for-apache4/src/test/java/nl/altindag/ssl/SSLFactoryIT.java
-@@ -17,7 +17,6 @@ package nl.altindag.ssl;
- 
- import nl.altindag.log.LogCaptor;
- import nl.altindag.ssl.util.Apache4SslUtils;
--import nl.altindag.ssl.util.KeyStoreUtils;
- import org.apache.http.HttpResponse;
- import org.apache.http.client.HttpClient;
- import org.apache.http.client.methods.HttpGet;
-@@ -44,7 +43,7 @@ class SSLFactoryIT {
-         SSLFactory sslFactory = SSLFactory.builder()
-                 .withIdentityMaterial("keystore/badssl-identity.p12", "badssl.com".toCharArray())
-                 .withTrustMaterial("keystore/badssl-truststore.p12", "badssl.com".toCharArray())
--                .withTrustMaterial(KeyStoreUtils.createKeyStore()) // Adding additional trust material forces usage of CompositeX509ExtendedTrustManager and verbose logging
-+                .withDefaultTrustMaterial() // Adding additional trust material forces usage of CompositeX509ExtendedTrustManager and verbose logging
-                 .build();
- 
-         LayeredConnectionSocketFactory socketFactory = Apache4SslUtils.toSocketFactory(sslFactory);
 diff --git a/sslcontext-kickstart-for-apache5/src/test/java/nl/altindag/ssl/SSLFactoryIT.java b/sslcontext-kickstart-for-apache5/src/test/java/nl/altindag/ssl/SSLFactoryIT.java
 index 02c0448..988c700 100644
 --- a/sslcontext-kickstart-for-apache5/src/test/java/nl/altindag/ssl/SSLFactoryIT.java
@@ -259,3 +238,154 @@ index 71450b4..63455f7 100644
      public static String requireNotBlank(String maybeNull, String message) {
          return requireNotBlank(maybeNull, () -> new IllegalArgumentException(message));
      }
+diff --git a/sslcontext-kickstart/src/test/java/nl/altindag/ssl/SSLFactoryIT.java b/sslcontext-kickstart/src/test/java/nl/altindag/ssl/SSLFactoryIT.java
+index 7c5c955..461c1b6 100644
+--- a/sslcontext-kickstart/src/test/java/nl/altindag/ssl/SSLFactoryIT.java
++++ b/sslcontext-kickstart/src/test/java/nl/altindag/ssl/SSLFactoryIT.java
+@@ -17,7 +17,6 @@ package nl.altindag.ssl;
+ 
+ import com.sun.net.httpserver.HttpsServer;
+ import nl.altindag.log.LogCaptor;
+-import nl.altindag.ssl.util.KeyStoreUtils;
+ import nl.altindag.ssl.util.SSLFactoryUtils;
+ import org.junit.jupiter.api.Tag;
+ import org.junit.jupiter.api.Test;
+@@ -57,7 +56,7 @@ class SSLFactoryIT {
+         SSLFactory sslFactory = SSLFactory.builder()
+                 .withIdentityMaterial(KEYSTORE_LOCATION + "badssl-identity.p12", "badssl.com".toCharArray())
+                 .withTrustMaterial(KEYSTORE_LOCATION + "badssl-truststore.p12", "badssl.com".toCharArray())
+-                .withTrustMaterial(KeyStoreUtils.createKeyStore()) // Adding additional trust material forces usage of CompositeX509ExtendedTrustManager and verbose logging
++                .withDefaultTrustMaterial() // Adding additional trust material forces usage of CompositeX509ExtendedTrustManager and verbose logging
+                 .build();
+ 
+         HttpsURLConnection connection = (HttpsURLConnection) new URL("https://client.badssl.com/").openConnection();
+@@ -83,7 +82,7 @@ class SSLFactoryIT {
+ 
+         SSLFactory sslFactory = SSLFactory.builder()
+                 .withIdentityMaterial(KEYSTORE_LOCATION + "badssl-identity.p12", "badssl.com".toCharArray())
+-                .withTrustMaterial(KeyStoreUtils.createKeyStore()) // Adding additional trust material forces usage of CompositeX509ExtendedTrustManager and verbose logging
++                .withDefaultTrustMaterial() // Adding additional trust material forces usage of CompositeX509ExtendedTrustManager and verbose logging
+                 .withTrustMaterial(KEYSTORE_LOCATION + "badssl-truststore.p12", "badssl.com".toCharArray())
+                 .build();
+ 
+diff --git a/sslcontext-kickstart/src/test/java/nl/altindag/ssl/util/TrustManagerUtilsShould.java b/sslcontext-kickstart/src/test/java/nl/altindag/ssl/util/TrustManagerUtilsShould.java
+index df39097..cc09929 100644
+--- a/sslcontext-kickstart/src/test/java/nl/altindag/ssl/util/TrustManagerUtilsShould.java
++++ b/sslcontext-kickstart/src/test/java/nl/altindag/ssl/util/TrustManagerUtilsShould.java
+@@ -15,9 +15,11 @@
+  */
+ package nl.altindag.ssl.util;
+ 
++import nl.altindag.log.LogCaptor;
+ import nl.altindag.ssl.exception.GenericSecurityException;
+ import nl.altindag.ssl.exception.GenericTrustManagerException;
+ import nl.altindag.ssl.trustmanager.CompositeX509ExtendedTrustManager;
++import nl.altindag.ssl.trustmanager.DummyX509ExtendedTrustManager;
+ import nl.altindag.ssl.trustmanager.UnsafeX509ExtendedTrustManager;
+ import nl.altindag.ssl.trustmanager.X509TrustManagerWrapper;
+ import org.junit.jupiter.api.Test;
+@@ -370,6 +372,8 @@ class TrustManagerUtilsShould {
+ 
+     @Test
+     void createOnlyUnsafeTrustManagerWhileProvidingMultipleTrustManagers() {
++        LogCaptor logCaptor = LogCaptor.forRoot();
++
+         KeyStore trustStore = KeyStoreUtils.loadKeyStore(KEYSTORE_LOCATION + TRUSTSTORE_FILE_NAME, TRUSTSTORE_PASSWORD);
+ 
+         X509ExtendedTrustManager trustManager = TrustManagerUtils.combine(
+@@ -378,6 +382,21 @@ class TrustManagerUtilsShould {
+         );
+ 
+         assertThat(trustManager).isInstanceOf(UnsafeX509ExtendedTrustManager.class);
++
++        assertThat(logCaptor.getDebugLogs()).contains("Unsafe TrustManager is being used therefore other trust managers will not be included for constructing the base trust manager");
++    }
++
++    @Test
++    void doNotLogAnythingWhenUnsafeTrustManagerIsBeingUsedWithoutAdditionalTrustManagers() {
++        LogCaptor logCaptor = LogCaptor.forRoot();
++
++        X509ExtendedTrustManager trustManager = TrustManagerUtils.combine(
++                TrustManagerUtils.createUnsafeTrustManager()
++        );
++
++        assertThat(trustManager).isInstanceOf(UnsafeX509ExtendedTrustManager.class);
++
++        assertThat(logCaptor.getLogs()).isEmpty();
+     }
+ 
+     @Test
+@@ -386,7 +405,7 @@ class TrustManagerUtilsShould {
+         KeyStore trustStoreTwo = KeyStoreUtils.loadKeyStore(KEYSTORE_LOCATION + "truststore-containing-github.jks", TRUSTSTORE_PASSWORD);
+         KeyStore emptyTrustStore = KeyStoreUtils.createKeyStore();
+ 
+-        X509ExtendedTrustManager trustManager = TrustManagerUtils.createTrustManager(trustStoreOne, trustStoreOne, emptyTrustStore);
++        X509ExtendedTrustManager trustManager = TrustManagerUtils.createTrustManager(trustStoreOne, trustStoreTwo, emptyTrustStore);
+ 
+         assertThat(trustManager).isInstanceOf(CompositeX509ExtendedTrustManager.class);
+ 
+@@ -394,14 +413,62 @@ class TrustManagerUtilsShould {
+         assertThat(compositeX509ExtendedTrustManager.getTrustManagers()).hasSize(2);
+     }
+ 
++    @Test
++    void ignoreOtherTrustMaterialIfDummyTrustManagerIsPresent() {
++        LogCaptor logCaptor = LogCaptor.forRoot();
++
++        KeyStore trustStoreOne = KeyStoreUtils.loadKeyStore(KEYSTORE_LOCATION + TRUSTSTORE_FILE_NAME, TRUSTSTORE_PASSWORD);
++        KeyStore trustStoreTwo = KeyStoreUtils.loadKeyStore(KEYSTORE_LOCATION + "truststore-containing-github.jks", TRUSTSTORE_PASSWORD);
++
++        X509ExtendedTrustManager trustManager = TrustManagerUtils.trustManagerBuilder()
++                .withTrustStore(trustStoreOne)
++                .withTrustStore(trustStoreTwo)
++                .withTrustManager(TrustManagerUtils.createDummyTrustManager())
++                .build();
++
++        assertThat(trustManager).isInstanceOf(DummyX509ExtendedTrustManager.class);
++        assertThat(logCaptor.getDebugLogs()).contains("Dummy TrustManager is being used therefore other trust managers will not be included for constructing the base trust manager");
++    }
++
++    @Test
++    void doNotLogAnythingWhenDummyTrustManagerIsBeingUsedWithoutAdditionalTrustManagers() {
++        LogCaptor logCaptor = LogCaptor.forRoot();
++
++        X509ExtendedTrustManager trustManager = TrustManagerUtils.combine(
++                TrustManagerUtils.createDummyTrustManager()
++        );
++
++        assertThat(trustManager).isInstanceOf(DummyX509ExtendedTrustManager.class);
++
++        assertThat(logCaptor.getLogs()).isEmpty();
++    }
++
++    @Test
++    void notCombineIfOnlyOneTrustManagerContainsTrustedCertificates() {
++        X509ExtendedTrustManager emptyTrustManager = TrustManagerUtils.createTrustManager(KeyStoreUtils.createKeyStore());
++        X509ExtendedTrustManager filledTrustManager = TrustManagerUtils.createTrustManager(KeyStoreUtils.loadKeyStore(KEYSTORE_LOCATION + TRUSTSTORE_FILE_NAME, TRUSTSTORE_PASSWORD));
++
++        X509ExtendedTrustManager trustManager = TrustManagerUtils.combine(emptyTrustManager, filledTrustManager);
++
++        assertThat(trustManager).isNotInstanceOf(CompositeX509ExtendedTrustManager.class);
++    }
++
+     private CertPathTrustManagerParameters createTrustManagerParameters(KeyStore trustStore) throws NoSuchAlgorithmException, KeyStoreException, InvalidAlgorithmParameterException {
+         CertPathBuilder certPathBuilder = CertPathBuilder.getInstance("PKIX");
+         PKIXRevocationChecker revocationChecker = (PKIXRevocationChecker) certPathBuilder.getRevocationChecker();
+         revocationChecker.setOptions(EnumSet.of(PKIXRevocationChecker.Option.NO_FALLBACK));
+         PKIXBuilderParameters pkixParams = new PKIXBuilderParameters(trustStore, new X509CertSelector());
+         pkixParams.addCertPathChecker(revocationChecker);
+-        CertPathTrustManagerParameters certPathTrustManagerParameters = new CertPathTrustManagerParameters(pkixParams);
+-        return certPathTrustManagerParameters;
++        return new CertPathTrustManagerParameters(pkixParams);
++    }
++
++    @Test
++    void throwExceptionWhenMultipleTrustManagersCombinedDontHaveTrustedCertificates() {
++        X509ExtendedTrustManager trustManagerOne = TrustManagerUtils.createTrustManager(KeyStoreUtils.createKeyStore());
++        X509ExtendedTrustManager trustManagerTwo = TrustManagerUtils.createTrustManager(KeyStoreUtils.createKeyStore());
++
++        assertThatThrownBy(() -> TrustManagerUtils.combine(trustManagerOne, trustManagerTwo))
++                .hasMessageContaining("The provided trust material does not contain any trusted certificate.");
+     }
+ 
+     @Test

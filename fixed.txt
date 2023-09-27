@@ -1,0 +1,663 @@
+jackson-dataformat-xml_1
+
+checkstyle_1
+
+checkstyle_2
+
+checkstyle_3
+
+checkstyle_4
+
+checkstyle_5
+
+checkstyle_6
+
+checkstyle_7
+
+checkstyle_8
+
+checkstyle_9
+
+checkstyle_10
+
+checkstyle_11
+
+checkstyle_12
+
+checkstyle_13
+
+checkstyle_14
+
+checkstyle_15
+
+checkstyle_16
+
+jackson-core_1
+
+jackson-core_2
+
+jackson-core_3
+
+dubbo_1
+
+[1mTEST: .org.apache.dubbo.config.ReferenceConfigTest.java[0m
+
+[91mFailure/Error info:[0m
+    ReferenceConfigTest.testClassLoader:1132 expected: <null> but was: <sun.misc.Launcher$AppClassLoader@7f31245a>
+   ReferenceConfigTest.testDifferentClassLoaderRequest:1097 expected: <org.apache.dubbo.config.ReferenceConfigTest$TestClassLoader1@36fc695d> but was: <org.apache.dubbo.config.ReferenceConfigTest$TestClassLoader2@33352f32>
+------------------------------------------------------------------------
+
+dubbo_2
+
+jackson-databind_1
+
+jackson-databind_2
+
+jackson-databind_3
+
+jackson-databind_4
+
+seata_1
+
+seata_2
+
+Apktool_1
+
+openapi-generator_1
+
+[1mTEST: .org.openapitools.codegen.python.PythonClientTest.java[0m
+
+[91mFailure/Error info:[0m
+    PythonClientTest.testUuidExampleWorksEvenIfPatternIsDefined:468 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_2
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.nonRequiredFieldShouldNotIncludeNotNullAnnotation_issue13365:1609->generateFiles:627 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotationWithBeanValidationTrue_issue13365:1632->generateFiles:627 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotation_issue13365:1580->generateFiles:627 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+openapi-generator_3
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.useBeanValidationGenerateAnnotationsForRequestBody_issue13932:1833 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+openapi-generator_4
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotationJakarta_issue13365_issue13885:1547 
+Expecting ListFromStream:
+  ["java.net.URI",
+    "java.util.Objects",
+    "com.fasterxml.jackson.annotation.JsonProperty",
+    "com.fasterxml.jackson.annotation.JsonCreator",
+    "java.time.OffsetDateTime",
+    "io.swagger.v3.oas.annotations.media.Schema",
+    "java.util",
+    "jakarta.annotation.Generated"]
+to contain:
+  ["jakarta.validation.constraints.NotNull"]
+but could not find the following element(s):
+  ["jakarta.validation.constraints.NotNull"]
+
+   SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotation_issue13365:1514 
+Expecting ListFromStream:
+  ["java.net.URI",
+    "java.util.Objects",
+    "com.fasterxml.jackson.annotation.JsonProperty",
+    "com.fasterxml.jackson.annotation.JsonCreator",
+    "java.time.OffsetDateTime",
+    "io.swagger.v3.oas.annotations.media.Schema",
+    "java.util",
+    "javax.annotation.Generated"]
+to contain:
+  ["javax.validation.constraints.NotNull"]
+but could not find the following element(s):
+  ["javax.validation.constraints.NotNull"]
+------------------------------------------------------------------------
+
+openapi-generator_5
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotationWithBeanValidationTrue_issue13365:1952 Should have annotation with name: javax.validation.constraints.Email
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationFalseJava8TrueForFormatEmail:824->beanValidationForFormatEmail:839->beanValidationForFormatEmail:875 File does not contain line [@javax.validation.constraints.Email] expected [true] but found [false]
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationFalseJava8TrueJakartaeeTrueForFormatEmail:834->beanValidationForFormatEmail:875 File does not contain line [@jakarta.validation.constraints.Email] expected [true] but found [false]
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationTrueJava8FalseForFormatEmail:829->beanValidationForFormatEmail:839->beanValidationForFormatEmail:875 File does not contain line [@javax.validation.constraints.Email] expected [true] but found [false]
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationTrueJava8TrueForFormatEmail:881->beanValidationForFormatEmail:839->beanValidationForFormatEmail:875 File does not contain line [@javax.validation.constraints.Email] expected [true] but found [false]
+------------------------------------------------------------------------
+
+openapi-generator_6
+
+openapi-generator_7
+
+[1mTEST: .org.openapitools.codegen.go.GoClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    GoClientCodegenTest.verifyApiTestWithNullResponse:278 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_8
+
+[1mTEST: .org.openapitools.codegen.go.GoClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    GoClientCodegenTest.verifyReadOnlyAttributes:301 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_9
+
+openapi-generator_10
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testMultipartBoot:599 Expected to be a single method multipartMixed with parameter(s) [MultipartMixedStatus, MultipartFile, MultipartMixedRequestMarker, List<MultipartMixedStatus>], but found 0
+------------------------------------------------------------------------
+
+openapi-generator_11
+
+openapi-generator_12
+
+[1mTEST: .org.openapitools.codegen.java.JavaClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    JavaClientCodegenTest.testDiscriminatorWithMappingIssue14731:1792 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   JavaClientCodegenTest.testDiscriminatorWithoutMappingIssue14731:1832 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testDiscriminatorWithMappingIssue14731:1177 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   SpringCodegenTest.testDiscriminatorWithoutMappingIssue14731:1216 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+openapi-generator_13
+
+openapi-generator_14
+
+openapi-generator_15
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testAddUnsignedToIntegerWithInvalidMaxValue:4502 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_16
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testAllOfDefaultEnumType:4587 » IndexOutOfBounds Index 5 out of bounds for length 5
+------------------------------------------------------------------------
+
+openapi-generator_17
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testReturnTypeVoidWithResponseEntity_issue12341:2290 » NullPointer
+   SpringCodegenTest.testReturnTypeVoidWithoutResponseEntityWithDelegate_issue12341:2333 » NullPointer
+   SpringCodegenTest.testReturnTypeVoidWithoutResponseEntityWithoutDelegateWithAsync_issue12341:2377 » NullPointer
+   SpringCodegenTest.testReturnTypeVoidWithoutResponseEntityWithoutDelegateWithoutAsync_issue12341:2414 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_18
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testDoesNotHasRestControllerHaveController_issue15264:2486 » NullPointer
+   SpringCodegenTest.testHasRestControllerDoesNotHaveController_issue15264:2450 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_19
+
+[1mTEST: .org.openapitools.codegen.java.JavaClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    JavaClientCodegenTest.testDeprecatedProperty:1996 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_20
+
+[1mTEST: .org.openapitools.codegen.InlineModelResolverTest.java[0m
+
+[91mFailure/Error info:[0m
+    InlineModelResolverTest.resolveOperationInlineEnum:1137 NullPointer
+   InlineModelResolverTest.resolveOperationInlineEnumFormParameters:1155 NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_21
+
+jsoup_1
+
+jsoup_2
+
+jsoup_3
+
+jsoup_4
+
+jsoup_5
+
+gson_1
+
+gson_2
+
+gson_3
+
+gson_4
+
+gson_5
+
+gson_6
+
+gson_7
+
+gson_8
+
+gson_9
+
+gson_10
+
+gson_11
+
+gson_12
+
+nacos_1
+
+nacos_2
+
+nacos_3
+
+nacos_4
+
+nacos_5
+
+fastjson_1
+
+assertj_1
+
+assertj_2
+
+assertj_3
+
+assertj_4
+
+assertj_5
+
+rocketmq_1
+
+rocketmq_2
+
+rocketmq_3
+
+rocketmq_4
+
+rocketmq_5
+
+rocketmq_6
+
+rocketmq_7
+
+rocketmq_8
+
+rocketmq_9
+
+rocketmq_10
+jackson-dataformat-xml_1
+
+checkstyle_1
+
+checkstyle_2
+
+checkstyle_3
+
+checkstyle_4
+
+checkstyle_5
+
+checkstyle_6
+
+checkstyle_7
+
+checkstyle_8
+
+checkstyle_9
+
+checkstyle_10
+
+checkstyle_11
+
+checkstyle_12
+
+checkstyle_13
+
+checkstyle_14
+
+checkstyle_15
+
+checkstyle_16
+
+jackson-core_1
+
+jackson-core_2
+
+jackson-core_3
+
+dubbo_1
+
+[1mTEST: .org.apache.dubbo.config.ReferenceConfigTest.java[0m
+
+[91mFailure/Error info:[0m
+    ReferenceConfigTest.testClassLoader:1132 expected: <null> but was: <sun.misc.Launcher$AppClassLoader@7f31245a>
+   ReferenceConfigTest.testDifferentClassLoaderRequest:1097 expected: <org.apache.dubbo.config.ReferenceConfigTest$TestClassLoader1@36fc695d> but was: <org.apache.dubbo.config.ReferenceConfigTest$TestClassLoader2@33352f32>
+------------------------------------------------------------------------
+
+dubbo_2
+
+jackson-databind_1
+
+jackson-databind_2
+
+jackson-databind_3
+
+jackson-databind_4
+
+seata_1
+
+seata_2
+
+Apktool_1
+
+openapi-generator_1
+
+[1mTEST: .org.openapitools.codegen.python.PythonClientTest.java[0m
+
+[91mFailure/Error info:[0m
+    PythonClientTest.testUuidExampleWorksEvenIfPatternIsDefined:468 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_2
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.nonRequiredFieldShouldNotIncludeNotNullAnnotation_issue13365:1609->generateFiles:627 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotationWithBeanValidationTrue_issue13365:1632->generateFiles:627 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotation_issue13365:1580->generateFiles:627 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+openapi-generator_3
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.useBeanValidationGenerateAnnotationsForRequestBody_issue13932:1833 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+openapi-generator_4
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotationJakarta_issue13365_issue13885:1547 
+Expecting ListFromStream:
+  ["java.net.URI",
+    "java.util.Objects",
+    "com.fasterxml.jackson.annotation.JsonProperty",
+    "com.fasterxml.jackson.annotation.JsonCreator",
+    "java.time.OffsetDateTime",
+    "io.swagger.v3.oas.annotations.media.Schema",
+    "java.util",
+    "jakarta.annotation.Generated"]
+to contain:
+  ["jakarta.validation.constraints.NotNull"]
+but could not find the following element(s):
+  ["jakarta.validation.constraints.NotNull"]
+
+   SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotation_issue13365:1514 
+Expecting ListFromStream:
+  ["java.net.URI",
+    "java.util.Objects",
+    "com.fasterxml.jackson.annotation.JsonProperty",
+    "com.fasterxml.jackson.annotation.JsonCreator",
+    "java.time.OffsetDateTime",
+    "io.swagger.v3.oas.annotations.media.Schema",
+    "java.util",
+    "javax.annotation.Generated"]
+to contain:
+  ["javax.validation.constraints.NotNull"]
+but could not find the following element(s):
+  ["javax.validation.constraints.NotNull"]
+------------------------------------------------------------------------
+
+openapi-generator_5
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.requiredFieldShouldIncludeNotNullAnnotationWithBeanValidationTrue_issue13365:1952 Should have annotation with name: javax.validation.constraints.Email
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationFalseJava8TrueForFormatEmail:824->beanValidationForFormatEmail:839->beanValidationForFormatEmail:875 File does not contain line [@javax.validation.constraints.Email] expected [true] but found [false]
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationFalseJava8TrueJakartaeeTrueForFormatEmail:834->beanValidationForFormatEmail:875 File does not contain line [@jakarta.validation.constraints.Email] expected [true] but found [false]
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationTrueJava8FalseForFormatEmail:829->beanValidationForFormatEmail:839->beanValidationForFormatEmail:875 File does not contain line [@javax.validation.constraints.Email] expected [true] but found [false]
+   SpringCodegenTest.useBeanValidationTruePerformBeanValidationTrueJava8TrueForFormatEmail:881->beanValidationForFormatEmail:839->beanValidationForFormatEmail:875 File does not contain line [@javax.validation.constraints.Email] expected [true] but found [false]
+------------------------------------------------------------------------
+
+openapi-generator_6
+
+openapi-generator_7
+
+[1mTEST: .org.openapitools.codegen.go.GoClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    GoClientCodegenTest.verifyApiTestWithNullResponse:278 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_8
+
+[1mTEST: .org.openapitools.codegen.go.GoClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    GoClientCodegenTest.verifyReadOnlyAttributes:301 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_9
+
+openapi-generator_10
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testMultipartBoot:599 Expected to be a single method multipartMixed with parameter(s) [MultipartMixedStatus, MultipartFile, MultipartMixedRequestMarker, List<MultipartMixedStatus>], but found 0
+------------------------------------------------------------------------
+
+openapi-generator_11
+
+openapi-generator_12
+
+[1mTEST: .org.openapitools.codegen.java.JavaClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    JavaClientCodegenTest.testDiscriminatorWithMappingIssue14731:1792 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   JavaClientCodegenTest.testDiscriminatorWithoutMappingIssue14731:1832 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testDiscriminatorWithMappingIssue14731:1177 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+   SpringCodegenTest.testDiscriminatorWithoutMappingIssue14731:1216 » Runtime Issues with the OpenAPI input. Possible causes: invalid/missing spec, malformed JSON/YAML files, etc.
+------------------------------------------------------------------------
+
+openapi-generator_13
+
+openapi-generator_14
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testAllOfDefaultEnumType:4307 » IndexOutOfBounds Index 4 out of bounds for length 4
+------------------------------------------------------------------------
+
+openapi-generator_15
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testAddUnsignedToIntegerWithInvalidMaxValue:4502 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_16
+
+[1mTEST: .org.openapitools.codegen.DefaultCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    DefaultCodegenTest.testAllOfDefaultEnumType:4587 » IndexOutOfBounds Index 5 out of bounds for length 5
+------------------------------------------------------------------------
+
+openapi-generator_17
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testReturnTypeVoidWithResponseEntity_issue12341:2290 » NullPointer
+   SpringCodegenTest.testReturnTypeVoidWithoutResponseEntityWithDelegate_issue12341:2333 » NullPointer
+   SpringCodegenTest.testReturnTypeVoidWithoutResponseEntityWithoutDelegateWithAsync_issue12341:2377 » NullPointer
+   SpringCodegenTest.testReturnTypeVoidWithoutResponseEntityWithoutDelegateWithoutAsync_issue12341:2414 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_18
+
+[1mTEST: .org.openapitools.codegen.java.spring.SpringCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    SpringCodegenTest.testDoesNotHasRestControllerHaveController_issue15264:2486 » NullPointer
+   SpringCodegenTest.testHasRestControllerDoesNotHaveController_issue15264:2450 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_19
+
+[1mTEST: .org.openapitools.codegen.java.JavaClientCodegenTest.java[0m
+
+[91mFailure/Error info:[0m
+    JavaClientCodegenTest.testDeprecatedProperty:1996 » NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_20
+
+[1mTEST: .org.openapitools.codegen.InlineModelResolverTest.java[0m
+
+[91mFailure/Error info:[0m
+    InlineModelResolverTest.resolveOperationInlineEnum:1137 NullPointer
+   InlineModelResolverTest.resolveOperationInlineEnumFormParameters:1155 NullPointer
+------------------------------------------------------------------------
+
+openapi-generator_21
+
+jsoup_1
+
+jsoup_2
+
+jsoup_3
+
+jsoup_4
+
+jsoup_5
+
+gson_1
+
+gson_2
+
+gson_3
+
+gson_4
+
+gson_5
+
+gson_6
+
+gson_7
+
+gson_8
+
+gson_9
+
+gson_10
+
+gson_11
+
+gson_12
+
+nacos_1
+
+nacos_2
+
+nacos_3
+
+nacos_4
+
+nacos_5
+
+fastjson_1
+
+assertj_1
+
+assertj_2
+
+assertj_3
+
+assertj_4
+
+assertj_5
+
+rocketmq_1
+
+rocketmq_2
+
+rocketmq_3
+
+rocketmq_4
+
+rocketmq_5
+
+rocketmq_6
+
+rocketmq_7
+
+rocketmq_8
+
+rocketmq_9
+
+rocketmq_10
+
+rocketmq_11
+
+rocketmq_12
+
+retrofit_1
+
+sslcontext-kickstart_1
+
+sslcontext-kickstart_2
+
+sslcontext-kickstart_3
+
+sslcontext-kickstart_4
+
+sslcontext-kickstart_5
+
+sslcontext-kickstart_6
+

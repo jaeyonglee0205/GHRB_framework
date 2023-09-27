@@ -42,19 +42,6 @@ index 81819783b..f8ae785b5 100644
       *
       * @param modifiers String contains modifiers.
       */
-diff --git a/src/main/resources/com/puppycrawl/tools/checkstyle/meta/checks/coding/IllegalTypeCheck.xml b/src/main/resources/com/puppycrawl/tools/checkstyle/meta/checks/coding/IllegalTypeCheck.xml
-index 05b9e707d..51a2ab355 100644
---- a/src/main/resources/com/puppycrawl/tools/checkstyle/meta/checks/coding/IllegalTypeCheck.xml
-+++ b/src/main/resources/com/puppycrawl/tools/checkstyle/meta/checks/coding/IllegalTypeCheck.xml
-@@ -80,7 +80,7 @@
-                       validation-type="tokenTypesSet">
-                <description>Control whether to check only methods and fields with any
-  of the specified modifiers.
-- This property does not affect method calls nor method references.</description>
-+ This property does not affect method calls nor method references nor record components.</description>
-             </property>
-             <property default-value="ANNOTATION_FIELD_DEF,CLASS_DEF,INTERFACE_DEF,METHOD_CALL,METHOD_DEF,METHOD_REF,PARAMETER_DEF,VARIABLE_DEF,PATTERN_VARIABLE_DEF,RECORD_DEF,RECORD_COMPONENT_DEF"
-                       name="tokens"
 diff --git a/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersDefault.java b/src/test/resources-noncompilable/com/puppycrawl/tools/checkstyle/checks/coding/illegaltype/InputIllegalTypeRecordsWithMemberModifiersDefault.java
 new file mode 100644
 index 000000000..dd50d3344
@@ -329,18 +316,3 @@ index 000000000..d1149e881
 +
 +}
 +
-diff --git a/src/xdocs/config_coding.xml b/src/xdocs/config_coding.xml
-index 59e953847..b12789af2 100644
---- a/src/xdocs/config_coding.xml
-+++ b/src/xdocs/config_coding.xml
-@@ -3166,7 +3166,9 @@ public void myTest() {
-               <td>memberModifiers</td>
-               <td>
-                 Control whether to check only methods and fields with any of the specified
--                modifiers. This property does not affect method calls nor method references.
-+                modifiers.
-+                This property does not affect method calls nor method references nor
-+                record components.
-               </td>
-               <td>subset of tokens
-                 <a href="apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html">TokenTypes</a>

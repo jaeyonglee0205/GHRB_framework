@@ -128,6 +128,8 @@ def call_checkout(pid, vid, dir, patch):
     report_id = active_bugs.loc[active_bugs['bug_id'] == int(bid)]["report.id"].values[0]
 
     test_patch_dir = os.path.abspath(os.path.join('./data/test_diff/', f'{report_id}.diff'))
+    
+    prod_diff_dir = os.path.abspath(os.path.join('./data/prod_diff/', f'{report_id}.diff'))
 
     if version == "b":
         #buggy version
@@ -135,7 +137,8 @@ def call_checkout(pid, vid, dir, patch):
     
     elif version == "f":
         #fixed version
-        commit = active_bugs.loc[active_bugs['bug_id'] == int(bid)]['revision.id.fixed'].values[0]
+        # commit = active_bugs.loc[active_bugs['bug_id'] == int(bid)]['revision.id.fixed'].values[0]
+        commit = active_bugs.loc[active_bugs['bug_id'] == int(bid)]['revision.id.buggy'].values[0]
 
     else:
         output = "Choose 'b' for buggy version, 'f' for fixed version"
@@ -192,7 +195,18 @@ def call_checkout(pid, vid, dir, patch):
                 stdout=sp.DEVNULL, stderr=sp.DEVNULL)
             output += (f"Checking out {commit} to {repo_path}\n")
         
-        if version == "b" and patch == True:
+        # if version == "b" and patch == True:
+        #     if dir is not None:
+        #         #print("dir is not None 2")
+        #         sp.run(['git', f'--work-tree={dir}', 'apply', '--unsafe-paths', f'--directory={dir}', 
+        #                 '--ignore-space-change', '--ignore-whitespace', test_patch_dir], cwd=repo_path)
+        #     else:
+        #         sp.run(['git', 'apply', test_patch_dir], cwd=repo_path,
+        #             stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+
+        #     output += (f"Applying patch\n")
+
+        if (version == "b" or version == "f") and patch == True:
             if dir is not None:
                 #print("dir is not None 2")
                 sp.run(['git', f'--work-tree={dir}', 'apply', '--unsafe-paths', f'--directory={dir}', 
@@ -201,7 +215,20 @@ def call_checkout(pid, vid, dir, patch):
                 sp.run(['git', 'apply', test_patch_dir], cwd=repo_path,
                     stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
-            output += (f"Applying patch\n")
+            output += (f"Applying test patch\n")
+
+        if version == "f":
+            if dir is not None:
+                #print("dir is not None 2")
+                sp.run(['git', f'--work-tree={dir}', 'apply', '--unsafe-paths', f'--directory={dir}', 
+                        '--ignore-space-change', '--ignore-whitespace', prod_diff_dir], cwd=repo_path)
+            else:
+                sp.run(['git', 'apply', prod_diff_dir], cwd=repo_path,
+                    stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+
+            output += (f"Applying prod diff\n")
+        
+
         
         output += (f"Check out program version \033[4m{pid}-{vid}\033[0m\n")
 

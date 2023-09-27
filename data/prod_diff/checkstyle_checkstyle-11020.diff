@@ -1,16 +1,3 @@
-diff --git a/.ci/validation.sh b/.ci/validation.sh
-index 245e6e0d8..be6b3b21e 100755
---- a/.ci/validation.sh
-+++ b/.ci/validation.sh
-@@ -295,7 +295,7 @@ no-error-xwiki)
-   cd ..
-   checkout_from https://github.com/xwiki/xwiki-platform.git
-   cd .ci-temp/xwiki-platform
--  git checkout "1180900c""ea69d4235e20ff1ff0f156e9876d4b10"
-+  git checkout "e469e5be6420c7c053863d0aa""bd5094ae4145a94"
-   # Validate xwiki-platform
-   mvn -e --no-transfer-progress checkstyle:check@default -Dcheckstyle.version=${CS_POM_VERSION}
-   cd ..
 diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/SimplifyBooleanExpressionCheck.java b/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/SimplifyBooleanExpressionCheck.java
 index 14bf018b0..77f825a1a 100644
 --- a/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/SimplifyBooleanExpressionCheck.java
@@ -55,18 +42,6 @@ index 14bf018b0..77f825a1a 100644
              default:
                  break;
          }
-diff --git a/src/main/resources/com/puppycrawl/tools/checkstyle/meta/checks/coding/SimplifyBooleanExpressionCheck.xml b/src/main/resources/com/puppycrawl/tools/checkstyle/meta/checks/coding/SimplifyBooleanExpressionCheck.xml
-index af45aa78c..07a62ed3e 100644
---- a/src/main/resources/com/puppycrawl/tools/checkstyle/meta/checks/coding/SimplifyBooleanExpressionCheck.xml
-+++ b/src/main/resources/com/puppycrawl/tools/checkstyle/meta/checks/coding/SimplifyBooleanExpressionCheck.xml
-@@ -7,6 +7,7 @@
-          <description>&lt;p&gt;
-  Checks for over-complicated boolean expressions. Currently finds code like
-  {@code if (b == true)}, {@code b || true}, {@code !false},
-+ {@code boolean a = q &gt; 12 ? true : false},
-  etc.
-  &lt;/p&gt;
-  &lt;p&gt;
 diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/coding/simplifybooleanexpression/InputSimplifyBooleanExpression.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/coding/simplifybooleanexpression/InputSimplifyBooleanExpression.java
 index ef762da62..a1866160c 100644
 --- a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/coding/simplifybooleanexpression/InputSimplifyBooleanExpression.java
@@ -98,26 +73,4 @@ index ef762da62..a1866160c 100644
 +        int d = false ? 1 : 2; // violation
 +        temp = a() ? true : true; // violation
 +    }
- }
-diff --git a/src/xdocs/config_coding.xml b/src/xdocs/config_coding.xml
-index 76cb02526..7ed2747c0 100644
---- a/src/xdocs/config_coding.xml
-+++ b/src/xdocs/config_coding.xml
-@@ -6408,6 +6408,7 @@ public class D {
-         <p>
-           Checks for over-complicated boolean expressions. Currently finds
-           code like <code> if (b == true)</code>, <code>b || true</code>, <code>!false</code>,
-+          <code>boolean a = q > 12 ? true : false</code>,
-           etc.
-         </p>
- 
-@@ -6444,6 +6445,9 @@ public class Test {
-     e = (a || false) ? c : d; // violation, can be simplified to a
-     e = (a &amp;&amp; b) ? c : d;     // OK
- 
-+    int s = 12;
-+    boolean m = s &gt; 1 ? true : false; // violation, can be simplified to s &gt; 1
-+    boolean f = c == null ? false : c.someMethod(); // OK
-   }
- 
  }
