@@ -11,7 +11,7 @@ import pandas as pd
 
 def clone_repo (owner, name):
     link = "https://github.com/" + owner + "/" + name
-    name = os.getcwd() + '/repos/' + name
+    name = '/root/framework/repos/' + name
     
     p = sp.Popen(['git', 'clone', link, name], stderr=sp.PIPE, stdout=sp.PIPE)
 
@@ -37,7 +37,7 @@ def project_id_collector():
 
         for dir in os.listdir("/root/framework/repos/"):
             if project_id in dir:
-                repo_path = os.path.abspath(os.path.join('repos/', f'{dir}'))
+                repo_path = os.path.abspath(os.path.join('/root/framework/repos/', f'{dir}'))
         project_map[project_id]["owner"] = owner
         project_map[project_id]["number_of_bugs"] = number_of_bugs
         project_map[project_id]['commit_db'] = commit_db
@@ -68,7 +68,7 @@ def commit_db_collector():
             commit_db.loc[index] = [index, value['buggy_commit'], value['merge_commit'], value["bug_id"], value['issue']['url']]
             index += 1
         
-        commit_db.to_csv(os.getcwd() + "/commit_db/" + project_id + "_bugs.csv", index=False)
+        commit_db.to_csv("/root/framework/commit_db/" + project_id + "_bugs.csv", index=False)
 
 def find_og_collector():
     total_list = set()

@@ -199,16 +199,3 @@ index d7d28e11..d695699a 100644
  
          public String getMasterName() {
              return masterName;
-diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/test/java/io/seata/spring/boot/autoconfigure/ServerPropertiesTest.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/test/java/io/seata/spring/boot/autoconfigure/ServerPropertiesTest.java
-index 8bddb7ac..043babc6 100644
---- a/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/test/java/io/seata/spring/boot/autoconfigure/ServerPropertiesTest.java
-+++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/test/java/io/seata/spring/boot/autoconfigure/ServerPropertiesTest.java
-@@ -95,7 +95,7 @@ public class ServerPropertiesTest {
- 
-     @Test
-     public void testStoreRedisPropertiesSentinel() {
--        assertEquals(context.getBean(StoreRedisProperties.Sentinel.class).getSentinelHosts(), "");
-+        assertEquals(context.getBean(StoreRedisProperties.Sentinel.class).getSentinelHosts(), null);
-     }
- 
-     @AfterAll

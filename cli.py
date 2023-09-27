@@ -426,7 +426,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
             pattern = r'\[ERROR\] Errors:(.*?)\[INFO\]\s+\[ERROR\] Tests run:'
             match = re.search(pattern, stdout, re.DOTALL)
         if match is None:
-            pattern = r'Results[^\n]*\n((?s).*?)Tests run'
+            pattern = r'Results[^\n]*\n(.*?)Tests run'
             match = re.search(pattern, stdout, re.DOTALL)
         fail_part = match.group(1).strip()
         fail_part = re.sub(r'\[ERROR\]', '', fail_part).strip()

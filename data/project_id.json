@@ -40,7 +40,7 @@
   },
   "dubbo": {
     "owner": "apache",
-    "number_of_bugs": 2,
+    "number_of_bugs": 1,
     "commit_db": "commit_db/dubbo_bugs.csv",
     "repo_path": "/root/framework/repos/dubbo",
     "requirements": {
@@ -91,7 +91,7 @@
   },
   "openapi-generator": {
     "owner": "OpenAPITools",
-    "number_of_bugs": 21,
+    "number_of_bugs": 5,
     "commit_db": "commit_db/openapi-generator_bugs.csv",
     "repo_path": "/root/framework/repos/openapi-generator",
     "requirements": {

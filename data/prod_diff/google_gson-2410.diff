@@ -23,16 +23,3 @@ index 69c1b06d..d0fbc1a4 100644
 +    return "https://github.com/google/gson/blob/main/Troubleshooting.md#" + id;
    }
  }
-diff --git a/shrinker-test/src/test/java/com/google/gson/it/ShrinkingIT.java b/shrinker-test/src/test/java/com/google/gson/it/ShrinkingIT.java
-index ddf6f34f..9c32f1aa 100644
---- a/shrinker-test/src/test/java/com/google/gson/it/ShrinkingIT.java
-+++ b/shrinker-test/src/test/java/com/google/gson/it/ShrinkingIT.java
-@@ -194,7 +194,7 @@ public class ShrinkingIT {
-         assertThat(e).hasCauseThat().hasMessageThat().isEqualTo(
-             "Abstract classes can't be instantiated! Adjust the R8 configuration or register an InstanceCreator"
-             + " or a TypeAdapter for this type. Class name: com.example.DefaultConstructorMain$TestClass"
--            + "\nSee https://github.com/google/gson/blob/master/Troubleshooting.md#r8-abstract-class"
-+            + "\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#r8-abstract-class"
-         );
-       }
-     });
