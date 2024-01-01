@@ -970,6 +970,9 @@ if __name__ == '__main__':
     parser_export.add_argument("-w", dest='working_dir', action="store",
                                help="The working directory of the checked-out project version")
     
+
+
+    
     args = parser.parse_args()
     #print(args)
     if args.command == "info":

@@ -1,0 +1,80 @@
+[
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Update ViewStub margin if doesn't have ActionBar",
+        "url": "https://github.com/airbnb/native-navigation/pull/127",
+        "resourcePath": "/airbnb/native-navigation/pull/127",
+        "createdAt": "2017-07-12T01:30:29Z",
+        "number": 127,
+        "mergeCommit": null,
+        "potentialMergeCommit": {
+          "oid": "355e5d5d593c30ae7e807e27c78f3275c176636c",
+          "message": "Merge c10222b07b60dff6ecebcf6c78921dcb180833dd into 9cf50bf9b751b40778f473f3b19fcfe2c4d40599",
+          "commitUrl": "https://github.com/airbnb/native-navigation/commit/355e5d5d593c30ae7e807e27c78f3275c176636c",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "9cf50bf9b751b40778f473f3b19fcfe2c4d40599",
+                "message": "Merge pull request #143 from hitbear518/fix-dismiss-payload\n\nfix: dismiss payload"
+              },
+              {
+                "oid": "c10222b07b60dff6ecebcf6c78921dcb180833dd",
+                "message": "remove view stub margin if hidden action bar"
+              }
+            ]
+          }
+        },
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "lib/android/src/main/java/com/airbnb/android/react/navigation/DefaultNavigationImplementation.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "lib/android/src/main/java/com/airbnb/android/react/navigation/ReactInterface.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "lib/android/src/main/java/com/airbnb/android/react/navigation/ReactNativeFragment.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0MTMwMDM4NDExOmMxMDIyMmIwN2I2MGRmZjZlY2ViY2Y2Yzc4OTIxZGNiMTgwODMzZGQ=",
+                "url": "https://github.com/airbnb/native-navigation/pull/127/commits/c10222b07b60dff6ecebcf6c78921dcb180833dd"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 59,
+                "url": "https://github.com/airbnb/native-navigation/issues/59",
+                "title": "Navigator.Config hidden does not work on Android",
+                "bodyHTML": "<p dir=\"auto\">The <code class=\"notranslate\">Navigator.Config</code> <code class=\"notranslate\">hidden</code> prop does not seem to work on Android.</p>\n<p dir=\"auto\">We are using <code class=\"notranslate\">Theme.AppCompat.Light.NoActionBar</code> theme on the activity.<br>\n<code class=\"notranslate\">next.hasKey(\"hidden\")</code> is true only on the second call of <code class=\"notranslate\">reconcileNavigationProperties</code>, when <code class=\"notranslate\">bar</code> is null due to <a href=\"https://github.com/airbnb/native-navigation/blob/master/lib/android/src/main/java/com/airbnb/android/react/navigation/ReactNativeFragment.java#L444\">this call</a>, making it not call <a href=\"https://github.com/airbnb/native-navigation/blob/master/lib/android/src/main/java/com/airbnb/android/react/navigation/DefaultNavigationImplementation.java#L383\"><code class=\"notranslate\">bar.hide()</code></a></p>\n<p dir=\"auto\">We tried replacing <a href=\"https://github.com/airbnb/native-navigation/blob/master/lib/android/src/main/java/com/airbnb/android/react/navigation/ReactNativeFragment.java#L448\">this line</a> with <code class=\"notranslate\">activity.getSupportActionBar()</code>, but that left an empty space above the react content, see image below.<br>\n<a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://cloud.githubusercontent.com/assets/735858/24222372/98d68cd6-0f30-11e7-84b6-d529db6ef522.png\"><img src=\"https://cloud.githubusercontent.com/assets/735858/24222372/98d68cd6-0f30-11e7-84b6-d529db6ef522.png\" alt=\"image\" style=\"max-width: 100%;\"></a></p>",
+                "resourcePath": "/airbnb/native-navigation/issues/59",
+                "createdAt": "2017-03-22T21:52:02Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+]
